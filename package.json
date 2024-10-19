@@ -10,15 +10,15 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxtjs/tailwindcss": "^6.12.1",
-    "@pinia/nuxt": "^0.5.5",
-    "@supabase/supabase-js": "^2.45.4",
-    "nuxt": "^3.13.0",
+    "@nuxtjs/tailwindcss": "^6.12.2",
+    "nuxt": "^3.13.2",
+    "nuxt-app": "file:",
     "primevue": "^4.1.1",
     "vue": "latest",
     "vue-router": "latest"
   },
   "devDependencies": {
+    "@nuxtjs/supabase": "^1.4.1",
     "@primevue/nuxt-module": "^4.1.1"
   }
 }
