@@ -7,7 +7,7 @@ definePageMeta({
 
 const supabase = useSupabaseClient()
 
-const state = reactive({
+const credentials = reactive({
   email: '',
   password: '',
   rememberme: false,
@@ -20,12 +20,13 @@ const handleLogin = async () => {
   try {
     signInLoading.value = true
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: state.email,
-      password: state.password
+      email: credentials.email,
+      password: credentials.password
     })
     if (error) throw error
+    navigateTo("/")
   } catch (error) {
-    state.failedAuth = true
+    credentials.failedAuth = true
   } finally {
     signInLoading.value = false
   }
@@ -44,7 +45,7 @@ const handleLogin = async () => {
               <i class="pi pi-envelope"></i>
           </InputGroupAddon>
           <FloatLabel variant="on">
-            <InputText id="on_label_email" v-model="state.email" :invalid="state.failedAuth"/>
+            <InputText id="on_label_email" v-model="credentials.email" :invalid="credentials.failedAuth"/>
             <label for="on_label_email">Correu electrònic</label>
           </FloatLabel>
         </InputGroup>
@@ -54,14 +55,14 @@ const handleLogin = async () => {
               <i class="pi pi-key"></i>
           </InputGroupAddon>
           <FloatLabel variant="on">
-            <Password id="on_label_password" v-model="state.password" :invalid="state.failedAuth" toggleMask />
+            <Password id="on_label_password" v-model="credentials.password" :invalid="credentials.failedAuth" :feedback="false" toggleMask />
             <label for="on_label_password">Contrasenya</label>
           </FloatLabel>
         </InputGroup>
 
         <div class="flex items-center justify-between mb-2">
             <div class="flex items-center">
-                <Checkbox id="rememberme" v-model="state.rememberme" :binary="true" class="mr-2" />
+                <Checkbox id="rememberme" v-model="credentials.rememberme" :binary="true" class="mr-2" />
                 <label for="rememberme">Recorda'm</label>
             </div>
             <a class="font-medium no-underline ml-2 text-primary text-right cursor-pointer">Contrasenya oblidada?</a>
@@ -74,7 +75,7 @@ const handleLogin = async () => {
           </div>
           <div class="flex items-center justify-center">
             <span class="text-sm text-gray-500">No estàs registrat?</span>
-            <Button as="router-link" size="small" label="Crear un compte" icon="pi pi-arrow-up-right" iconPos="right" to="/signup" link />
+            <Button as="router-link" size="small" label="Crear un compte" icon="pi pi-arrow-up-right" iconPos="right" to="/signup" target="_blank" link />
           </div>
         </div>
       </form>
