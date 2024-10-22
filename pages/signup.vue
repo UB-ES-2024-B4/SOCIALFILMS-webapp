@@ -10,12 +10,13 @@ const supabase = useSupabaseClient()
 const credentials = reactive({
 	username: '',
   email: '',
+	passwordToConfirm: '',
   password: '',
   rememberme: false,
   failedAuth: false
 })
 
-const signUpLoading = ref(false);
+const signUpLoading = ref(false)
 const modalInfo = ref(false)
 
 const handleSignUp = async () => {
@@ -43,6 +44,17 @@ const redirectToLogin = () => {
   navigateTo('/login');
   window.close();
 }
+
+const isDifferentPassword = computed(() => {
+	if (!credentials.password || !credentials.passwordToConfirm){
+		return false
+	}
+	return credentials.password !== credentials.passwordToConfirm
+})
+
+const isNotFilled = computed(() => {
+  return (!credentials.username || !credentials.email || !credentials.password || !credentials.passwordToConfirm) && !isDifferentPassword.value
+})
 
 </script>
 
@@ -88,7 +100,7 @@ const redirectToLogin = () => {
               <i class="pi pi-key"></i>
           </InputGroupAddon>
           <FloatLabel variant="on">
-						<Password id="on_label_password" v-model="credentials.password" :invalid="credentials.failedAuth" toggleMask>
+						<Password id="on_label_password" v-model="credentials.passwordToConfirm" :invalid="credentials.failedAuth" toggleMask>
 							<template #footer>
 									<Divider />
 									<ul class="pl-2 ml-2 my-0 list-disc leading-normal">
@@ -103,7 +115,21 @@ const redirectToLogin = () => {
             <label for="on_label_password">Contrasenya</label>
           </FloatLabel>
         </InputGroup>
-				<Button type="submit" label="Registrar-me" :loading="signUpLoading" class="mt-2"/>
+				<div class="flex flex-col gap-1">
+					<InputGroup>
+						<InputGroupAddon>
+								<i class="pi pi-key"></i>
+						</InputGroupAddon>
+						<FloatLabel variant="on">
+							<Password id="on_label_confirm_password" v-model="credentials.password" :invalid="isDifferentPassword" :feedback="false" toggleMask />
+							<label for="on_label_confirm_password">Confirmar contrasenya</label>
+						</FloatLabel>
+					</InputGroup>
+					<transition name="p-message" mode="out-in" class="flex flex-col">
+						<Message v-if="isDifferentPassword" closable severity="error" icon="pi pi-times-circle">Les contrasenyes no coinxideixen</Message>
+					</transition>
+				</div>	
+				<Button type="submit" label="Registrar-me" :loading="signUpLoading" :disabled="isNotFilled" class="mt-2"/>
       </form>
     </div>
   </div>
