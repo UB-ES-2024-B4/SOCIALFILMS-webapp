@@ -32,6 +32,10 @@ const handleLogin = async () => {
   }
 }
 
+const isNotFilled = computed(() => {
+  return !credentials.email || !credentials.password
+})
+
 </script>
 
 <template>
@@ -71,7 +75,7 @@ const handleLogin = async () => {
         <div class="flex flex-col gap-3">
           <div class="flex items-center justify-between gap-2">
             <Button as="router-link" label="Tornar a l'inici" icon="pi pi-arrow-circle-left" to="/" severity="secondary" outlined />
-            <Button type="submit" label="Inicia sessió" :loading="signInLoading" class="flex-grow" />
+            <Button type="submit" label="Inicia sessió" :loading="signInLoading" :disabled="isNotFilled" class="flex-grow" />
           </div>
           <div class="flex items-center justify-center">
             <span class="text-sm text-gray-500">No estàs registrat?</span>

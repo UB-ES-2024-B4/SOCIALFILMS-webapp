@@ -53,7 +53,7 @@ const isDifferentPassword = computed(() => {
 })
 
 const isNotFilled = computed(() => {
-  return (!credentials.username || !credentials.email || !credentials.password || !credentials.passwordToConfirm) && !isDifferentPassword.value
+  return !credentials.username || !credentials.email || !credentials.password || !credentials.passwordToConfirm || isDifferentPassword.value
 })
 
 </script>
