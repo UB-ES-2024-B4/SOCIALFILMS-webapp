@@ -68,6 +68,10 @@ const handleSignUp = async () => {
 
     credentialsStatus.failedAuth = true
     switch (error.code) {
+      case authErrorCodes.UserAlreadyExists:
+        credentialsStatus.emailExists = true
+        break
+
       case authErrorCodes.ValidationFailed:
         credentialsStatus.emailNotValid = true
         break
@@ -95,9 +99,9 @@ const isNotFilled = computed(() => {
 </script>
 
 <template>
-	<Dialog v-model:visible="modalInfo" modal header="Registre completat" :style="{ width: '25rem' }" position="bottom" :draggable="false">
-    <div class="flex gap-4 items-start mb-6">
-			<i class="pi pi-exclamation-circle mt-1" style="font-size: 2rem; color: #708090"></i>
+	<Dialog v-model:visible="modalInfo" modal header="Registre completat" :style="{ width: '22rem' }" position="bottom" :draggable="false">
+    <div class="flex gap-4 items-center mb-6">
+			<i class="pi pi-check-circle" style="font-size: 2rem; color: #708090"></i>
 			<span class="text-gray-500 dark:text-gray-300 block">
 				T'has registrat amb exit!
 			</span>
