@@ -117,7 +117,7 @@ const isNotFilled = computed(() => {
                 <i class="pi pi-user"></i>
             </InputGroupAddon>
             <FloatLabel variant="on">
-              <InputText id="on_label_username" v-model="credentials.username" :invalid="credentialsStatus.failedAuth"/>
+              <InputText id="on_label_username" v-model="credentials.username" :invalid="credentialsStatus.failedAuth || credentialsStatus.usernameExists"/>
               <label for="on_label_username">Nom d'usuari</label>
             </FloatLabel>
           </InputGroup>
@@ -132,7 +132,7 @@ const isNotFilled = computed(() => {
                 <i class="pi pi-envelope"></i>
             </InputGroupAddon>
             <FloatLabel variant="on">
-              <InputText id="on_label_email" v-model="credentials.email" :invalid="credentialsStatus.failedAuth"/>
+              <InputText id="on_label_email" v-model="credentials.email" :invalid="credentialsStatus.failedAuth || credentialsStatus.emailExists"/>
               <label for="on_label_email">Correu electrònic</label>
             </FloatLabel>
           </InputGroup>
