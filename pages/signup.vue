@@ -99,7 +99,7 @@ const isNotFilled = computed(() => {
     <div class="flex gap-4 items-start mb-6">
 			<i class="pi pi-exclamation-circle mt-1" style="font-size: 2rem; color: #708090"></i>
 			<span class="text-gray-500 dark:text-gray-300 block">
-				Si us plau, revisa el teu email per a confirmar el teu compte i finalitzar el procés de registre.
+				T'has registrat amb exit!
 			</span>
     </div>
     <div class="flex justify-end gap-2">
