@@ -20,7 +20,7 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data ->> 'username',
-    NEW.raw_user_meta_data ->> 'email'
+    NEW.email
   )
   ON CONFLICT DO NOTHING;  -- Avoid duplicate entries if the user already exists
   RETURN NEW;
