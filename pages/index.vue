@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { Film } from "~/types";
 import FilmCard from "~/components/FilmCard.vue";
-import FilmCardV2 from "~/components/FilmCard.vue";
 
 
 definePageMeta({
-	layout: 'empty'
+	layout: 'navbar'
 })
 
 const dummyFilm: Film = {
