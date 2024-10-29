@@ -1,12 +1,18 @@
 import type { GenreId } from "./genres";
 
 export interface Film {
-    poster: string
-    title: string
-    overview: string
-    isAdult: boolean
-    genre: GenreId[]
-    releaseDate: string
-    voteAverage: number
-    voteCount: number
-  }
+  id: number
+  media_type: string
+  poster_path: string
+  title: string
+  overview: string
+  adult: boolean
+  genre_ids: GenreId[]
+  release_date: string
+  vote_average: number
+  vote_count: number
+}
+
+export interface FilmsAPI {
+  results: Film[]
+}

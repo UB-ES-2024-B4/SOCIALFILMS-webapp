@@ -27,7 +27,7 @@ const liked = ref(false)
     <!-- Header -->
     <div class="relative aspect-[3/3]">
       <img
-        :src="film.poster"
+        :src="'https://image.tmdb.org/t/p/original'+film.poster_path"
         :alt="`${film.title} poster`"
         class="absolute inset-0 object-cover"
       />
@@ -43,21 +43,21 @@ const liked = ref(false)
 
     <!-- Footer -->
     <div class="px-3 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
-      <h2 class="font-bold text-xl">{{ film.title }}</h2>
-      <h3 class="text-sm text-gray-400">{{ film.genre.map(id => genres[id]).join(' • ') }}</h3>
+      <h2 class="font-bold text-xl truncate">{{ film.title }}</h2>
+      <h3 class="text-sm text-gray-400 truncate">{{ film.genre_ids.map(id => genres[id]).join(' • ') }}</h3>
       <div class="flex items-center space-x-1.5 mt-3">
-        <span :class="film.isAdult ? 
+        <span :class="film.adult ? 
         'tag bg-red-500/20 border border-red-500 text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400' :
         'tag bg-green-500/20 border border-green-500 text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'">
-          {{ film.isAdult ? 'R' : 'PG-13' }}
+          {{ film.adult ? 'R' : 'PG-13' }}
         </span>
         <span class="tag bg-gray-200/20 text-gray-200">
           <i class="pi pi-calendar mr-1.5" style="font-size: small"></i>
-          {{ film.releaseDate }}
+          {{ film.release_date }}
         </span>
         <span class="tag bg-gray-200/20 text-gray-200">
           <i class="pi pi-star-fill text-yellow-400 mr-1.5" style="font-size: small"></i> 
-          {{ film.voteAverage }}
+          {{ film.vote_average.toFixed(1) }}
         </span>
       </div>
     </div>

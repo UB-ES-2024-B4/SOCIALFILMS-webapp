@@ -1,27 +1,33 @@
 <script setup lang="ts">
-import type { Film } from "~/types";
+import type { Film, FilmsAPI } from "~/types";
 import FilmCard from "~/components/FilmCard.vue";
 
+const supabase = useSupabaseClient()
 
 definePageMeta({
 	layout: 'navbar'
 })
 
-const dummyFilm: Film = {
-  poster: "https://image.tmdb.org/t/p/original/cRDJxdnRb7ikKd6fVJTrGeaL34v.jpg", // Cambia esto por una URL válida
-  title: "Inception",
-  overview: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO.",
-  isAdult: false,
-  genre: [1, 2],
-  releaseDate: "2010-07-16",
-  voteAverage: 8.8,
-  voteCount: 230000
-};
+const { data, error } = await supabase.rpc('get_trending_movies_of_week') as {data: FilmsAPI, error: any}
+console.log(data)
 
 </script>
 
 <template>
-	<div class="w-screen h-screen flex items-center justify-center gap-60">
-		<FilmCard :film="dummyFilm" :trending="true" :trendingNumber="2"></FilmCard>
-	</div>
+	<div class="mt-10 w-full h-full flex justify-center">
+    <div>
+      <h2 class="font-extrabold text-3xl pl-12 mb-4">Trending films</h2>
+
+      <Carousel
+        :value="data.results"
+        :numVisible="4"
+        :numScroll="1"
+        class="w-[1110px]"
+      >
+        <template #item="slotProps">
+          <FilmCard class="m-2" :film="slotProps.data" :trending="true" :trendingNumber="slotProps.index+1"></FilmCard>
+        </template>
+      </Carousel>
+    </div>
+  </div>
 </template>
