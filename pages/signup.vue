@@ -107,7 +107,7 @@ const isNotFilled = computed(() => {
 			</span>
     </div>
     <div class="flex justify-end gap-2">
-        <Button type="button" label="Acceptar" @click="modalInfo = false; navigateTo('/login')"></Button>
+        <Button type="button" label="Acceptar" @click="modalInfo = false; navigateTo('/')"></Button>
     </div>
 	</Dialog>
   <div class="h-screen w-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
