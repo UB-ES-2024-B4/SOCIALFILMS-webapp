@@ -23,9 +23,9 @@ const liked = ref(false)
 </script>
 
 <template>
-  <div class="relative w-60 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-500 dark:bg-neutral-800">
+  <div class="relative w-60 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-500">
     <!-- Header -->
-    <div class="relative aspect-[2/3]">
+    <div class="relative aspect-[3/3]">
       <img
         :src="film.poster"
         :alt="`${film.title} poster`"
@@ -42,20 +42,20 @@ const liked = ref(false)
     </div>
 
     <!-- Footer -->
-    <div class="px-3 pt-1.5 pb-5 bg-white/60 dark:bg-neutral-900/60 dark:text-white backdrop-blur-md">
+    <div class="px-3 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
       <h2 class="font-bold text-xl">{{ film.title }}</h2>
-      <h3 class="text-sm text-gray-500 dark:text-gray-400">{{ film.genre.map(id => genres[id]).join(' • ') }}</h3>
+      <h3 class="text-sm text-gray-400">{{ film.genre.map(id => genres[id]).join(' • ') }}</h3>
       <div class="flex items-center space-x-1.5 mt-3">
         <span :class="film.isAdult ? 
         'tag bg-red-500/20 border border-red-500 text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400' :
         'tag bg-green-500/20 border border-green-500 text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'">
           {{ film.isAdult ? 'R' : 'PG-13' }}
         </span>
-        <span class="tag bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+        <span class="tag bg-gray-200/20 text-gray-200">
           <i class="pi pi-calendar mr-1.5" style="font-size: small"></i>
           {{ film.releaseDate }}
         </span>
-        <span class="tag bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+        <span class="tag bg-gray-200/20 text-gray-200">
           <i class="pi pi-star-fill text-yellow-400 mr-1.5" style="font-size: small"></i> 
           {{ film.voteAverage }}
         </span>
