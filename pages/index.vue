@@ -1,11 +1,12 @@
 <script setup lang="ts">
-definePageMeta({
-    layout: 'empty'
-})
+import Navbar from '~/layouts/navbar.vue';
 
+
+definePageMeta({
+  layout: 'navbar',
+})
 </script>
 
 <template>
-    <div>
-    </div>
+
 </template>
