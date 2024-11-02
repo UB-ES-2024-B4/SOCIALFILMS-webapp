@@ -23,7 +23,7 @@ const liked = ref(false)
 </script>
 
 <template>
-  <div class="relative w-60 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-500">
+  <div class="relative w-64 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
     <!-- Header -->
     <div class="relative aspect-[3/3]">
       <img
@@ -42,9 +42,9 @@ const liked = ref(false)
     </div>
 
     <!-- Footer -->
-    <div class="px-3 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
+    <div class="px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
       <h2 class="font-bold text-xl truncate">{{ film.title }}</h2>
-      <h3 class="text-sm text-gray-400 truncate">{{ film.genre_ids.map(id => genres[id]).join(' • ') }}</h3>
+      <h3 class="text-sm text-gray-300 mt-[2px] truncate">{{ film.genre_ids.map(id => genres[id]).join(' • ') }}</h3>
       <div class="flex items-center space-x-1.5 mt-3">
         <span :class="film.adult ? 
         'tag bg-red-500/20 border border-red-500 text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400' :
@@ -52,11 +52,11 @@ const liked = ref(false)
           {{ film.adult ? 'R' : 'PG-13' }}
         </span>
         <span class="tag bg-gray-200/20 text-gray-200">
-          <i class="pi pi-calendar mr-1.5" style="font-size: small"></i>
+          <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
           {{ film.release_date }}
         </span>
         <span class="tag bg-gray-200/20 text-gray-200">
-          <i class="pi pi-star-fill text-yellow-400 mr-1.5" style="font-size: small"></i> 
+          <i class="pi pi-star-fill text-yellow-400 mr-1.5 text-[0.8rem]"></i> 
           {{ film.vote_average.toFixed(1) }}
         </span>
       </div>
@@ -66,8 +66,8 @@ const liked = ref(false)
 
 <style scoped>
 .tag {
-  padding: 0.15rem 0.5rem;
-  font-size: 0.77rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
   font-weight: 400;
   border-radius: 9999px;
   display: inline-flex; /* Para alinear el icono y el texto */

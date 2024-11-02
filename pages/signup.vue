@@ -112,8 +112,8 @@ const isNotFilled = computed(() => {
 	</Dialog>
   <div class="h-screen w-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
     <div class="flex flex-col justify-center p-10 rounded-xl shadow-2xl lg:w-4/12 sm:w-7/12 bg-white dark:bg-black dark:shadow-gray-800">
-      <h1 class="font-medium text-3xl mb-1">Crear nou compte</h1>
-      <h2 class="text-sm mb-5">Hola, benvingut/da👋</h2>
+      <h1 class="font-semibold text-3xl mb-1">Crear nou compte</h1>
+      <h2 class="mb-5">Hola, benvingut/da👋</h2>
       <form class="flex flex-col gap-y-3" @submit.prevent="handleSignUp">
         <div class="flex flex-col">
           <InputGroup>
@@ -185,8 +185,14 @@ const isNotFilled = computed(() => {
 					<transition name="p-message" mode="out-in">
 						<Message class="mt-1.5" v-if="isDifferentPassword" severity="error" icon="pi pi-times-circle">Les contrasenyes no coinxideixen</Message>
 					</transition>
-				</div>	
-				<Button type="submit" label="Registrar-me" :loading="signUpLoading" :disabled="isNotFilled" class="mt-2"/>
+				</div>
+        <div class="flex flex-col gap-3">
+          <Button type="submit" label="Registrar-me" :loading="signUpLoading" :disabled="isNotFilled" class="mt-2"/>
+          <span class="inline-flex items-center justify-center text-gray-500 dark:text-gray-300">
+            Ja estàs registrat?
+            <Button as="router-link" label="Inicia sessió" icon="pi pi-arrow-up-right" iconPos="right" to="/login" link />
+          </span>
+        </div>
       </form>
     </div>
   </div>
