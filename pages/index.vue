@@ -15,17 +15,17 @@ console.log(data)
 
 <template>
 	<div class="mt-10 w-full h-full flex justify-center">
-    <div>
-      <h2 class="font-extrabold text-3xl pl-12 mb-4">Trending films</h2>
+    <div class="w-[88%]">
+      <h2 class="font-extrabold text-3xl pl-16 mb-5">Trending films</h2>
 
       <Carousel
         :value="data.results"
         :numVisible="4"
-        :numScroll="1"
-        class="w-[1110px]"
+        :numScroll="2"
+        :showIndicators="false"
       >
         <template #item="slotProps">
-          <FilmCard class="m-2" :film="slotProps.data" :trending="true" :trendingNumber="slotProps.index+1"></FilmCard>
+          <FilmCard class="mt-2.5 mb-20 mx-5" :film="slotProps.data" :trending="true" :trendingNumber="slotProps.index+1"></FilmCard>
         </template>
       </Carousel>
     </div>

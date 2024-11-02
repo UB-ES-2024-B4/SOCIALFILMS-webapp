@@ -61,8 +61,8 @@ const isNotFilled = computed(() => {
   <Toast />
   <div class="h-screen w-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
     <div class="flex flex-col justify-center p-10 rounded-xl shadow-2xl lg:w-4/12 sm:w-7/12 bg-white dark:bg-black dark:shadow-gray-800">
-      <h1 class="font-medium text-3xl mb-1">Inicia sessió</h1>
-      <h2 class="text-sm mb-5">Hola, benvingut/da de nou👋</h2>
+      <h1 class="font-semibold text-3xl mb-1">Inicia sessió</h1>
+      <h2 class="mb-5">Hola, benvingut/da de nou👋</h2>
       <form class="flex flex-col gap-y-3" @submit.prevent="handleLogin">
         <InputGroup>
           <InputGroupAddon>
@@ -95,7 +95,7 @@ const isNotFilled = computed(() => {
                 <Checkbox id="rememberme" v-model="credentials.rememberme" :binary="true" class="mr-2" />
                 <label for="rememberme">Recorda'm</label>
             </div>
-            <a class="font-medium no-underline ml-2 text-primary text-right cursor-pointer">Contrasenya oblidada?</a>
+            <a class="font-medium no-underline text-right cursor-pointer">Contrasenya oblidada?</a>
         </div>
 
         <div class="flex flex-col gap-3">
@@ -103,10 +103,10 @@ const isNotFilled = computed(() => {
             <Button as="router-link" label="Tornar a l'inici" icon="pi pi-arrow-circle-left" to="/" severity="secondary" outlined />
             <Button type="submit" label="Inicia sessió" :loading="signInLoading" :disabled="isNotFilled" class="flex-grow" />
           </div>
-          <div class="flex items-center justify-center">
-            <span class="text-sm text-gray-500 dark:text-gray-300">No estàs registrat?</span>
-            <Button as="router-link" size="small" label="Crear un compte" icon="pi pi-arrow-up-right" iconPos="right" to="/signup" link />
-          </div>
+          <span class="inline-flex items-center justify-center text-gray-500 dark:text-gray-300">
+            No estàs registrat?
+            <Button as="router-link" label="Crear un compte" icon="pi pi-arrow-up-right" iconPos="right" to="/signup" link />
+          </span>
         </div>
       </form>
     </div>
