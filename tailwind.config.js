@@ -2,7 +2,15 @@
 export default {
   content: [],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Inter"],
+        serif: ["Inter"],
+        mono: ["Inter"],
+        display: ["Inter"],
+        body: ["Inter"]
+      }
+    },
   },
   plugins: [],
 }
