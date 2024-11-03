@@ -1,12 +1,23 @@
 export const genres = {
-    1: "Action",
-    2: "Adventure",
-    3: "Comedy",
-    4: "Drama",
-    5: "Fantasy",
-    6: "Horror",
-    7: "Romance",
-    8: "Thriller",
-  };
-  
-  export type GenreId = keyof typeof genres;
+  28: "Action",
+  12: "Adventure",
+  16: "Animation",
+  35: "Comedy",
+  80: "Crime",
+  99: "Documentary",
+  18: "Drama",
+  10751: "Family",
+  14: "Fantasy",
+  36: "History",
+  27: "Horror",
+  10402: "Music",
+  9648: "Mystery",
+  10749: "Romance",
+  878: "Science Fiction",
+  10770: "TV Movie",
+  53: "Thriller",
+  10752: "War",
+  37: "Western",
+};
+
+export type GenreId = keyof typeof genres;
