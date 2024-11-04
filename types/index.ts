@@ -16,3 +16,11 @@ export interface Film {
 export interface FilmsAPI {
   results: Film[]
 }
+
+export interface Review {
+  id: number
+  author: string
+  datetime: Date
+  content: string
+  rating: number
+}
