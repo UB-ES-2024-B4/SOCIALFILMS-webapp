@@ -30,7 +30,7 @@ const toggle = (event) => {
 </script>
 
 <template>
-  <div class="w-full flex flex-col p-6 gap-3 border rounded-xl shadow-sm hover:shadow-lg transition-all duration-500 hover:border-violet-300 dark:bg-black dark:border-gray-500/70">
+  <div class="w-full flex flex-col p-6 gap-3 border-[1.5px] border-gray-400 rounded-xl shadow-sm hover:shadow-lg transition-all duration-500 hover:border-violet-400 bg-white/80 dark:bg-black/60 dark:border-gray-500/70">
     <div class="flex items-center justify-between">
       <div class="flex items-center">
         <Avatar :label="review.author[0]" class="mr-2.5" size="large" shape="circle" />
