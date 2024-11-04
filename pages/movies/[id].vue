@@ -128,17 +128,17 @@ onMounted(() => {
                 <div>
                   <div class="divider"></div>
                   <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Director/a</h4>
-                  <p class="text-gray-500 dark:text-gray-400">James Cameron</p>
+                  <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
                 </div>
                 <div>
                   <div class="divider"></div>
                   <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Guión</h4>
-                  <p class="text-gray-500 dark:text-gray-400">James Cameron</p>
+                  <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
                 </div>
                 <div>
                   <div class="divider"></div>
                   <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Reparto</h4>
-                  <p class="text-gray-500 dark:text-gray-400">James Cameron</p>
+                  <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
                 </div>
               </div>
             </div>
