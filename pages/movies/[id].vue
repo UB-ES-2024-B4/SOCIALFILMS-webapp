@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ReviewCard from "~/components/ReviewCard.vue";
+import CreditCard from "~/components/CreditCard.vue";
 
 const backdropOpacity = ref(1)
 const posterTranslateY = ref(-112) 
@@ -70,9 +71,35 @@ onMounted(() => {
   console.log(window.outerWidth, window.outerHeight);
 })
 
+const visibleDrawerDirector = ref(false)
+const visibleDrawerScript = ref(false)
+const visibleDrawerCast = ref(false)
+
 </script>
 
 <template>
+  <Drawer v-model:visible="visibleDrawerDirector" header="Director" position="right">
+    <CreditCard 
+      image="https://image.tmdb.org/t/p/original/DDeITcCpnBd0CkAIRPhggy9bt5.jpg" 
+      name="Alfonso Kakna"
+      rol-or-character="Manolo Aada">
+    </CreditCard>
+  </Drawer>
+  <Drawer v-model:visible="visibleDrawerScript" header="Guión" position="right">
+    <CreditCard 
+      image="https://image.tmdb.org/t/p/original/DDeITcCpnBd0CkAIRPhggy9bt5.jpg" 
+      name="Alfonso Kakna"
+      rol-or-character="Manolo Aada">
+    </CreditCard>
+  </Drawer>
+  <Drawer v-model:visible="visibleDrawerCast" header="Reparto" position="right">
+    <CreditCard 
+      image="https://image.tmdb.org/t/p/original/DDeITcCpnBd0CkAIRPhggy9bt5.jpg" 
+      name="Alfonso Kakna"
+      rol-or-character="Manolo Aada">
+    </CreditCard>
+  </Drawer>
+  
   <div class="w-full min-h-screen">
     <!-- Backdrop Image -->
     <div
@@ -127,18 +154,34 @@ onMounted(() => {
               <div class="flex-none md:w-1/3 lg:w-1/4 space-y-10"> <!-- Ajusta el ancho según tus necesidades -->
                 <div>
                   <div class="divider"></div>
-                  <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Director/a</h4>
-                  <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                  <div class="flex justify-between">
+                    <div>
+                      <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Director/a</h4>
+                      <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                    </div>
+                    <Button icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerDirector = true"/>
+                  </div>
+                  
                 </div>
                 <div>
                   <div class="divider"></div>
-                  <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Guión</h4>
-                  <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                  <div class="flex justify-between">
+                    <div>
+                      <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Guión</h4>
+                      <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                    </div>
+                    <Button icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerScript = true"/>
+                  </div>
                 </div>
                 <div>
                   <div class="divider"></div>
-                  <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Reparto</h4>
-                  <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                  <div class="flex justify-between">
+                    <div>
+                      <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Reparto</h4>
+                      <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                    </div>
+                    <Button icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerCast = true" />
+                  </div>
                 </div>
               </div>
             </div>
