@@ -19,13 +19,13 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex items-center gap-5">
+  <div class="flex items-center gap-5 py-2">
 		<Image preview>
 			<template #previewicon>
 					<i class="pi pi-expand"></i>
 			</template>
 			<template #image>
-					<img class="w-28 h-28 rounded-full object-cover" :src="image" alt="image" />
+					<img class="w-24 h-24 rounded-full object-cover" :src="image" alt="image" />
 			</template>
 			<template #preview="slotProps">
 					<img :src="image" alt="preview" :style="slotProps.style" @click="slotProps.onClick" />

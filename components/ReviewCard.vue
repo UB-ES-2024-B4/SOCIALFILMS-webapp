@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import 'primeicons/primeicons.css'
 import type { Review } from '~/types';
-import { timeAgo } from '~/utils/timeAgo';
+import { timeAgo } from '~/utils/timeFunctions';
+
+const user = useSupabaseUser()
 
 defineProps({
   review: {
@@ -10,7 +12,6 @@ defineProps({
   },
 });
 
-const isAuthor = ref(true)
 const like = ref(false)
 
 const menu = ref()
@@ -36,23 +37,26 @@ const toggle = (event) => {
         <Avatar :label="review.author[0]" class="mr-2.5" size="large" shape="circle" />
         <div class="inline-flex items-baseline sm:flex-col">
           <h1 class="text-2xl font-bold">{{ review.author }}</h1>
-          <h2 class="ml-1.5 text-gray-500 dark:text-gray-400">{{ timeAgo(review.datetime) }}</h2>
+          <h2 class="ml-1.5 text-gray-500 dark:text-gray-400">{{ timeAgo(review.created_at) }}</h2>
         </div>
       </div>
       <div class="flex gap-2">
         <Chip :label="review.rating" icon="pi pi-star-fill" />
         <Button type="button" severity="secondary" icon="pi pi-ellipsis-v" @click="toggle" rounded />
-        <Menu ref="menu" :model="isAuthor ? authorItems : nonAuthorItems" :popup="true" />
+        <Menu ref="menu" :model="user.id == review.user_id ? authorItems : nonAuthorItems" :popup="true" />
       </div>
 
     </div>
-    <p class="text-lg">{{ review.content }}</p>
+    <p class="text-lg">{{ review.comment }}</p>
     <div class="flex gap-3 mt-2">
       <span class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400">
         <Button severity="secondary" :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'" aria-label="Like" rounded @click="like=true"/>
-        200
+        {{ review.likes == 0 ? '' : review.likes }}
       </span>
-      <Button severity="secondary" :icon="like ? 'pi pi-thumbs-down' : 'pi pi-thumbs-down-fill'" aria-label="Dislike" rounded @click="like=false"/>
+      <span class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400">
+        <Button severity="secondary" :icon="like ? 'pi pi-thumbs-down' : 'pi pi-thumbs-down-fill'" aria-label="Dislike" rounded @click="like=false"/>
+        {{ review.dislikes == 0 ? '' : review.dislikes }}
+      </span>
     </div>
   </div>
 </template>

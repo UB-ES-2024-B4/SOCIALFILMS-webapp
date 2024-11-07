@@ -27,7 +27,8 @@ export interface FilmsAPI {
 
 export interface Review {
   id: number
-  user_id: number
+  user_id: string
+  user?: string
   created_at: Date
   comment: string
   likes: number
@@ -37,13 +38,13 @@ export interface Review {
   editable: boolean
 }
 
-interface CreditsAPI {
+export interface CreditsAPI {
   id: number
   cast: CastMember[]
   crew: CrewMember[]
 }
 
-interface CastMember {
+export interface CastMember {
   adult: boolean
   gender: number
   id: number
@@ -58,7 +59,7 @@ interface CastMember {
   order: number
 }
 
-interface CrewMember {
+export interface CrewMember {
   adult: boolean
   gender: number
   id: number

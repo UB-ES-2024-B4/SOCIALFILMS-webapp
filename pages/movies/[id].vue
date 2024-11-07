@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import type { Film, Review } from "~/types";
+import type { Film, Review, CreditsAPI, CastMember, CrewMember } from "~/types";
+import { formatRuntime } from '~/utils/timeFunctions';
 import ReviewCard from "~/components/ReviewCard.vue";
 import CreditCard from "~/components/CreditCard.vue";
 
 const supabase = useSupabaseClient()
 const route = useRoute()
 
-const { data: dataMovie, error: errorMovie } = await supabase.rpc('find_movie_by_id', {movie_id: route.params.id}) as {data: Film[], error: any}
+const { data: dataMovie, error: errorMovie } = await supabase.rpc('find_movie_by_id', {movie_id: route.params.id}) as {data: Film, error: any}
 const { data: dataReviews, error: errorReviews } = await supabase.rpc('get_reviews', {_movie_id: route.params.id}) as {data: Review[], error: any}
+const { data: dataCredits, error: errorCredits } = await supabase.rpc('get_credits_movie', {_movie_id: route.params.id}) as {data: CreditsAPI, error: any}
 
 const reviews = dataReviews?.map(review => ({
   ...review,
   created_at: new Date(review.created_at)
 })) || [];
 
-console.log(dataMovie)
+const directors = dataCredits.crew.filter(member => member.job === "Director")
+const writing = dataCredits.crew.filter(member => member.department === "Writing")
 
 const posterTranslateY = ref(-112) 
 const scrollThreshold = 200
@@ -49,25 +52,25 @@ const visibleDrawerCast = ref(false)
 </script>
 
 <template>
-  <Drawer v-model:visible="visibleDrawerDirector" header="Director" position="right">
-    <CreditCard 
-      image="https://image.tmdb.org/t/p/original/DDeITcCpnBd0CkAIRPhggy9bt5.jpg" 
-      name="Alfonso Kakna"
-      rol-or-character="Manolo Aada">
+  <Drawer v-model:visible="visibleDrawerDirector" header="Director/a" position="right">
+    <CreditCard v-for="director in directors"
+      :image="'https://image.tmdb.org/t/p/original'+director.profile_path" 
+      :name="director.name"
+      :rol-or-character="director.job">
     </CreditCard>
   </Drawer>
   <Drawer v-model:visible="visibleDrawerScript" header="Guión" position="right">
-    <CreditCard 
-      image="https://image.tmdb.org/t/p/original/DDeITcCpnBd0CkAIRPhggy9bt5.jpg" 
-      name="Alfonso Kakna"
-      rol-or-character="Manolo Aada">
+    <CreditCard v-for="writingMember in writing"
+      :image="'https://image.tmdb.org/t/p/original'+writingMember.profile_path" 
+      :name="writingMember.name"
+      :rol-or-character="writingMember.job">
     </CreditCard>
   </Drawer>
   <Drawer v-model:visible="visibleDrawerCast" header="Reparto" position="right">
-    <CreditCard 
-      image="https://image.tmdb.org/t/p/original/DDeITcCpnBd0CkAIRPhggy9bt5.jpg" 
-      name="Alfonso Kakna"
-      rol-or-character="Manolo Aada">
+    <CreditCard v-for="castMember in dataCredits.cast"
+      :image="'https://image.tmdb.org/t/p/original'+castMember.profile_path" 
+      :name="castMember.name"
+      :rol-or-character="castMember.character">
     </CreditCard>
   </Drawer>
 
@@ -111,8 +114,12 @@ const visibleDrawerCast = ref(false)
                     {{ dataMovie.release_date }}
                   </span>
                   <span class="tag bg-gray-100/50 text-gray-600 dark:bg-gray-700/50 dark:text-gray-200">
+                    <i class="pi pi-clock mr-1.5"></i>
+                    {{ formatRuntime(dataMovie.runtime) }}
+                  </span>
+                  <span class="tag bg-gray-100/50 text-gray-600 dark:bg-gray-700/50 dark:text-gray-200">
                     <i class="pi pi-star-fill text-yellow-400 mr-1.5"></i> 
-                    {{ dataMovie.vote_average }}
+                    {{ dataMovie.vote_average.toFixed(1) }}
                   </span>
                 </div>
                 <div>
@@ -122,15 +129,17 @@ const visibleDrawerCast = ref(false)
               </div>
 
               <!-- Film Director, Cast, etc -->
-              <div class="flex-none md:w-1/3 lg:w-1/4 space-y-10"> <!-- Ajusta el ancho según tus necesidades -->
+              <div class="flex-none md:w-1/3 lg:w-1/4 space-y-14"> <!-- Ajusta el ancho según tus necesidades -->
                 <div>
                   <div class="divider"></div>
                   <div class="flex justify-between">
                     <div>
                       <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Director/a</h4>
-                      <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                      <p class="text-gray-600 dark:text-gray-400 max-h-6">
+                        {{ directors.slice(0, 2).map(d => d.name).join(' • ') }}
+                      </p>
                     </div>
-                    <Button icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerDirector = true"/>
+                    <Button class="flex-none" icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerDirector = true"/>
                   </div>
                   
                 </div>
@@ -139,9 +148,11 @@ const visibleDrawerCast = ref(false)
                   <div class="flex justify-between">
                     <div>
                       <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Guión</h4>
-                      <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                      <p class="text-gray-600 dark:text-gray-400 max-h-6">
+                        {{ writing.slice(0, 2).map(w => w.name).join(' • ') }}
+                      </p>
                     </div>
-                    <Button icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerScript = true"/>
+                    <Button class="flex-none" icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerScript = true"/>
                   </div>
                 </div>
                 <div>
@@ -149,9 +160,11 @@ const visibleDrawerCast = ref(false)
                   <div class="flex justify-between">
                     <div>
                       <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Reparto</h4>
-                      <p class="text-gray-600 dark:text-gray-400">James Cameron</p>
+                      <p class="text-gray-600 dark:text-gray-400 max-h-6">
+                        {{ dataCredits.cast.slice(0, 3).map(c => c.name).join(' • ') }}
+                      </p>
                     </div>
-                    <Button icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerCast = true" />
+                    <Button class="flex-none" icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerCast = true" />
                   </div>
                 </div>
               </div>
