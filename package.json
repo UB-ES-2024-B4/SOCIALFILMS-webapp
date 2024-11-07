@@ -15,6 +15,7 @@
     "nuxt-app": "file:",
     "primeicons": "^7.0.0",
     "primevue": "^4.1.1",
+    "uuid": "^11.0.2",
     "vue": "latest",
     "vue-router": "latest"
   },
@@ -22,6 +23,9 @@
     "@nuxt/icon": "^1.5.6",
     "@nuxtjs/supabase": "^1.4.1",
     "@nuxtjs/tailwindcss": "^6.12.2",
-    "@primevue/nuxt-module": "^4.1.1"
+    "@primevue/nuxt-module": "^4.1.1",
+    "@types/jest": "^29.5.14",
+    "@types/uuid": "^10.0.0",
+    "dotenv": "^16.4.5"
   }
 }
