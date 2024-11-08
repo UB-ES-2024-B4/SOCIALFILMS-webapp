@@ -9,12 +9,152 @@ const route = useRoute()
 
 const { data: dataMovie, error: errorMovie } = await supabase.rpc('find_movie_by_id', {movie_id: route.params.id}) as {data: Film, error: any}
 const { data: dataReviews, error: errorReviews } = await supabase.rpc('get_reviews', {_movie_id: route.params.id}) as {data: Review[], error: any}
-const { data: dataCredits, error: errorCredits } = await supabase.rpc('get_credits_movie', {_movie_id: route.params.id}) as {data: CreditsAPI, error: any}
+// const { data: dataCredits, error: errorCredits } = await supabase.rpc('get_credits_movie', {_movie_id: route.params.id}) as {data: CreditsAPI, error: any}
 
-const reviews = dataReviews?.map(review => ({
-  ...review,
-  created_at: new Date(review.created_at)
-})) || [];
+// const reviews = dataReviews?.map(review => ({
+//   ...review,
+//   created_at: new Date(review.created_at)
+// })) || [];
+
+// dump data
+const dataCredits: CreditsAPI = {
+  id: 12345,
+  cast: [
+    {
+      adult: false,
+      gender: 1,
+      id: 101,
+      known_for_department: "Acting",
+      name: "Emma Stone",
+      original_name: "Emma Stone",
+      popularity: 45.5,
+      profile_path: "/path/to/profile.jpg",
+      cast_id: 10,
+      character: "Mia Dolan",
+      credit_id: "abc123",
+      order: 1,
+    },
+    {
+      adult: false,
+      gender: 2,
+      id: 102,
+      known_for_department: "Acting",
+      name: "Ryan Gosling",
+      original_name: "Ryan Gosling",
+      popularity: 50.3,
+      profile_path: "/path/to/profile2.jpg",
+      cast_id: 11,
+      character: "Sebastian Wilder",
+      credit_id: "abc124",
+      order: 2,
+    },
+    {
+      adult: false,
+      gender: 1,
+      id: 103,
+      known_for_department: "Acting",
+      name: "Emma Stone",
+      original_name: "Emma Stone",
+      popularity: 60.7,
+      profile_path: "/path/to/profile3.jpg",
+      cast_id: 12,
+      character: "Mia Dolan",
+      credit_id: "abc125",
+      order: 1,
+    }
+  ],
+  crew: [
+    {
+      adult: false,
+      gender: 2,
+      id: 201,
+      known_for_department: "Directing",
+      name: "Damien Chazelle",
+      original_name: "Damien Chazelle",
+      popularity: 60.2,
+      profile_path: "/path/to/profile3.jpg",
+      credit_id: "abc125",
+      department: "Directing",
+      job: "Director",
+    },
+    {
+      adult: false,
+      gender: 2,
+      id: 202,
+      known_for_department: "Writing",
+      name: "Damien Chazelle",
+      original_name: "Damien Chazelle",
+      popularity: 60.2,
+      profile_path: "/path/to/profile3.jpg",
+      credit_id: "abc126",
+      department: "Writing",
+      job: "Screenplay",
+    }
+  ]
+}
+
+const reviews: Review[] = [
+  {
+    id: 1,
+    user_id: "user123",
+    user: "John Doe",
+    created_at: new Date("2023-11-01T10:30:00Z"),
+    comment: "Absolutely loved this movie! The storyline was captivating and the characters were well-developed.",
+    likes: 124,
+    dislikes: 3,
+    shared_count: 15,
+    rating: 9,
+    editable: false,
+  },
+  {
+    id: 2,
+    user_id: "user456",
+    user: "Jane Smith",
+    created_at: new Date("2023-11-02T15:45:00Z"),
+    comment: "Great cinematography but the plot was lacking. Expected more from the director.",
+    likes: 67,
+    dislikes: 20,
+    shared_count: 5,
+    rating: 6,
+    editable: true,
+  },
+  {
+    id: 3,
+    user_id: "user789",
+    user: "Sam Wilson",
+    created_at: new Date("2023-11-03T12:00:00Z"),
+    comment: "A classic! I can watch it over and over again. Highly recommended!",
+    likes: 200,
+    dislikes: 1,
+    shared_count: 30,
+    rating: 10,
+    editable: false,
+  },
+  {
+    id: 4,
+    user_id: "user101",
+    user: "Alex Johnson",
+    created_at: new Date("2023-11-04T18:20:00Z"),
+    comment: "Not my type of movie, but I can see why others might enjoy it.",
+    likes: 30,
+    dislikes: 45,
+    shared_count: 8,
+    rating: 4,
+    editable: true,
+  },
+  {
+    id: 5,
+    user_id: "user102",
+    user: "Emily Brown",
+    created_at: new Date("2023-11-05T21:10:00Z"),
+    comment: "Well-crafted storyline and brilliant acting. One of the best movies of the year!",
+    likes: 180,
+    dislikes: 5,
+    shared_count: 25,
+    rating: 8,
+    editable: false,
+  },
+]
 
 const directors = dataCredits.crew.filter(member => member.job === "Director")
 const writing = dataCredits.crew.filter(member => member.department === "Writing")
