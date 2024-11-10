@@ -66,6 +66,72 @@ const filteredLanguage = computed(() => {
 <template>
   <div class="w-full h-full">
     <div class="flex my-5 ml-10 mr-4">
+        <div class="flex-none">
+            <div v-if="isFiltersVisible" class="w-72 mr-10 rounded-md shadow">
+                <Accordion :value="['0','1','2','3']" multiple>
+                    <AccordionPanel value="0">
+                        <AccordionHeader>Gèneres</AccordionHeader>
+                        <AccordionContent>
+                            <div class="flex flex-wrap justify-center gap-4">
+                                <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputText class="w-60" size="small" v-model="queryGenre" />
+                                        <InputIcon class="pi pi-search" />
+                                    </IconField>
+                                    <label for="on_label">Busca un gènere</label>
+                                </FloatLabel>
+                                <div v-for="genre of filteredGenres" :key="genre.code" class="flex items-center gap-2">
+                                    <Checkbox v-model="selectedGenres" :inputId="genre.code" name="genre" :value="genre.name" />
+                                    <label :for="genre.code">{{ genre.name }}</label>
+                                </div>
+                            </div>
+                        </AccordionContent>
+                    </AccordionPanel>
+                    <AccordionPanel value="1">
+                        <AccordionHeader>País</AccordionHeader>
+                        <AccordionContent>
+                            <div class="flex flex-wrap justify-center gap-4">
+                                <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputText class="w-60" size="small" v-model="queryCountry" />
+                                        <InputIcon class="pi pi-search" />
+                                    </IconField>
+                                    <label for="on_label">Busca un país</label>
+                                </FloatLabel>
+                                <div v-for="country in filteredCountry" :key="country.code" class="flex items-center gap-2">
+                                    <RadioButton v-model="selectedCountry" :inputId="country.code" name="country" :value="country.name" />
+                                    <label :for="country.code">{{ country.name }}</label>
+                                </div>
+                            </div>
+                        </AccordionContent>
+                    </AccordionPanel>
+                    <AccordionPanel value="2">
+                        <AccordionHeader>Idioma</AccordionHeader>
+                        <AccordionContent>
+                            <div class="flex flex-wrap justify-center gap-4">
+                                <FloatLabel variant="on">
+                                    <IconField>
+                                        <InputText class="w-60" size="small" v-model="queryLanguage" />
+                                        <InputIcon class="pi pi-search" />
+                                    </IconField>
+                                    <label for="on_label">Busca un idioma</label>
+                                </FloatLabel>
+                                <div v-for="language in filteredLanguage" :key="language.code" class="flex items-center gap-2">
+                                    <RadioButton v-model="selectedLanguage" :inputId="language.code" name="language" :value="language.name" />
+                                    <label :for="language.code">{{ language.name }}</label>
+                                </div>
+                            </div>
+                        </AccordionContent>
+                    </AccordionPanel>
+                    <AccordionPanel value="3">
+                        <AccordionHeader>Any</AccordionHeader>
+                        <AccordionContent>
+                            <DatePicker v-model="selectedYear" inline view="year" dateFormat="yy" />
+                        </AccordionContent>
+                    </AccordionPanel>
+                </Accordion>
+            </div>
+        </div>
         <div class="flex-1 flex-col">
             <div class="flex justify-between items-center">
                 <SelectButton 
@@ -74,6 +140,14 @@ const filteredLanguage = computed(() => {
                     :options="optionsSort" 
                     optionLabel="sort_by" 
                     optionValue="value" />
+                <Button 
+                    iconPos="right" 
+                    :icon="isFiltersVisible ? 'pi pi-filter-fill' : 'pi pi-filter'" 
+                    severity="contrast" 
+                    label="Filtres"
+                    @click="isFiltersVisible = !isFiltersVisible"
+                    raised>
+                </Button>
             </div>
             <div class="flex flex-wrap my-10 mx-2 gap-10 justify-between items-center">
                 <FilmCard
