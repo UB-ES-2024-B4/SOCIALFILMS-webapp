@@ -9,7 +9,21 @@ const route = useRoute()
 
 const { data: dataMovie, error: errorMovie } = await supabase.rpc('find_movie_by_id', {movie_id: route.params.id}) as {data: Film, error: any}
 const { data: dataReviews, error: errorReviews } = await supabase.rpc('get_reviews', {_movie_id: route.params.id}) as {data: Review[], error: any}
-// const { data: dataCredits, error: errorCredits } = await supabase.rpc('get_credits_movie', {_movie_id: route.params.id}) as {data: CreditsAPI, error: any}
+
+const directors = ref<CrewMember[]>()
+const writing = ref<CrewMember[]>()
+const dataCredits = ref<CreditsAPI>()
+
+try {
+  const { data: dataCredits, error: errorCredits } = await supabase.rpc('get_credits_movie', {movie_id: route.params.id}) as {data: CreditsAPI, error: any}
+  if (errorCredits) throw errorCredits
+  
+  directors.value = dataCredits.crew.filter(member => member.job === "Director")
+  writing.value = dataCredits.crew.filter(member => member.department === "Writing")
+  
+} catch (e) {
+  console.error(e)
+}
 
 // const reviews = dataReviews?.map(review => ({
 //   ...review,
@@ -17,82 +31,6 @@ const { data: dataReviews, error: errorReviews } = await supabase.rpc('get_revie
 // })) || [];
 
 // dump data
-const dataCredits: CreditsAPI = {
-  id: 12345,
-  cast: [
-    {
-      adult: false,
-      gender: 1,
-      id: 101,
-      known_for_department: "Acting",
-      name: "Emma Stone",
-      original_name: "Emma Stone",
-      popularity: 45.5,
-      profile_path: "/path/to/profile.jpg",
-      cast_id: 10,
-      character: "Mia Dolan",
-      credit_id: "abc123",
-      order: 1,
-    },
-    {
-      adult: false,
-      gender: 2,
-      id: 102,
-      known_for_department: "Acting",
-      name: "Ryan Gosling",
-      original_name: "Ryan Gosling",
-      popularity: 50.3,
-      profile_path: "/path/to/profile2.jpg",
-      cast_id: 11,
-      character: "Sebastian Wilder",
-      credit_id: "abc124",
-      order: 2,
-    },
-    {
-      adult: false,
-      gender: 1,
-      id: 103,
-      known_for_department: "Acting",
-      name: "Emma Stone",
-      original_name: "Emma Stone",
-      popularity: 60.7,
-      profile_path: "/path/to/profile3.jpg",
-      cast_id: 12,
-      character: "Mia Dolan",
-      credit_id: "abc125",
-      order: 1,
-    }
-  ],
-  crew: [
-    {
-      adult: false,
-      gender: 2,
-      id: 201,
-      known_for_department: "Directing",
-      name: "Damien Chazelle",
-      original_name: "Damien Chazelle",
-      popularity: 60.2,
-      profile_path: "/path/to/profile3.jpg",
-      credit_id: "abc125",
-      department: "Directing",
-      job: "Director",
-    },
-    {
-      adult: false,
-      gender: 2,
-      id: 202,
-      known_for_department: "Writing",
-      name: "Damien Chazelle",
-      original_name: "Damien Chazelle",
-      popularity: 60.2,
-      profile_path: "/path/to/profile3.jpg",
-      credit_id: "abc126",
-      department: "Writing",
-      job: "Screenplay",
-    }
-  ]
-}
-
 const reviews: Review[] = [
   {
     id: 1,
@@ -156,9 +94,6 @@ const reviews: Review[] = [
   },
 ]
 
-const directors = dataCredits.crew.filter(member => member.job === "Director")
-const writing = dataCredits.crew.filter(member => member.department === "Writing")
-
 const posterTranslateY = ref(-112) 
 const scrollThreshold = 200
 
@@ -207,7 +142,7 @@ const visibleDrawerCast = ref(false)
     </CreditCard>
   </Drawer>
   <Drawer v-model:visible="visibleDrawerCast" header="Reparto" position="right">
-    <CreditCard v-for="castMember in dataCredits.cast"
+    <CreditCard v-for="castMember in dataCredits?.cast"
       :image="'https://image.tmdb.org/t/p/original'+castMember.profile_path" 
       :name="castMember.name"
       :rol-or-character="castMember.character">
@@ -276,7 +211,7 @@ const visibleDrawerCast = ref(false)
                     <div>
                       <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Director/a</h4>
                       <p class="text-gray-600 dark:text-gray-400 max-h-6">
-                        {{ directors.slice(0, 2).map(d => d.name).join(' • ') }}
+                        {{ directors?.slice(0, 2).map(d => d.name).join(' • ') }}
                       </p>
                     </div>
                     <Button class="flex-none" icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerDirector = true"/>
@@ -289,7 +224,7 @@ const visibleDrawerCast = ref(false)
                     <div>
                       <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Guión</h4>
                       <p class="text-gray-600 dark:text-gray-400 max-h-6">
-                        {{ writing.slice(0, 2).map(w => w.name).join(' • ') }}
+                        {{ writing?.slice(0, 2).map(w => w.name).join(' • ') }}
                       </p>
                     </div>
                     <Button class="flex-none" icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerScript = true"/>
@@ -301,7 +236,7 @@ const visibleDrawerCast = ref(false)
                     <div>
                       <h4 class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1">Reparto</h4>
                       <p class="text-gray-600 dark:text-gray-400 max-h-6">
-                        {{ dataCredits.cast.slice(0, 3).map(c => c.name).join(' • ') }}
+                        {{ dataCredits?.cast.slice(0, 3).map(c => c.name).join(' • ') }}
                       </p>
                     </div>
                     <Button class="flex-none" icon="pi pi-angle-right" text rounded aria-label="More info" @click="visibleDrawerCast = true" />
