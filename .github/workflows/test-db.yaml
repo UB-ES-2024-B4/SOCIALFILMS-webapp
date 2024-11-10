@@ -25,7 +25,7 @@ jobs:
 
       - run: supabase db start
       - run: supabase db lint
-      
+
       - name: Run Supabase DB Tests
         run: |
           result=$(supabase db test)

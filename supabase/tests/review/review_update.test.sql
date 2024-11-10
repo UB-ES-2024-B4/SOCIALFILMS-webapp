@@ -6,7 +6,7 @@ SELECT plan(4);
 
 
 
-SELECT public.create_review('ea02ab60-fdd0-4913-ad27-8d472a89ac0c', 1, 5, 'Great movie!');
+SELECT public.create_review('062cd767-f3fa-4bcf-9bee-230062f19fb0', 1, 5, 'Great movie!');
 
 
 SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE comment = 'Great movie!') = 1, 'Initial review inserted for update');
