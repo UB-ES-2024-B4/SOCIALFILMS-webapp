@@ -7,6 +7,13 @@ const supabase = useSupabaseClient()
 
 const searchQuery = ref('');
 
+const items = ref([
+    {
+        label: 'Home',
+        icon: 'pi pi-home'
+    }
+]);
+
 const userOptions = [
     {
         label: 'Tancar sessió',
@@ -26,36 +33,34 @@ const userOptions = [
 
 const user = useSupabaseUser()
 
-</script>
+console.log(user)
 
+</script>
 
 <template>
     <div>
-        <Toolbar class="w-full flex justify-between items-center p-10">
+        <Menubar :model="items">
             <template #start>
-                <img src="../public/logo1.png" alt="Logo" class="h-20 w-auto" />
+                <div class="logo-container mx-20 bg-primary-50 rounded-full flex items-center justify-center h-16 w-16">
+                    <span class="text-2xl font-bold text-primary-700">LOGO</span>
+                </div>  
             </template>
-
-            <template #center>
-                <div class="flex items-center justify-center flex-grow">
-                    <IconField>
-                        <InputText placeholder="Search" />
-                        <InputIcon>
-                            <i class="pi pi-search"></i>
-                        </InputIcon>
-                    </IconField>
-                </div>
+            <template #item="{ item, props, hasSubmenu, root }">
+                <a v-ripple class="flex items-center" v-bind="props.action">
+                    <span>{{ item.label }}</span>
+                    <Badge v-if="item.badge" :class="{ 'ml-auto': !root, 'ml-2': root }" :value="item.badge" />
+                    <i v-if="hasSubmenu" :class="['pi pi-angle-down ml-auto', { 'pi-angle-down': root, 'pi-angle-right': !root }]"></i>
+                </a>
             </template>
-
-            <template #end> 
-                <div class="flex items-center gap-3">
+            <template #end>
+                <div class="flex items-center gap-4">
+                    <InputText placeholder="Search" type="text" class="w-32 sm:w-auto" />
                     <Button v-if="!user" label="Login" icon="pi pi-user" @click='navigateTo("/login")'/>
-                    <SplitButton v-if="user" label="Compte" :model="userOptions"></SplitButton>
-                    <Avatar v-if="user" icon="pi pi-user" class="mr-2" size="large" />
+                    <SplitButton v-if="user" icon="pi pi-user" label="Compte" :model="userOptions"></SplitButton>
+                    <Avatar label="U" class="mr-2" size="large" shape="circle" />
                 </div>
             </template>
-        </Toolbar>
+        </Menubar>
         <slot />
     </div>
 </template>
-
