@@ -15,12 +15,13 @@ const writing = ref<CrewMember[]>()
 const dataCredits = ref<CreditsAPI>()
 
 try {
-  const { data: dataCredits, error: errorCredits } = await supabase.rpc('get_credits_movie', {movie_id: route.params.id}) as {data: CreditsAPI, error: any}
+  const { data, error: errorCredits } = await supabase.rpc('get_credits_movie', {movie_id: route.params.id}) as {data: CreditsAPI, error: any}
   if (errorCredits) throw errorCredits
   
-  directors.value = dataCredits.crew.filter(member => member.job === "Director")
-  writing.value = dataCredits.crew.filter(member => member.department === "Writing")
-  
+  dataCredits.value = data
+  directors.value = data.crew.filter(member => member.job === "Director")
+  writing.value = data.crew.filter(member => member.department === "Writing")
+  console.log(dataCredits)
 } catch (e) {
   console.error(e)
 }
