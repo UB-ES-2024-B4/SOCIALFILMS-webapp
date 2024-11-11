@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+Postman-win64-Setup.exe
+
