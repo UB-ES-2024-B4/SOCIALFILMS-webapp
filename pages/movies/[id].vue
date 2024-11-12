@@ -3,9 +3,12 @@ import type { Film, Review, CreditsAPI, CastMember, CrewMember } from "~/types";
 import { formatRuntime } from '~/utils/timeFunctions';
 import ReviewCard from "~/components/ReviewCard.vue";
 import CreditCard from "~/components/CreditCard.vue";
+import Button from 'primevue/button';
 
 const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 const route = useRoute()
+const toast = useToast();
 
 const { data: dataMovie, error: errorMovie } = await supabase.rpc('find_movie_by_id', {movie_id: route.params.id}) as {data: Film, error: any}
 const { data: dataReviews, error: errorReviews } = await supabase.rpc('get_reviews', {_movie_id: route.params.id}) as {data: Review[], error: any}
@@ -14,6 +17,41 @@ const directors = ref<CrewMember[]>()
 const writing = ref<CrewMember[]>()
 const dataCredits = ref<CreditsAPI>()
 
+const visible = ref(false)
+const rating = ref(1)
+const comment = ref('')
+const numCharacters = computed(() => {
+    return comment.value.length;
+});
+
+const selectRating = (star: number) => {
+    rating.value = star;
+}
+
+// Submit review
+const submitReview = async () => {
+    const user_id = user.value?.id
+   
+    if (!user_id) {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Debes estar logueado para dejar una reseña.', life: 3000 })
+    visible.value = false;
+    return;
+    }
+
+    try {
+      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_user_id: user_id, _movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value })
+      if (!reviewError) {
+          toast.add({ severity: 'success', summary: 'Éxito', detail: 'La review se ha subido correctamente.', life: 3000 });
+          visible.value = false;
+      } else {
+          toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique la calificación y escribe un comentario.', life: 3000 })
+      }
+    } catch (e) {
+      console.error(e)
+    }
+}
+
+
 try {
   const { data, error: errorCredits } = await supabase.rpc('get_credits_movie', {movie_id: route.params.id}) as {data: CreditsAPI, error: any}
   if (errorCredits) throw errorCredits
@@ -21,7 +59,6 @@ try {
   dataCredits.value = data
   directors.value = data.crew.filter(member => member.job === "Director")
   writing.value = data.crew.filter(member => member.department === "Writing")
-  console.log(dataCredits)
 } catch (e) {
   console.error(e)
 }
@@ -35,7 +72,7 @@ try {
 const reviews: Review[] = [
   {
     id: 1,
-    user_id: "user123",
+    user_id: "96c82631-7f20-4934-a1d8-cedd6d9b4801",
     user: "John Doe",
     created_at: new Date("2023-11-01T10:30:00Z"),
     comment: "Absolutely loved this movie! The storyline was captivating and the characters were well-developed.",
@@ -43,7 +80,7 @@ const reviews: Review[] = [
     dislikes: 3,
     shared_count: 15,
     rating: 9,
-    editable: false,
+    editable: true,
   },
   {
     id: 2,
@@ -128,6 +165,69 @@ const visibleDrawerCast = ref(false)
 </script>
 
 <template>
+  <Dialog v-model:visible="visible" modal header="Nueva reseña">
+    <div class="flex flex-col mt-4 space-y-4">
+        <div class="flex space-x-8">
+            <div class="flex flex-col">
+                <h2 class="font-bold whitespace-nowrap text-2xl text-gray-800 leading-tight">{{dataMovie.title}}</h2>
+
+                <div class="flex items-center space-x-1.5 mt-3">
+                    <span :class="dataMovie.adult ? 
+                    'tag bg-red-500/20 border border-red-500 whitespace-nowrap text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400' :
+                    'tag bg-green-500/20 border border-green-500 whitespace-nowrap text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'">
+                    {{ dataMovie.adult ? 'R' : 'PG-13' }}
+                    </span>
+                    <span class="tag border border-gray-400 whitespace-nowrap text-gray-800 dark:text-gray-200">
+                    <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
+                    {{ dataMovie.release_date }}
+                    </span>
+                    <span class="tag border border-gray-400 text-gray-800 dark:text-gray-200">
+                    <i class="pi pi-star-fill text-yellow-400 dark:text-yellow-400 mr-1.5 text-[0.8rem]"></i> 
+                    {{ dataMovie.vote_average.toFixed(1) }}
+                    </span>
+                </div>
+
+                <h3 class="mt-auto ">Califica del 1 al 10 ({{ rating }})</h3>
+                <div class="flex mb-4 items-center space-x-2">
+                    <span
+                        v-for="star in 10"
+                        :key="star"
+                        @mouseover ="selectRating(star)" 
+                        class="cursor-pointer text-2xl transition-transform duration-200 transform"
+                        :class="{'scale-125': star === rating}"
+                    >
+                        <i :class="['pi', star <= (rating) ? 'pi-star-fill text-yellow-400' : 'pi-star']"></i>
+                    </span>
+                </div>
+            </div>
+            <img
+                :src="'https://image.tmdb.org/t/p/original'+dataMovie.poster_path"
+                :alt="`${dataMovie.title} poster`"
+                class="w-2/3 h-72 object-cover rounded-lg"
+            />
+        </div>
+        <div class="relative mb-4">
+            <Textarea
+                autoResize 
+                v-model="comment"
+                rows="4"
+                cols="20"
+                maxlength="255"
+                placeholder="Escribe tu comentario..."
+                class="mb-4 w-full"
+            />
+            <span class="absolute right-2 bottom-[-0.1rem] text-gray-500 text-sm">
+                {{ numCharacters }} / 255
+            </span>
+        </div>
+
+        <div class="flex justify-between">
+          <Button label="Cancelar" severity="secondary" @click="visible=false" />
+          <Button label="Publicar" @click="submitReview" />
+        </div>
+    </div>
+  </Dialog>
+
   <Drawer v-model:visible="visibleDrawerDirector" header="Director/a" position="right" class="!w-full md:!w-80 lg:!w-[25rem]">
     <CreditCard v-for="director in directors"
       :image="director.profile_path" 
@@ -249,9 +349,12 @@ const visibleDrawerCast = ref(false)
         </div>
         <!-- Reviews Section -->
         <div class="px-4 py-10 md:px-10">
-          <h2 class="text-3xl font-bold mb-4">Reviews</h2>
+          <div class="flex items-center gap-8 mb-4">
+            <h2 class="text-3xl font-bold">Reviews</h2>
+            <Button label="Añadir review" variant="outlined" @click="visible=true"/>
+          </div>
           <div v-if="reviews.length" class="space-y-4">
-            <ReviewCard v-for="(review, index) in reviews" :review="review" :key="index"></ReviewCard>
+            <ReviewCard v-for="(review, index) in reviews" :review="review" :key="index" :film="dataMovie"></ReviewCard>
           </div>
           <p v-else class="text-gray-600 dark:text-gray-400">Encara no hi ha ressenyes.</p>
         </div>
