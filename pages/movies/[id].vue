@@ -165,7 +165,7 @@ const visibleDrawerCast = ref(false)
 </script>
 
 <template>
-  <Dialog v-model:visible="visible" modal header="Nueva reseña:">
+  <Dialog v-model:visible="visible" modal header="Nueva reseña">
     <div class="flex flex-col mt-4 space-y-4">
         <div class="flex space-x-8">
             <div class="flex flex-col">
@@ -351,9 +351,7 @@ const visibleDrawerCast = ref(false)
         <div class="px-4 py-10 md:px-10">
           <div class="flex items-center gap-8 mb-4">
             <h2 class="text-3xl font-bold">Reviews</h2>
-            <button class="border-2 border-violet-500 text-violet-500 font-semibold py-2 px-2 rounded-full hover:bg-violet-500 hover:bg-opacity-25 focus:outline-none focus:ring-2 focus:ring-violet-300 transition duration-200" @click="visible=true">
-              Añadir Review
-            </button>
+            <Button label="Añadir review" variant="outlined" @click="visible=true"/>
           </div>
           <div v-if="reviews.length" class="space-y-4">
             <ReviewCard v-for="(review, index) in reviews" :review="review" :key="index" :film="dataMovie"></ReviewCard>

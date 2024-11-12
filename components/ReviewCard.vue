@@ -23,7 +23,6 @@ const like = ref(false)
 
 const openEditDialog = () => {
   visible.value = true;
-  console.log(visible)
 }
 
 const menu = ref()
@@ -80,7 +79,7 @@ const submitReview = async () => {
 
 <template>
   <Toast />
-  <Dialog v-model:visible="visible" modal header="Editar reseña:">
+  <Dialog v-model:visible="visible" modal header="Editar reseña">
     <div class="flex flex-col mt-4 space-y-4">
           <div class="flex space-x-8">
             <div class="flex flex-col">
