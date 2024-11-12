@@ -128,23 +128,23 @@ const visibleDrawerCast = ref(false)
 </script>
 
 <template>
-  <Drawer v-model:visible="visibleDrawerDirector" header="Director/a" position="right">
+  <Drawer v-model:visible="visibleDrawerDirector" header="Director/a" position="right" class="!w-full md:!w-80 lg:!w-[25rem]">
     <CreditCard v-for="director in directors"
-      :image="'https://image.tmdb.org/t/p/original'+director.profile_path" 
+      :image="director.profile_path" 
       :name="director.name"
       :rol-or-character="director.job">
     </CreditCard>
   </Drawer>
-  <Drawer v-model:visible="visibleDrawerScript" header="Guión" position="right">
+  <Drawer v-model:visible="visibleDrawerScript" header="Guión" position="right" class="!w-full md:!w-80 lg:!w-[25rem]">
     <CreditCard v-for="writingMember in writing"
-      :image="'https://image.tmdb.org/t/p/original'+writingMember.profile_path" 
+      :image="writingMember.profile_path" 
       :name="writingMember.name"
       :rol-or-character="writingMember.job">
     </CreditCard>
   </Drawer>
-  <Drawer v-model:visible="visibleDrawerCast" header="Reparto" position="right">
+  <Drawer v-model:visible="visibleDrawerCast" header="Reparto" position="right" class="!w-full md:!w-80 lg:!w-[25rem]">
     <CreditCard v-for="castMember in dataCredits?.cast"
-      :image="'https://image.tmdb.org/t/p/original'+castMember.profile_path" 
+      :image="castMember.profile_path" 
       :name="castMember.name"
       :rol-or-character="castMember.character">
     </CreditCard>
