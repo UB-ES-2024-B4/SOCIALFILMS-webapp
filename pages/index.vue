@@ -17,7 +17,7 @@ const navigateToMovie = (id: number) => {
 </script>
 
 <template>
-	<div class="mt-10 w-full h-full flex justify-center">
+	<div class="mt-32 w-full h-full flex justify-center">
     <div class="w-[88%]">
       <h2 class="font-extrabold text-3xl pl-16 mb-5">Trending films</h2>
 

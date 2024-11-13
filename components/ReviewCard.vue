@@ -66,12 +66,13 @@ const submitReview = async () => {
     return;
     }
 
-    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _new_rating: rating.value, _new_comment: comment.value })
-    if (!reviewError) {
+    console.log(props.review.id,  rating.value, comment.value)
+    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value })
+    if (reviewError) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique una calificación y escribe un comentario.', life: 3000 })
+    } else {
         toast.add({ severity: 'success', summary: 'Éxito', detail: 'La review ha sido modificada correctamente.', life: 3000 });
         visible.value = false;
-    } else {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique una calificación y escribe un comentario.', life: 3000 })
     }
 }
 
@@ -145,9 +146,9 @@ const submitReview = async () => {
   <div class="w-full flex flex-col p-6 gap-3 border-[1.5px] border-gray-400 rounded-xl shadow-sm hover:shadow-lg transition-all duration-500 hover:border-violet-400 bg-white/80 dark:bg-black/60 dark:border-gray-500/70">
     <div class="flex items-center justify-between">
       <div class="flex items-center">
-        <Avatar :label="review.user[0]" class="mr-2.5" size="large" shape="circle" />
+        <Avatar :label="review.user ? review.user[0] : 'T'" class="mr-2.5" size="large" shape="circle" />
         <div class="inline-flex items-baseline sm:flex-col">
-          <h1 class="text-2xl font-bold">{{ review.user }}</h1>
+          <h1 class="text-2xl font-bold">{{ review.user ? review.user : 'User not found' }}</h1>
           <h2 class="ml-1.5 text-gray-500 dark:text-gray-400">{{ timeAgo(review.created_at) }}</h2>
         </div>
       </div>

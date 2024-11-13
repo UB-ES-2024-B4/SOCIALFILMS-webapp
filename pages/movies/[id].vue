@@ -5,6 +5,10 @@ import ReviewCard from "~/components/ReviewCard.vue";
 import CreditCard from "~/components/CreditCard.vue";
 import Button from 'primevue/button';
 
+definePageMeta({
+	layout: 'navbar'
+})
+
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const route = useRoute()
@@ -39,7 +43,7 @@ const submitReview = async () => {
     }
 
     try {
-      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_user_id: user_id, _movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value })
+      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value })
       if (!reviewError) {
           toast.add({ severity: 'success', summary: 'Éxito', detail: 'La review se ha subido correctamente.', life: 3000 });
           visible.value = false;
@@ -63,74 +67,10 @@ try {
   console.error(e)
 }
 
-// const reviews = dataReviews?.map(review => ({
-//   ...review,
-//   created_at: new Date(review.created_at)
-// })) || [];
-
-// dump data
-const reviews: Review[] = [
-  {
-    id: 1,
-    user_id: "96c82631-7f20-4934-a1d8-cedd6d9b4801",
-    user: "John Doe",
-    created_at: new Date("2023-11-01T10:30:00Z"),
-    comment: "Absolutely loved this movie! The storyline was captivating and the characters were well-developed.",
-    likes: 124,
-    dislikes: 3,
-    shared_count: 15,
-    rating: 9,
-    editable: true,
-  },
-  {
-    id: 2,
-    user_id: "user456",
-    user: "Jane Smith",
-    created_at: new Date("2023-11-02T15:45:00Z"),
-    comment: "Great cinematography but the plot was lacking. Expected more from the director.",
-    likes: 67,
-    dislikes: 20,
-    shared_count: 5,
-    rating: 6,
-    editable: true,
-  },
-  {
-    id: 3,
-    user_id: "user789",
-    user: "Sam Wilson",
-    created_at: new Date("2023-11-03T12:00:00Z"),
-    comment: "A classic! I can watch it over and over again. Highly recommended!",
-    likes: 200,
-    dislikes: 1,
-    shared_count: 30,
-    rating: 10,
-    editable: false,
-  },
-  {
-    id: 4,
-    user_id: "user101",
-    user: "Alex Johnson",
-    created_at: new Date("2023-11-04T18:20:00Z"),
-    comment: "Not my type of movie, but I can see why others might enjoy it.",
-    likes: 30,
-    dislikes: 45,
-    shared_count: 8,
-    rating: 4,
-    editable: true,
-  },
-  {
-    id: 5,
-    user_id: "user102",
-    user: "Emily Brown",
-    created_at: new Date("2023-11-05T21:10:00Z"),
-    comment: "Well-crafted storyline and brilliant acting. One of the best movies of the year!",
-    likes: 180,
-    dislikes: 5,
-    shared_count: 25,
-    rating: 8,
-    editable: false,
-  },
-]
+const reviews = dataReviews?.map(review => ({
+  ...review,
+  created_at: new Date(review.created_at)
+})) || [];
 
 const posterTranslateY = ref(-112) 
 const scrollThreshold = 200
