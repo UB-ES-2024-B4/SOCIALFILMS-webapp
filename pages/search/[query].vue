@@ -8,7 +8,7 @@ definePageMeta({
 
 const supabase = useSupabaseClient()
 const route = useRoute()
-const query = route.params.query
+const query = typeof route.params.query === 'string' ? decodeURIComponent(route.params.query).replace(/-/g, ' ') : ''
 
 const optionsSort = ref([
     { sort_by: 'Más vistas', value: 'popularity.desc' },
@@ -20,15 +20,68 @@ const optionsSort = ref([
 ])
 const sortValue = ref('popularity.desc')
 
+const isFiltersVisible = ref(true)
+const queryCountry = ref('')
+const queryGenre = ref('')
+const queryLanguage = ref('')
+
+const selectedGenres = ref<number[]>((route.query.genre ? (route.query.genre as string).split(',') : []).filter(Boolean).map(Number))
+const selectedYear = ref<Date | null>(route.query.year ? new Date(route.query.year as string) : null)
+const selectedCountry = ref<string>(route.query.country as string || '')
+const selectedLanguage = ref<string>(route.query.language as string || '')
+
 const filmsQueryOriginal = ref<FilmsAPI>({ results: [] })
 const filmsQueryFiltered = ref<Film[]>([])
+
+const applyFilters = async () => {
+    let filtered = [...filmsQueryOriginal.value?.results]
+
+    if (selectedGenres.value.length > 0) {
+        filtered = filtered.filter(film =>
+            film.genre_ids?.some(genreId => selectedGenres.value.includes(genreId))
+        )
+    }
+
+    if (selectedYear.value) {
+        filtered = filtered.filter(film => new Date(film.release_date).getFullYear() === new Date(selectedYear.value).getFullYear())
+    }
+
+    if (selectedCountry.value || selectedLanguage.value) {
+        const detailedFilms = await Promise.all(filtered.map(async (film) => {
+            const { data: fullFilm, error } = await supabase.rpc('find_movie_by_id', { movie_id: film.id }) as {data: Film, error: any}
+            return {
+                ...film,
+                spoken_languages: fullFilm.spoken_languages,
+                production_countries: fullFilm.production_countries
+            }
+        }))
+        filtered = detailedFilms
+
+        if (selectedCountry.value) {
+            filtered = filtered.filter(film => film.production_countries?.some(country => country.iso_3166_1 === selectedCountry.value))
+        }
+        console.log(filtered)
+        if (selectedLanguage.value) {
+            filtered = filtered.filter(film => film.spoken_languages?.some(language => language.iso_639_1 === selectedLanguage.value))
+        }
+    }
+
+    filtered = filtered.sort((a, b) => {
+        const [field, order] = sortValue.value.split('.')
+        const modifier = order === 'desc' ? -1 : 1
+        return ((a[field as keyof Film] ?? 0) < (b[field as keyof Film] ?? 0) ? -1 : 1) * modifier
+    })
+
+    filmsQueryFiltered.value = filtered
+}
+
 try {
-    const { data, error } = await supabase.rpc('search_movie_by_name', {movie_name: query}) as {data: FilmsAPI, error: any}
+    const { data, error } = await supabase.rpc('search_movie_by_name', { movie_name: encodeURIComponent(query), lang: 'es' }) as {data: FilmsAPI, error: any}
     if (error) throw error
     
     filmsQueryOriginal.value = data
     filmsQueryFiltered.value = data.results
-    console.log(data)
+    applyFilters()
 } catch (e) {
     console.error(e)
 }
@@ -36,15 +89,6 @@ try {
 const navigateToMovie = (id: number) => {
   navigateTo(`/movies/${id}`)
 }
-
-const isFiltersVisible = ref(true)
-const selectedCountry = ref('')
-const selectedGenres = ref([])
-const selectedLanguage = ref('')
-const selectedYear = ref()
-const queryCountry = ref('')
-const queryGenre = ref('')
-const queryLanguage = ref('')
 
 const filteredGenres = computed(() => {
     if (queryGenre) {
@@ -74,49 +118,7 @@ const filteredLanguage = computed(() => {
 })
 
 watch([filmsQueryOriginal, selectedGenres, selectedYear, selectedCountry, selectedLanguage, sortValue], async () => {
-    let filtered = [...filmsQueryOriginal.value?.results]
-
-    if (selectedGenres.value.length > 0) {
-        filtered = filtered.filter(film =>
-            film.genre_ids?.some(genreId => selectedGenres.value.includes(genreId))
-        )
-    }
-    
-    if (selectedYear.value) {
-        filtered = filtered.filter(film => new Date(film.release_date).getFullYear() === new Date(selectedYear.value).getFullYear())
-    }
-
-    console.log(selectedCountry.value || selectedLanguage.value)
-
-    if (selectedCountry.value || selectedLanguage.value) {
-        const detailedFilms = await Promise.all(filtered.map(async (film) => {
-            const { data: fullFilm, error } = await supabase.rpc('find_movie_by_id', {movie_id: film.id}) as {data: Film, error: any}
-            return {
-                ...film,
-                spoken_languages: fullFilm.spoken_languages,
-                production_countries: fullFilm.production_countries
-            }
-        }))
-        filtered = detailedFilms
-        console.log(filtered)
-        console.log(selectedCountry.value)
-
-        if (selectedCountry.value) {
-            filtered = filtered.filter(film => film.production_countries?.some(country => country.iso_3166_1 === selectedCountry.value))
-        }
-        console.log(filtered)
-        if (selectedLanguage.value) {
-            filtered = filtered.filter(film => film.spoken_languages?.some(language => language.iso_639_1 === selectedLanguage.value))
-        }
-    }
-
-    filtered = filtered.sort((a, b) => {
-        const [field, order] = sortValue.value.split('.')
-        const modifier = order === 'desc' ? -1 : 1
-        return ((a[field as keyof Film] ?? 0) < (b[field as keyof Film] ?? 0) ? -1 : 1) * modifier
-    })
-
-    filmsQueryFiltered.value = filtered
+    applyFilters()
 })
 
 </script>
@@ -207,7 +209,8 @@ watch([filmsQueryOriginal, selectedGenres, selectedYear, selectedCountry, select
                     raised>
                 </Button>
             </div>
-            <div class="flex flex-wrap my-10 mx-2 gap-10 justify-between items-center">
+            
+            <div v-if="filmsQueryFiltered.length > 0" class="flex flex-wrap my-10 mx-2 gap-10 items-center">
                 <FilmCard
                     v-for="(film, index) in filmsQueryFiltered"
                     class="cursor-pointer"
@@ -216,6 +219,10 @@ watch([filmsQueryOriginal, selectedGenres, selectedYear, selectedCountry, select
                     :trendingNumber="index + 1"
                     @click="navigateToMovie(film.id)"
                 ></FilmCard>
+            </div>
+            <div v-else class="w-full mt-16 items-center justify-center text-center">
+                <p class="text-2xl font-semibold text-gray-600 dark:text-gray-300">No se encontraron resultados para tu búsqueda.</p>
+                <p class="mt-2 text-xl text-gray-400 dark:text-gray-500">Prueba con otras palabras clave o ajusta tus filtros.</p>
             </div>
         </div>
     </div>

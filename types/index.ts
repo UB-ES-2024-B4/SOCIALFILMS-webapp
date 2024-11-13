@@ -5,6 +5,7 @@ export interface Film {
   media_type: string
   poster_path: string
   backdrop_path: string
+  original_title: string
   title: string
   overview: string
   adult: boolean
@@ -85,6 +86,13 @@ export interface CrewMember {
   credit_id: string
   department: string
   job: string
+}
+
+export interface SearchFilters {
+  genre?: string
+  country?: string
+  language?: string
+  year?: string
 }
 
 export const countries = [
