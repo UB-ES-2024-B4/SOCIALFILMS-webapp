@@ -19,16 +19,28 @@ const optionsSort = ref([
     { sort_by: 'Peor valoradas', value: 'vote_average.asc' }
 ])
 const sortValue = ref('popularity.desc')
-const { data, error } = await supabase.rpc('search_movie_by_name', {movie_name: query}) as {data: FilmsAPI, error: any}
+
+const filmsQueryOriginal = ref<FilmsAPI>({ results: [] })
+const filmsQueryFiltered = ref<Film[]>([])
+try {
+    const { data, error } = await supabase.rpc('search_movie_by_name', {movie_name: query}) as {data: FilmsAPI, error: any}
+    if (error) throw error
+    
+    filmsQueryOriginal.value = data
+    filmsQueryFiltered.value = data.results
+    console.log(data)
+} catch (e) {
+    console.error(e)
+}
 
 const navigateToMovie = (id: number) => {
   navigateTo(`/movies/${id}`)
 }
 
 const isFiltersVisible = ref(true)
-const selectedCountry = ref()
-const selectedGenres = ref()
-const selectedLanguage = ref()
+const selectedCountry = ref('')
+const selectedGenres = ref([])
+const selectedLanguage = ref('')
 const selectedYear = ref()
 const queryCountry = ref('')
 const queryGenre = ref('')
@@ -61,6 +73,52 @@ const filteredLanguage = computed(() => {
     return languages
 })
 
+watch([filmsQueryOriginal, selectedGenres, selectedYear, selectedCountry, selectedLanguage, sortValue], async () => {
+    let filtered = [...filmsQueryOriginal.value?.results]
+
+    if (selectedGenres.value.length > 0) {
+        filtered = filtered.filter(film =>
+            film.genre_ids?.some(genreId => selectedGenres.value.includes(genreId))
+        )
+    }
+    
+    if (selectedYear.value) {
+        filtered = filtered.filter(film => new Date(film.release_date).getFullYear() === new Date(selectedYear.value).getFullYear())
+    }
+
+    console.log(selectedCountry.value || selectedLanguage.value)
+
+    if (selectedCountry.value || selectedLanguage.value) {
+        const detailedFilms = await Promise.all(filtered.map(async (film) => {
+            const { data: fullFilm, error } = await supabase.rpc('find_movie_by_id', {movie_id: film.id}) as {data: Film, error: any}
+            return {
+                ...film,
+                spoken_languages: fullFilm.spoken_languages,
+                production_countries: fullFilm.production_countries
+            }
+        }))
+        filtered = detailedFilms
+        console.log(filtered)
+        console.log(selectedCountry.value)
+
+        if (selectedCountry.value) {
+            filtered = filtered.filter(film => film.production_countries?.some(country => country.iso_3166_1 === selectedCountry.value))
+        }
+        console.log(filtered)
+        if (selectedLanguage.value) {
+            filtered = filtered.filter(film => film.spoken_languages?.some(language => language.iso_639_1 === selectedLanguage.value))
+        }
+    }
+
+    filtered = filtered.sort((a, b) => {
+        const [field, order] = sortValue.value.split('.')
+        const modifier = order === 'desc' ? -1 : 1
+        return ((a[field as keyof Film] ?? 0) < (b[field as keyof Film] ?? 0) ? -1 : 1) * modifier
+    })
+
+    filmsQueryFiltered.value = filtered
+})
+
 </script>
 
 <template>
@@ -81,8 +139,8 @@ const filteredLanguage = computed(() => {
                                     <label for="on_label">Busca un gènere</label>
                                 </FloatLabel>
                                 <div v-for="genre of filteredGenres" :key="genre.code" class="flex items-center gap-2">
-                                    <Checkbox v-model="selectedGenres" :inputId="genre.code" name="genre" :value="genre.name" />
-                                    <label :for="genre.code">{{ genre.name }}</label>
+                                    <Checkbox v-model="selectedGenres" name="genre" :value="genre.code" />
+                                    <label :for="genre.name">{{ genre.name }}</label>
                                 </div>
                             </div>
                         </AccordionContent>
@@ -99,7 +157,7 @@ const filteredLanguage = computed(() => {
                                     <label for="on_label">Busca un país</label>
                                 </FloatLabel>
                                 <div v-for="country in filteredCountry" :key="country.code" class="flex items-center gap-2">
-                                    <RadioButton v-model="selectedCountry" :inputId="country.code" name="country" :value="country.name" />
+                                    <RadioButton v-model="selectedCountry" :inputId="country.code" name="country" :value="country.code" />
                                     <label :for="country.code">{{ country.name }}</label>
                                 </div>
                             </div>
@@ -117,7 +175,7 @@ const filteredLanguage = computed(() => {
                                     <label for="on_label">Busca un idioma</label>
                                 </FloatLabel>
                                 <div v-for="language in filteredLanguage" :key="language.code" class="flex items-center gap-2">
-                                    <RadioButton v-model="selectedLanguage" :inputId="language.code" name="language" :value="language.name" />
+                                    <RadioButton v-model="selectedLanguage" :inputId="language.code" name="language" :value="language.code" />
                                     <label :for="language.code">{{ language.name }}</label>
                                 </div>
                             </div>
@@ -151,7 +209,7 @@ const filteredLanguage = computed(() => {
             </div>
             <div class="flex flex-wrap my-10 mx-2 gap-10 justify-between items-center">
                 <FilmCard
-                    v-for="(film, index) in data.results"
+                    v-for="(film, index) in filmsQueryFiltered"
                     class="cursor-pointer"
                     :film="film"
                     :trending="false"
