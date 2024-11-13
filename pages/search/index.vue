@@ -17,7 +17,7 @@ const query = ref('')
 
 <template>
   <div class="w-full h-full">
-    <form class="flex flex-col px-20 py-40" @submit.prevent="navigateTo(`/search/${query}`)">
+    <form class="flex flex-col px-20 py-40" @submit.prevent="navigateTo(`/search/${encodeURIComponent(query)}`)">
       <h1 class="text-8xl font-semibold mb-10">Buscador</h1>
       <div class="flex flex-col justify-center gap-1.5">
         <!-- Search input -->

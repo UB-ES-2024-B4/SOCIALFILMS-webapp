@@ -19,7 +19,7 @@ const optionsSort = ref([
     { sort_by: 'Peor valoradas', value: 'vote_average.asc' }
 ])
 const sortValue = ref('popularity.desc')
-const { data, error } = await supabase.rpc('get_trending_movies_of_week') as {data: FilmsAPI, error: any}
+const { data, error } = await supabase.rpc('search_movie_by_name', {movie_name: query}) as {data: FilmsAPI, error: any}
 
 const navigateToMovie = (id: number) => {
   navigateTo(`/movies/${id}`)
