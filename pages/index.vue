@@ -9,12 +9,15 @@ definePageMeta({
 })
 
 const { data, error } = await supabase.rpc('get_trending_movies_of_week') as {data: FilmsAPI, error: any}
-console.log(data)
+
+const navigateToMovie = (id: number) => {
+  navigateTo(`/movies/${id}`)
+};
 
 </script>
 
 <template>
-	<div class="mt-10 w-full h-full flex justify-center">
+	<div class="mt-32 w-full h-full flex justify-center">
     <div class="w-[88%]">
       <h2 class="font-extrabold text-3xl pl-16 mb-5">Trending films</h2>
 
@@ -25,7 +28,13 @@ console.log(data)
         :showIndicators="false"
       >
         <template #item="slotProps">
-          <FilmCard class="mt-2.5 mb-20 mx-5" :film="slotProps.data" :trending="true" :trendingNumber="slotProps.index+1"></FilmCard>
+          <FilmCard
+            class="mt-2.5 mb-20 mx-5 cursor-pointer"
+            :film="slotProps.data"
+            :trending="true"
+            :trendingNumber="slotProps.index + 1"
+            @click="navigateToMovie(slotProps.data.id)"
+          ></FilmCard>
         </template>
       </Carousel>
     </div>

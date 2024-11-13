@@ -36,6 +36,11 @@ interface ProductionCountry {
   name: string
 }
 
+interface Genre {
+  id: number
+  name?: string
+}
+
 export interface FilmsAPI {
   results: Film[]
 }
