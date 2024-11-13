@@ -124,7 +124,7 @@ watch([filmsQueryOriginal, selectedGenres, selectedYear, selectedCountry, select
 </script>
 
 <template>
-  <div class="w-full h-full">
+  <div class="mt-28 w-full h-full">
     <div class="flex my-5 ml-10 mr-4">
         <div class="flex-none">
             <div v-if="isFiltersVisible" class="w-72 mr-10 rounded-md shadow">
