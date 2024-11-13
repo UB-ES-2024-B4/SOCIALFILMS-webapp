@@ -61,9 +61,9 @@ const handleSubmitSearch = () => {
       <div v-if="isFiltersVisible" class="flex items-center mt-4 gap-2">
         <MultiSelect class="w-full md:w-64" size="small" v-model="selectedGenres" display="chip" :options="genres" optionLabel="name" optionValue="code" filter placeholder="Gèneres"
           :maxSelectedLabels="3" />
-        <Select class="w-full md:w-32" size="small" filter showClear v-model="selectedCountry" :options="countries" optionLabel="name" optionValue="code" placeholder="País" variant="outlined" />
-        <Select class="w-full md:w-32" size="small" filter showClear v-model="selectedLanguage" :options="languages" optionLabel="name" optionValue="code" placeholder="Idioma"/>
-        <DatePicker class="w-full md:w-24" size="small" v-model="selectedYear" view="year" dateFormat="yy" showIcon iconDisplay="input" placeholder="Any" />
+        <Select class="w-full md:w-40" size="small" filter showClear v-model="selectedCountry" :options="countries" optionLabel="name" optionValue="code" placeholder="País" variant="outlined" />
+        <Select class="w-full md:w-40" size="small" filter showClear v-model="selectedLanguage" :options="languages" optionLabel="name" optionValue="code" placeholder="Idioma"/>
+        <DatePicker class="w-full md:w-40" size="small" v-model="selectedYear" view="year" dateFormat="yy" showIcon placeholder="Any" />
       </div>
     </form>
   </div>
