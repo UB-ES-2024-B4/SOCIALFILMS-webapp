@@ -16,6 +16,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
 
     steps:
       - uses: actions/checkout@v4
@@ -23,12 +27,12 @@ jobs:
         with:
           version: latest
 
-      - run: supabase db start
-      - run: supabase db lint
+      - run: supabase link --password $SUPABASE_DB_PASSWORD --project-ref $SUPABASE_PROJECT_ID
+      - run: supabase db lint --linked
 
       - name: Run Supabase DB Tests
         run: |
-          result=$(supabase db test)
+          result=$(supabase db test --linked)
           echo "$result"
           # Verifica si el resultado contiene "Result: PASS" o "Result: NOTESTS"
           if echo "$result" | grep -q "Result: PASS"; then
