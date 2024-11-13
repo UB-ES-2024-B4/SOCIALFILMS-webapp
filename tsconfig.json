@@ -1,4 +1,12 @@
 {
-  // https://nuxt.com/docs/guide/concepts/typescript
+  "compilerOptions": {
+    "target": "es2020",            // o "esnext"
+    "module": "esnext",            // Cambia de "commonjs" a "esnext"
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["jest"]
+  },
   "extends": "./.nuxt/tsconfig.json"
 }
