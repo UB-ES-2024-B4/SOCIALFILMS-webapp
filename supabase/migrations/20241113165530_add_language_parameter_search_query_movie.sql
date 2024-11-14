@@ -20,3 +20,5 @@ BEGIN
   
 END;$function$
 ;
+
+drop function if exists "public"."search_movie_by_name"(movie_name text);
