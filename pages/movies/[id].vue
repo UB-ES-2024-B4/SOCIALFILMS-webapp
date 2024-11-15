@@ -21,6 +21,7 @@ const directors = ref<CrewMember[]>()
 const writing = ref<CrewMember[]>()
 const dataCredits = ref<CreditsAPI>()
 
+const checked = ref(false);
 const visible = ref(false)
 const rating = ref(1)
 const comment = ref('')
@@ -43,7 +44,7 @@ const submitReview = async () => {
     }
 
     try {
-      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value })
+      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value, _spoiler: checked.value})
       if (!reviewError) {
           toast.add({ severity: 'success', summary: 'Éxito', detail: 'La review se ha subido correctamente.', life: 3000 });
           visible.value = false;
@@ -161,9 +162,19 @@ const visibleDrawerCast = ref(false)
             </span>
         </div>
 
-        <div class="flex justify-between">
+        <div class="flex justify-between items-center">
           <Button label="Cancelar" severity="secondary" @click="visible=false" />
-          <Button label="Publicar" @click="submitReview" />
+          <div class="flex items-center gap-7">
+            <div class="relative flex items-center justify-center">
+              <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
+              <ToggleSwitch v-model="checked">
+              <template #handle="{ checked }">
+                  <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]" />
+              </template>
+              </ToggleSwitch>
+            </div>
+            <Button label="Publicar" @click="submitReview" />
+          </div>
         </div>
     </div>
   </Dialog>
