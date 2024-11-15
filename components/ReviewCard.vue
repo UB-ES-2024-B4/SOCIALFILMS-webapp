@@ -39,6 +39,7 @@ const toggle = (event) => {
   menu.value.toggle(event);
 };
 
+const checked = ref(false)
 const visible = ref(false)
 const rating = ref(1)
 const comment = ref('')
@@ -49,6 +50,7 @@ const numCharacters = computed(() => {
 onMounted(() => {
     comment.value = props.review.comment ?? ''
     rating.value = props.review.rating ?? 1
+    checked.value = props.review.spoiler ?? false
 
 });
 
@@ -67,7 +69,7 @@ const submitReview = async () => {
     }
 
     console.log(props.review.id,  rating.value, comment.value)
-    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value })
+    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoiler: checked.value })
     if (reviewError) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique una calificación y escribe un comentario.', life: 3000 })
     } else {
@@ -138,7 +140,17 @@ const submitReview = async () => {
 
         <div v-if="user" class="flex justify-between">
           <Button label="Cancelar" severity="secondary" @click="visible=false" />
-          <Button label="Publicar" @click="submitReview" />
+          <div class="flex items-center gap-7">
+            <div class="relative flex items-center justify-center">
+              <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
+              <ToggleSwitch v-model="checked">
+              <template #handle="{ checked }">
+                  <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]" />
+              </template>
+              </ToggleSwitch>
+            </div>
+            <Button label="Publicar" @click="submitReview" />
+          </div>
         </div>
     </div>
   </Dialog>

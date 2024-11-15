@@ -106,6 +106,7 @@ const visibleDrawerCast = ref(false)
 </script>
 
 <template>
+  <Toast/>
   <Dialog v-model:visible="visible" modal header="Nueva reseña">
     <div class="flex flex-col mt-4 space-y-4">
         <div class="flex space-x-8">
