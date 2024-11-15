@@ -3,6 +3,10 @@ import 'primeicons/primeicons.css'
 import { countries, languages, genres } from "~/types"
 import type { SearchFilters } from "~/types"
 
+definePageMeta({
+	layout: 'navbar'
+})
+
 const isFiltersVisible = ref(false)
 
 const selectedCountry = ref()
@@ -41,7 +45,7 @@ const handleSubmitSearch = () => {
 
 <template>
   <div class="w-full h-full">
-    <form class="flex flex-col px-20 py-40" @submit.prevent="handleSubmitSearch">
+    <form class="flex flex-col px-20 pt-52" @submit.prevent="handleSubmitSearch">
       <h1 class="text-8xl font-semibold mb-10">Buscador</h1>
       <div class="flex flex-col justify-center gap-1.5">
         <!-- Search input -->
