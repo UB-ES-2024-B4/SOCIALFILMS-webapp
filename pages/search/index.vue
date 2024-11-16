@@ -52,7 +52,6 @@ const handleSubmitSearch = () => {
     >
       <h1 class="text-8xl font-semibold mb-10">Buscador</h1>
       <div class="flex flex-col justify-center gap-1.5">
-        <!-- Search input -->
         <Message severity="secondary" variant="simple"
           >Milions de pel·lícules i ressenyes.</Message
         >

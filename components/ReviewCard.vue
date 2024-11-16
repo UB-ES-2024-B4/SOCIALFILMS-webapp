@@ -58,7 +58,6 @@ const selectRating = (star: number) => {
   rating.value = star;
 };
 
-// Submit review
 const submitReview = async () => {
   const user_id = user.value?.id;
 
@@ -278,7 +277,7 @@ const submitReview = async () => {
   font-size: 0.8rem;
   font-weight: 400;
   border-radius: 9999px;
-  display: inline-flex; /* Para alinear el icono y el texto */
+  display: inline-flex;
   align-items: center;
   backdrop-filter: blur(8px);
 }

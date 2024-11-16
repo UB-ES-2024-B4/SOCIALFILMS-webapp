@@ -38,7 +38,6 @@ const selectRating = (star: number) => {
   rating.value = star;
 };
 
-// Submit review
 const submitReview = async () => {
   const user_id = user.value?.id;
 
@@ -265,7 +264,6 @@ const visibleDrawerCast = ref(false);
   </Drawer>
 
   <div class="w-full min-h-screen">
-    <!-- Backdrop Image -->
     <div
       class="fixed w-full h-full bg-cover bg-center bg-fixed transition-opacity"
       :style="{
@@ -275,29 +273,23 @@ const visibleDrawerCast = ref(false);
       }"
     ></div>
 
-    <!-- Film Info Section -->
     <div class="relative z-10 pt-[28rem]">
       <div class="backdrop-blur-xl bg-white/70 dark:bg-black/50">
         <div class="flex flex-col md:flex-row px-4 pt-4 md:px-10 md:pt-10">
-          <!-- Poster -->
           <img
             :src="'https://image.tmdb.org/t/p/original' + dataMovie.poster_path"
             :alt="`${dataMovie.title} poster`"
             class="w-48 md:w-80 rounded-lg shadow-xl md:mr-10 transition-transform duration-500 dark:shadow-gray-300/15"
             :style="{ transform: `translateY(${posterTranslateY}px)` }"
           />
-
-          <!-- Film Details -->
           <div class="flex flex-col">
             <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
             <div class="flex flex-col flex-1 mt-4 md:flex-row md:mt-0 gap-14">
-              <!-- Detalles de la película -->
               <div class="flex-1 flex flex-col space-y-3">
                 <h2 class="text-lg text-gray-600 dark:text-gray-400">
                   {{ dataMovie.genres?.map((genre) => genre.name).join(" • ") }}
                 </h2>
 
-                <!-- Ratings and Tags -->
                 <div class="flex items-center space-x-2 mt-4">
                   <span
                     :class="
@@ -332,10 +324,7 @@ const visibleDrawerCast = ref(false);
                   <p>{{ dataMovie.overview }}</p>
                 </div>
               </div>
-
-              <!-- Film Director, Cast, etc -->
               <div class="flex-none md:w-1/3 lg:w-1/4 space-y-14">
-                <!-- Ajusta el ancho según tus necesidades -->
                 <div>
                   <div class="divider"></div>
                   <div class="flex justify-between">
@@ -424,7 +413,6 @@ const visibleDrawerCast = ref(false);
             </div>
           </div>
         </div>
-        <!-- Reviews Section -->
         <div class="px-4 py-10 md:px-10">
           <div class="flex items-center gap-8 mb-4">
             <h2 class="text-3xl font-bold">Reviews</h2>
@@ -457,7 +445,7 @@ const visibleDrawerCast = ref(false);
   font-size: 1rem;
   font-weight: 400;
   border-radius: 9999px;
-  display: inline-flex; /* Para alinear el icono y el texto */
+  display: inline-flex;
   align-items: center;
   backdrop-filter: blur(8px);
 }

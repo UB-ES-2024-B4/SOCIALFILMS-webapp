@@ -59,7 +59,6 @@ const items = ref([
       alt="Profile"
       class="w-10 h-10 rounded-full object-cover"
     />
-    <!-- <Avatar label="A" size="normal" shape="circle" /> -->
     <div class="text-left">
       <p class="text-white text-sm font-semibold">Arfi Maulana</p>
       <p class="text-gray-300 text-xs">@arfimaulana_</p>

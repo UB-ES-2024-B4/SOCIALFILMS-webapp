@@ -25,7 +25,6 @@ const liked = ref(false);
   <div
     class="relative w-64 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
   >
-    <!-- Header -->
     <div class="relative aspect-[3/3]">
       <img
         :src="'https://image.tmdb.org/t/p/original' + film.poster_path"
@@ -54,7 +53,6 @@ const liked = ref(false);
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
       <h2 class="font-bold text-xl truncate">{{ film.title }}</h2>
       <h3 class="text-sm text-gray-300 mt-[2px] truncate">
@@ -89,7 +87,7 @@ const liked = ref(false);
   font-size: 0.8rem;
   font-weight: 400;
   border-radius: 9999px;
-  display: inline-flex; /* Para alinear el icono y el texto */
+  display: inline-flex;
   align-items: center;
   backdrop-filter: blur(8px);
 }
