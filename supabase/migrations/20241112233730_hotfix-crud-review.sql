@@ -24,4 +24,4 @@ to public
 using (true);
 
 
-
+drop function if exists "public"."create_review"(_user_id UUID, _movie_id INT, _rating INT, _comment VARCHAR);

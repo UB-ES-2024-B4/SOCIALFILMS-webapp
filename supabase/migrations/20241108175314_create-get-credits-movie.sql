@@ -26,13 +26,14 @@ AS $function$declare
   result json;
 BEGIN
   request_url := format('https://api.themoviedb.org/3/search/movie?query=%s&include_adult=false&language=en-US&page=1&api_key=%s', movie_name, api_key);
-  
+
   select content::json into result
   from http_get(request_url);
 
   return result;
-  
+
 END;$function$
 ;
+
 
 
