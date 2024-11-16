@@ -11,7 +11,7 @@ SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE comment = 'Mock review to
 
 
 
--- Intentar insertar una reseña con el mismo user_id ('unique-user-id'), lo cual debería fallar por la restricción de unicidad
+
 DO $$
 BEGIN
     BEGIN
@@ -23,11 +23,11 @@ BEGIN
 END $$;
 SELECT ok(TRUE, 'Insertion with duplicate user_id failed as expected');
 
--- Verificar que no hay duplicados en la tabla después de los intentos fallidos
+
 SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE user_id = '5899f99d-a449-4bfa-8769-19c097aaf1f5' AND comment = 'Mock review to test unique constraints') = 1, 
           'No duplicates inserted for movie_id or user_id');
 
--- Limpiar la prueba eliminando la reseña creada para este test
+
 SELECT 'Delete function called', public.delete_review((SELECT id FROM public."Reviews" WHERE comment = 'Mock review to test unique constraints'));
 SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE comment = 'Mock review to test unique constraints') = 0, 
           'Test review deleted successfully');
