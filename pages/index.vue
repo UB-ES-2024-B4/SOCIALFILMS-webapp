@@ -2,22 +2,24 @@
 import type { Film, FilmsAPI } from "~/types";
 import FilmCard from "~/components/FilmCard.vue";
 
-const supabase = useSupabaseClient()
+const supabase = useSupabaseClient();
 
 definePageMeta({
-	layout: 'navbar'
-})
+  layout: "navbar",
+});
 
-const { data, error } = await supabase.rpc('get_trending_movies_of_week') as {data: FilmsAPI, error: any}
-
-const navigateToMovie = (id: number) => {
-  navigateTo(`/movies/${id}`)
+const { data, error } = (await supabase.rpc("get_trending_movies_of_week")) as {
+  data: FilmsAPI;
+  error: any;
 };
 
+const navigateToMovie = (id: number) => {
+  navigateTo(`/movies/${id}`);
+};
 </script>
 
 <template>
-	<div class="mt-32 w-full h-full flex justify-center">
+  <div class="mt-32 w-full h-full flex justify-center">
     <div class="w-[88%]">
       <h2 class="font-extrabold text-3xl pl-16 mb-5">Trending films</h2>
 
