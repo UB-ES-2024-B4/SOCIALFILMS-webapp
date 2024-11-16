@@ -10,8 +10,6 @@ SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE comment = 'Mock review to
           'Mock review inserted with unique constraints');
 
 
-
-
 DO $$
 BEGIN
     BEGIN
