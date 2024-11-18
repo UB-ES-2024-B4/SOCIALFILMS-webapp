@@ -50,7 +50,7 @@ const numCharacters = computed(() => {
 onMounted(() => {
     comment.value = props.review.comment ?? ''
     rating.value = props.review.rating ?? 1
-    checked.value = props.review.spoiler ?? false
+    checked.value = props.review.spoilers ?? false
 
 });
 
@@ -69,7 +69,7 @@ const submitReview = async () => {
     }
 
     console.log(props.review.id,  rating.value, comment.value)
-    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoiler: checked.value })
+    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value })
     if (reviewError) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique una calificación y escribe un comentario.', life: 3000 })
     } else {

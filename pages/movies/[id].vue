@@ -44,7 +44,7 @@ const submitReview = async () => {
     }
 
     try {
-      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value, _spoiler: checked.value})
+      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value})
       if (!reviewError) {
           toast.add({ severity: 'success', summary: 'Éxito', detail: 'La review se ha subido correctamente.', life: 3000 });
           visible.value = false;
