@@ -5,7 +5,7 @@ BEGIN;
 SELECT plan(4);
 
 
-SELECT ok((SELECT public.create_review(1, 5, 'Great movie!', '5899f99d-a449-4bfa-8769-19c097aaf1f5') IS NOT NULL), 'Create review function called');
+SELECT ok((SELECT public.create_review(1, 5, 'Great movie!', false, '5899f99d-a449-4bfa-8769-19c097aaf1f5') IS NOT NULL), 'Create review function called');
 
 
 SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE comment = 'Great movie!') = 1, 'Review inserted');

@@ -2,7 +2,7 @@ BEGIN;
 SELECT plan(5);
 
 
-SELECT ok((SELECT public.create_review(1, 5, 'Mock review to test unique constraints', '5899f99d-a449-4bfa-8769-19c097aaf1f5') IS NOT NULL), 
+SELECT ok((SELECT public.create_review(1, 5, 'Mock review to test unique constraints', false, '5899f99d-a449-4bfa-8769-19c097aaf1f5') IS NOT NULL), 
           'Create review with unique movie_id and user_id');
 
 
@@ -13,7 +13,7 @@ SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE comment = 'Mock review to
 DO $$
 BEGIN
     BEGIN
-        PERFORM public.create_review(1, 5, 'Duplicate user_id test', '5899f99d-a449-4bfa-8769-19c097aaf1f5');
+        PERFORM public.create_review(1, 5, 'Duplicate user_id test', false, '5899f99d-a449-4bfa-8769-19c097aaf1f5');
         RAISE EXCEPTION 'Expected unique constraint violation for user_id, but insert succeeded';
     EXCEPTION WHEN unique_violation THEN
         PERFORM NULL;
