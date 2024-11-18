@@ -1,11 +1,11 @@
 alter table "public"."Reviews" add column "spoilers" boolean not null default false;
 
 CREATE OR REPLACE FUNCTION public.create_review(
-  _user_id UUID,
   _movie_id INT,
   _rating INT,
   _comment VARCHAR,
-  _spoilers BOOLEAN DEFAULT false
+  _spoilers BOOLEAN DEFAULT false,
+  _user_id UUID DEFAULT NULL
 )
 RETURNS UUID
 LANGUAGE plpgsql
@@ -14,24 +14,22 @@ DECLARE
   new_review_id UUID;
 BEGIN
   INSERT INTO public."Reviews" (user_id, movie_id, rating, comment, spoilers, created_at, editable, likes, dislikes, shared_count)
-  VALUES (_user_id, _movie_id, _rating, _comment, _spoilers, NOW(), true, 0, 0, 0)
+  VALUES (COALESCE(_user_id, auth.uid()), _movie_id, _rating, _comment, _spoilers, NOW(), true, 0, 0, 0)
   RETURNING id INTO new_review_id;
 
   RETURN new_review_id;
 END;
 $$;
 
-
-
-
+drop function if exists "public"."create_review"(_movie_id integer, _rating integer, _comment character varying, _user_id UUID);
 
 CREATE OR REPLACE FUNCTION public.update_review(
   _review_id UUID,
   _rating INT,
   _comment VARCHAR,
-  _spoilers BOOLEAN DEFAULT false-- Nuevo parámetro para la columna spoilers
+  _spoilers BOOLEAN DEFAULT false
 )
-RETURNS TEXT -- Mensaje de estado
+RETURNS TEXT
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -46,7 +44,7 @@ BEGIN
     SET
       rating = _rating,
       comment = _comment,
-      spoilers = _spoilers, -- Actualización de la columna spoilers
+      spoilers = _spoilers,
       created_at = NOW()
     WHERE id = _review_id;
 
@@ -57,3 +55,4 @@ BEGIN
 END;
 $$;
 
+drop function if exists "public"."update_review"(_review_id UUID, _rating INT, _comment VARCHAR);
