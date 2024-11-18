@@ -55,8 +55,8 @@ const numCharacters = computed(() => {
 onMounted(() => {
     comment.value = props.review.comment ?? ''
     rating.value = props.review.rating ?? 1
-    checked.value = props.review.spoiler ?? false
-    spoiler.value = props.review.spoiler ?? true
+    checked.value = props.review.spoilers ?? false
+    spoiler.value = props.review.spoilers ?? true
 
 });
 
