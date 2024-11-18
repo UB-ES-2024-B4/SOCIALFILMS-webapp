@@ -27,9 +27,10 @@ const directors = ref<CrewMember[]>();
 const writing = ref<CrewMember[]>();
 const dataCredits = ref<CreditsAPI>();
 
-const visible = ref(false);
-const rating = ref(1);
-const comment = ref("");
+const checked = ref(false);
+const visible = ref(false)
+const rating = ref(1)
+const comment = ref('')
 const numCharacters = computed(() => {
   return comment.value.length;
 });
@@ -52,35 +53,23 @@ const submitReview = async () => {
     return;
   }
 
-  try {
-    const { data: reviewData, error: reviewError } = await supabase.rpc(
-      "create_review",
-      {
-        _movie_id: dataMovie.id,
-        _rating: rating.value,
-        _comment: comment.value,
+    try {
+      const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value})
+      if (!reviewError) {
+          toast.add({ severity: 'success', summary: 'Reseña subida', detail: 'Tu reseña se ha publicado con éxito.', life: 3000 });
+          visible.value = false;
+      } else {
+        if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
+          toast.add({ severity: 'error', summary: 'Conflicto detectado', detail: 'Ya has dejado una reseña para esta película. No se permiten duplicados.', life: 3000})
+        } else {
+          toast.add({ severity: 'error', summary: 'Error al publicar', detail: 'Por favor, actualiza tu calificación o escribe un comentario válido antes de intentarlo nuevamente.', life: 3000 })
+        }
       }
-    );
-    if (!reviewError) {
-      toast.add({
-        severity: "success",
-        summary: "Éxito",
-        detail: "La review se ha subido correctamente.",
-        life: 3000,
-      });
-      visible.value = false;
-    } else {
-      toast.add({
-        severity: "error",
-        summary: "Error",
-        detail: "Por favor, modifique la calificación y escribe un comentario.",
-        life: 3000,
-      });
+    } catch (e) {
+      console.error(e)
     }
-  } catch (e) {
-    console.error(e);
-  }
-};
+}
+
 
 try {
   const { data, error: errorCredits } = (await supabase.rpc(
@@ -134,6 +123,7 @@ const visibleDrawerCast = ref(false);
 </script>
 
 <template>
+  <Toast/>
   <Dialog v-model:visible="visible" modal header="Nueva reseña">
     <div class="flex flex-col mt-4 space-y-4">
       <div class="flex space-x-8">
@@ -209,14 +199,20 @@ const visibleDrawerCast = ref(false);
         </span>
       </div>
 
-      <div class="flex justify-between">
-        <Button
-          label="Cancelar"
-          severity="secondary"
-          @click="visible = false"
-        />
-        <Button label="Publicar" @click="submitReview" />
-      </div>
+        <div class="flex justify-between items-center">
+          <Button label="Cancelar" severity="secondary" @click="visible=false" />
+          <div class="flex items-center gap-7">
+            <div class="relative flex items-center justify-center">
+              <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
+              <ToggleSwitch v-model="checked">
+              <template #handle="{ checked }">
+                  <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]" />
+              </template>
+              </ToggleSwitch>
+            </div>
+            <Button label="Publicar" @click="submitReview" />
+          </div>
+        </div>
     </div>
   </Dialog>
 

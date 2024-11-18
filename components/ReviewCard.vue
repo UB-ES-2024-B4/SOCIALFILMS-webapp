@@ -42,16 +42,22 @@ const toggle = (event) => {
   menu.value.toggle(event);
 };
 
-const visible = ref(false);
-const rating = ref(1);
-const comment = ref("");
+const spoiler = ref(true)
+const isBlurred = ref(true)
+const checked = ref(false)
+const visible = ref(false)
+const rating = ref(1)
+const comment = ref('')
 const numCharacters = computed(() => {
   return comment.value.length;
 });
 
 onMounted(() => {
-  comment.value = props.review.comment ?? "";
-  rating.value = props.review.rating ?? 1;
+    comment.value = props.review.comment ?? ''
+    rating.value = props.review.rating ?? 1
+    checked.value = props.review.spoilers ?? false
+    spoiler.value = props.review.spoilers ?? true
+
 });
 
 const selectRating = (star: number) => {
@@ -62,42 +68,20 @@ const submitReview = async () => {
   const user_id = user.value?.id;
 
   if (!user_id) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "Debes estar logueado para dejar una reseña.",
-      life: 3000,
-    });
+    toast.add({ severity: "error", summary: "Error", detail: "Debes estar logueado para dejar una reseña.", life: 3000})
     visible.value = false;
     return;
   }
 
-  console.log(props.review.id, rating.value, comment.value);
-  const { data: reviewData, error: reviewError } = await supabase.rpc(
-    "update_review",
-    {
-      _review_id: props.review.id,
-      _rating: rating.value,
-      _comment: comment.value,
+    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value })
+    if (reviewError) {
+        toast.add({ severity: 'error', summary: 'Error al actualizar', detail: 'Asegúrate de modificar la calificación o escribir un comentario válido antes de guardar.', life: 3000 })
+    } else {
+        toast.add({ severity: 'success', summary: 'Actualización exitosa', detail: 'Tu reseña se ha actualizado correctamente.', life: 3000 });
+        visible.value = false;
     }
-  );
-  if (reviewError) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "Por favor, modifique una calificación y escribe un comentario.",
-      life: 3000,
-    });
-  } else {
-    toast.add({
-      severity: "success",
-      summary: "Éxito",
-      detail: "La review ha sido modificada correctamente.",
-      life: 3000,
-    });
-    visible.value = false;
-  }
-};
+}
+
 </script>
 
 <template>
@@ -177,14 +161,20 @@ const submitReview = async () => {
         </span>
       </div>
 
-      <div v-if="user" class="flex justify-between">
-        <Button
-          label="Cancelar"
-          severity="secondary"
-          @click="visible = false"
-        />
-        <Button label="Publicar" @click="submitReview" />
-      </div>
+        <div v-if="user" class="flex justify-between">
+          <Button label="Cancelar" severity="secondary" @click="visible=false" />
+          <div class="flex items-center gap-7">
+            <div class="relative flex items-center justify-center">
+              <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
+              <ToggleSwitch v-model="checked">
+              <template #handle="{ checked }">
+                  <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]" />
+              </template>
+              </ToggleSwitch>
+            </div>
+            <Button label="Publicar" @click="submitReview" />
+          </div>
+        </div>
     </div>
   </Dialog>
 
@@ -240,8 +230,28 @@ const submitReview = async () => {
           :popup="true"
         />
       </div>
+
     </div>
-    <p class="text-lg">{{ review.comment }}</p>
+
+    <div class="flex flex-col items-start mt-2">
+      <p :class="(spoiler && isBlurred) ? 'visible' : 'invisible'" class="text-center min-h-[24px] text-violet-600">
+        Esta review contiene spoilers!
+      </p>
+
+      <p :class="[ 'text-lg', spoiler && isBlurred ? 'blur-sm' : '' ]">
+        {{ review.comment }}
+      </p>
+
+      <div v-if="spoiler" class="flex space-x-2 mt-2">
+        <Button 
+          :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+          @click="isBlurred = !isBlurred"
+          class="p-button-rounded p-button-text"
+          :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
+        />
+      </div>
+    </div>
+
     <div class="flex gap-3 mt-2">
       <span
         class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
