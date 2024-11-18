@@ -2,24 +2,24 @@ CREATE OR REPLACE FUNCTION public.update_review(
   _review_id UUID,
   _rating INT,
   _comment VARCHAR,
-  _spoilers BOOLEAN
+  _spoilers BOOLEAN -- Nuevo parámetro para la columna spoilers
 )
-RETURNS TEXT -- Return a status message
+RETURNS TEXT -- Mensaje de estado
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- Check if the review is editable
+  -- Verificar si la reseña es editable
   IF EXISTS (
     SELECT 1
     FROM public."Reviews"
     WHERE id = _review_id AND editable = true
   ) THEN
-    -- Perform the update if editable is true
+    -- Realizar la actualización si editable es true
     UPDATE public."Reviews"
     SET
       rating = _rating,
       comment = _comment,
-      spoilers = _spoilers,
+      spoilers = _spoilers, -- Actualización de la columna spoilers
       created_at = NOW()
     WHERE id = _review_id;
 
