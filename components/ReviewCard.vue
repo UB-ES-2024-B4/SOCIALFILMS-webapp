@@ -169,29 +169,24 @@ const submitReview = async () => {
       </div>
 
     </div>
-    <div class="relative">
-      <p v-if="spoiler && isBlurred" class="text-center bg-gray-200 text-gray-600 p-4 rounded-md">
-        ⚠️ Esta review contiene spoilers.
-        <Button 
-          icon="pi pi-eye" 
-          @click="isBlurred = false" 
-          class="p-button-rounded p-button-text ml-2" 
-          label="Mostrar"
-        />
+
+    <div class="flex flex-col items-start mt-6 gap-2">
+      <p :class="(spoiler && isBlurred) ? 'visible' : 'invisible'" class="text-center min-h-[24px] text-violet-600">
+        Esta review contiene spoilers!
       </p>
 
-      <!-- Mostrar el contenido de la review (desenfocado si tiene spoiler y no se ha revelado) -->
-      <p v-else :class="[ 'text-lg', spoiler && isBlurred ? 'blur-sm' : '' ]">
+      <p :class="[ 'text-lg', spoiler && isBlurred ? 'blur-sm' : '' ]">
         {{ review.comment }}
       </p>
 
-      <Button 
-        v-if="!isBlurred && spoiler"
-        icon="pi pi-eye-slash" 
-        @click="isBlurred = true" 
-        class="p-button-rounded p-button-text mt-2" 
-        label="Ocultar"
-      />
+      <div class="flex space-x-2 mt-2">
+        <Button 
+          :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+          @click="isBlurred = !isBlurred"
+          class="p-button-rounded p-button-text"
+          :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
+        />
+      </div>
     </div>
 
     <div class="flex gap-3 mt-2">
