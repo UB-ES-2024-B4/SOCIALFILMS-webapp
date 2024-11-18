@@ -1,8 +1,7 @@
 CREATE OR REPLACE FUNCTION public.update_review(
   _review_id UUID,
   _rating INT,
-  _comment VARCHAR,
-  _spoilers BOOLEAN
+  _comment VARCHAR
 )
 RETURNS TEXT -- Return a status message
 LANGUAGE plpgsql
@@ -19,7 +18,6 @@ BEGIN
     SET
       rating = _rating,
       comment = _comment,
-      spoilers = _spoilers,
       created_at = NOW()
     WHERE id = _review_id;
 

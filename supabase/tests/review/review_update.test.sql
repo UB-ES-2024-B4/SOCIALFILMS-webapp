@@ -6,7 +6,7 @@ SELECT plan(4);
 
 
 
-SELECT public.create_review(1, 5, 'Great movie!', '062cd767-f3fa-4bcf-9bee-230062f19fb0');
+SELECT public.create_review(1, 5, 'Great movie!', false, '5899f99d-a449-4bfa-8769-19c097aaf1f5');
 
 
 SELECT ok((SELECT COUNT(*) FROM public."Reviews" WHERE comment = 'Great movie!') = 1, 'Initial review inserted for update');
@@ -18,7 +18,7 @@ DECLARE
   review_id UUID;
 BEGIN
   SELECT id INTO review_id FROM public."Reviews" WHERE comment = 'Great movie!';
-  PERFORM public.update_review(review_id, 4, 'Updated great movie!');
+  PERFORM public.update_review(review_id, 4, 'Updated great movie!', false);
 END $$;
 
 
@@ -32,7 +32,7 @@ SELECT ok((SELECT rating FROM public."Reviews" WHERE comment = 'Updated great mo
 UPDATE public."Reviews" SET editable = false WHERE comment = 'Updated great movie!';
 
 
-SELECT ok((SELECT public.update_review((SELECT id FROM public."Reviews" WHERE comment = 'Updated great movie!'), 5, 'Another update attempt')) = 'Review cannot be updated because it is not editable.', 'Attempt to update non-editable review returns correct message');
+SELECT ok((SELECT public.update_review((SELECT id FROM public."Reviews" WHERE comment = 'Updated great movie!'), 5, 'Another update attempt', false)) = 'Review cannot be updated because it is not editable.', 'Attempt to update non-editable review returns correct message');
 
 
 SELECT * FROM finish();
