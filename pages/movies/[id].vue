@@ -59,7 +59,11 @@ const submitReview = async () => {
           toast.add({ severity: 'success', summary: 'Éxito', detail: 'La review se ha subido correctamente.', life: 3000 });
           visible.value = false;
       } else {
+        if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
+          toast.add({ severity: 'error', summary: 'Error', detail: 'Solo puedes hacer un comentario por película.', life: 3000})
+        } else {
           toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique la calificación y escribe un comentario.', life: 3000 })
+        }
       }
     } catch (e) {
       console.error(e)
