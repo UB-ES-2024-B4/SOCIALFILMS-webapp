@@ -68,7 +68,6 @@ const submitReview = async () => {
     return;
     }
 
-    console.log(props.review.id,  rating.value, comment.value)
     const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value })
     if (reviewError) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique una calificación y escribe un comentario.', life: 3000 })

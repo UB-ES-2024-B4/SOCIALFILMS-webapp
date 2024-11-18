@@ -36,6 +36,7 @@ export interface Review {
   shared_count: number
   rating: number
   editable: boolean
+  spoilers: boolean
 }
 
 export interface CreditsAPI {
