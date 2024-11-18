@@ -170,7 +170,7 @@ const submitReview = async () => {
 
     </div>
 
-    <div class="flex flex-col items-start mt-6 gap-2">
+    <div class="flex flex-col items-start mt-2">
       <p :class="(spoiler && isBlurred) ? 'visible' : 'invisible'" class="text-center min-h-[24px] text-violet-600">
         Esta review contiene spoilers!
       </p>
@@ -179,7 +179,7 @@ const submitReview = async () => {
         {{ review.comment }}
       </p>
 
-      <div class="flex space-x-2 mt-2">
+      <div v-if="spoiler" class="flex space-x-2 mt-2">
         <Button 
           :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
           @click="isBlurred = !isBlurred"
