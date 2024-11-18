@@ -42,6 +42,8 @@ const toggle = (event) => {
   menu.value.toggle(event);
 };
 
+const spoiler = ref(true)
+const isBlurred = ref(true)
 const checked = ref(false)
 const visible = ref(false)
 const rating = ref(1)
@@ -53,7 +55,8 @@ const numCharacters = computed(() => {
 onMounted(() => {
     comment.value = props.review.comment ?? ''
     rating.value = props.review.rating ?? 1
-    checked.value = props.review.spoilers ?? false
+    checked.value = props.review.spoiler ?? false
+    spoiler.value = props.review.spoiler ?? true
 
 });
 
@@ -232,8 +235,28 @@ const submitReview = async () => {
           :popup="true"
         />
       </div>
+
     </div>
-    <p class="text-lg">{{ review.comment }}</p>
+
+    <div class="flex flex-col items-start mt-2">
+      <p :class="(spoiler && isBlurred) ? 'visible' : 'invisible'" class="text-center min-h-[24px] text-violet-600">
+        Esta review contiene spoilers!
+      </p>
+
+      <p :class="[ 'text-lg', spoiler && isBlurred ? 'blur-sm' : '' ]">
+        {{ review.comment }}
+      </p>
+
+      <div v-if="spoiler" class="flex space-x-2 mt-2">
+        <Button 
+          :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+          @click="isBlurred = !isBlurred"
+          class="p-button-rounded p-button-text"
+          :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
+        />
+      </div>
+    </div>
+
     <div class="flex gap-3 mt-2">
       <span
         class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
