@@ -68,21 +68,16 @@ const submitReview = async () => {
   const user_id = user.value?.id;
 
   if (!user_id) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "Debes estar logueado para dejar una reseña.",
-      life: 3000,
-    });
+    toast.add({ severity: "error", summary: "Error", detail: "Debes estar logueado para dejar una reseña.", life: 3000})
     visible.value = false;
     return;
   }
 
     const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value })
     if (reviewError) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, modifique una calificación y escribe un comentario.', life: 3000 })
+        toast.add({ severity: 'error', summary: 'Error al actualizar', detail: 'Asegúrate de modificar la calificación o escribir un comentario válido antes de guardar.', life: 3000 })
     } else {
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'La review ha sido modificada correctamente.', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Actualización exitosa', detail: 'Tu reseña se ha actualizado correctamente.', life: 3000 });
         visible.value = false;
     }
 }
