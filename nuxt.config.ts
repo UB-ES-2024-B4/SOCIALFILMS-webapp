@@ -15,7 +15,7 @@ export default defineNuxtConfig({
       login: '/login',
       callback: '/',
       include: undefined,
-      exclude: ['/','/signup'],
+      exclude: ['/','/signup','/movies/*'],
       cookieRedirect: false,
     }
   },

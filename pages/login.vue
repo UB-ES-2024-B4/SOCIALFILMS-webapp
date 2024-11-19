@@ -67,7 +67,7 @@ const isNotFilled = computed(() => {
     class="h-screen w-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950"
   >
     <div
-      class="flex flex-col justify-center p-10 rounded-xl shadow-2xl lg:w-4/12 sm:w-7/12 bg-white dark:bg-black dark:shadow-gray-800"
+      class="flex flex-col justify-center p-10 rounded-xl shadow-2xl sm:w-11/12 md:w-[425px] bg-white dark:bg-black dark:shadow-gray-800"
     >
       <h1 class="font-semibold text-3xl mb-1">Inicia sessió</h1>
       <h2 class="mb-5">Hola, benvingut/da de nou👋</h2>

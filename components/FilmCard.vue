@@ -23,7 +23,7 @@ const liked = ref(false);
 
 <template>
   <div
-    class="relative w-64 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+    class="relative w-[230px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
   >
     <div class="relative aspect-[3/3]">
       <img

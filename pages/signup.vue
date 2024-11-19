@@ -34,23 +34,6 @@ const handleSignUp = async () => {
   try {
     signUpLoading.value = true;
 
-    // const { data: dataUsername } = await supabase
-    //   .from('auth.users')
-    //   .select('id')
-    //   .eq('raw_user_meta_data->>username', credentials.username);
-
-    // const { data: dataEmail } = await supabase
-    //   .from('auth.users')
-    //   .select('id')
-    //   .eq('email', credentials.email);
-
-    // console.log(dataUsername)
-    // console.log(dataEmail)
-
-    // if (dataUsername!.length > 0) credentialsStatus.usernameExists = true
-    // if (dataEmail!.length > 0) credentialsStatus.emailExists = true
-    // if (credentialsStatus.emailExists || credentialsStatus.usernameExists) return;
-
     const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
@@ -133,7 +116,7 @@ const isNotFilled = computed(() => {
     class="h-screen w-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950"
   >
     <div
-      class="flex flex-col justify-center p-10 rounded-xl shadow-2xl lg:w-4/12 sm:w-7/12 bg-white dark:bg-black dark:shadow-gray-800"
+      class="flex flex-col justify-center p-10 rounded-xl shadow-2xl sm:w-11/12 md:w-[425px] bg-white dark:bg-black dark:shadow-gray-800"
     >
       <h1 class="font-semibold text-3xl mb-1">Crear nou compte</h1>
       <h2 class="mb-5">Hola, benvingut/da👋</h2>
