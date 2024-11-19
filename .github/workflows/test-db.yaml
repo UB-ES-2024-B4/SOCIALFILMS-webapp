@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: supabase db start
+      - run: supabase db lint
+
+      - name: Run Supabase DB Tests
+        run: |
+          result=$(supabase db test)
+          echo "$result"
+          # Verifica si el resultado contiene "Result: PASS" o "Result: NOTESTS"
+          if echo "$result" | grep -q "Result: PASS"; then
+            echo "Database tests passed!"
+          elif echo "$result" | grep -q "Result: NOTESTS"; then
+            echo "No database tests found. Skipping..."
+          else
+            echo "Database tests failed!"
+            exit 1
+          fi
