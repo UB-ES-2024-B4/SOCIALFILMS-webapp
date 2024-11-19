@@ -129,7 +129,7 @@ const visibleDrawerCast = ref(false);
       <div class="flex space-x-8">
         <div class="flex flex-col">
           <h2
-            class="font-bold whitespace-nowrap text-2xl text-gray-800 leading-tight"
+            class="font-bold whitespace-nowrap text-2xl text-gray-800 dark:text-gray-100 leading-tight"
           >
             {{ dataMovie.title }}
           </h2>
@@ -204,11 +204,7 @@ const visibleDrawerCast = ref(false);
           <div class="flex items-center gap-7">
             <div class="relative flex items-center justify-center">
               <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
-              <ToggleSwitch v-model="checked">
-              <template #handle="{ checked }">
-                  <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]" />
-              </template>
-              </ToggleSwitch>
+              <ToggleSwitch v-model="checked"/>
             </div>
             <Button label="Publicar" @click="submitReview" />
           </div>

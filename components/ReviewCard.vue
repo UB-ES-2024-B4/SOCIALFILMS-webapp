@@ -91,7 +91,7 @@ const submitReview = async () => {
       <div class="flex space-x-8">
         <div class="flex flex-col">
           <h2
-            class="font-bold whitespace-nowrap text-2xl text-gray-800 leading-tight"
+            class="font-bold whitespace-nowrap text-2xl text-gray-800 dark:text-gray-100 leading-tight"
           >
             {{ film.title }}
           </h2>
@@ -166,11 +166,7 @@ const submitReview = async () => {
           <div class="flex items-center gap-7">
             <div class="relative flex items-center justify-center">
               <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
-              <ToggleSwitch v-model="checked">
-              <template #handle="{ checked }">
-                  <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]" />
-              </template>
-              </ToggleSwitch>
+              <ToggleSwitch v-model="checked"/>
             </div>
             <Button label="Publicar" @click="submitReview" />
           </div>
@@ -226,30 +222,33 @@ const submitReview = async () => {
         />
         <Menu
           ref="menu"
-          :model="user.id == review.user_id ? authorItems : nonAuthorItems"
+          :model="user?.id == review.user_id ? authorItems : nonAuthorItems"
           :popup="true"
         />
       </div>
 
     </div>
 
-    <div class="flex flex-col items-start mt-2">
-      <p :class="(spoiler && isBlurred) ? 'visible' : 'invisible'" class="text-center min-h-[24px] text-violet-600">
-        Esta review contiene spoilers!
+    <div class="flex flex-col items-start relative">
+      <p 
+        v-if="spoiler && isBlurred"
+        class="absolute top-0 left-0 w-full text-lg font-medium z-10 transition-all duration-500">
+        ⚠️ Esta review contiene spoilers!
       </p>
 
-      <p :class="[ 'text-lg', spoiler && isBlurred ? 'blur-sm' : '' ]">
+      <p :class="[ 'text-lg transition-all duration-500 relative', spoiler && isBlurred ? 'blur-md' : '' ]">
         {{ review.comment }}
       </p>
 
-      <div v-if="spoiler" class="flex space-x-2 mt-2">
-        <Button 
+      <Button 
+          v-if="spoiler"
+          class="mt-3"
           :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
           @click="isBlurred = !isBlurred"
-          class="p-button-rounded p-button-text"
+          rounded
+          variant="outlined"
           :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
-        />
-      </div>
+      />
     </div>
 
     <div class="flex gap-3 mt-2">
