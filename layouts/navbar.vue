@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import "primeicons/primeicons.css";
 import UserProfileButton from "~/components/UserProfileButton.vue";
+import DialogProfileSettings from "~/components/DialogProfileSettings.vue";
 
 const route = useRoute();
 const supabase = useSupabaseClient();
