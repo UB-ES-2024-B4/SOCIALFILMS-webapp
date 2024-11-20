@@ -45,6 +45,10 @@ const toggle = (event) => {
   menu.value.toggle(event);
 };
 
+const emit = defineEmits<{
+  (event: 'delete-review', review_id: string): void;
+}>();
+
 const confirmPosition = async (position) => {
   if (!confirmVisible.value) {
     confirmVisible.value = true;
@@ -70,6 +74,7 @@ const confirmPosition = async (position) => {
             toast.add({ severity: 'error', summary: 'Error al eliminar', detail: 'No se a podido eliminar la reseña', life: 3000 })
         } else {
             toast.add({ severity: 'success', summary: 'Eliminación exitosa', detail: 'Tu reseña se ha eliminado correctamente.', life: 3000 });
+            emit('delete-review', props.review.id);
             visible.value = false;
         }
         confirmVisible.value = false;
@@ -118,6 +123,9 @@ const submitReview = async () => {
     } else {
         toast.add({ severity: 'success', summary: 'Actualización exitosa', detail: 'Tu reseña se ha actualizado correctamente.', life: 3000 });
         visible.value = false;
+        props.review.comment = comment.value ?? ''
+        props.review.rating = rating.value
+        spoiler.value = checked.value
     }
 }
 
