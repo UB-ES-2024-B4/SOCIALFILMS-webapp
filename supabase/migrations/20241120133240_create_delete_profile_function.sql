@@ -1,5 +1,3 @@
-set check_function_bodies = off;
-
 CREATE OR REPLACE FUNCTION public.delete_profile(_user_id uuid)
  RETURNS void
  LANGUAGE plpgsql
