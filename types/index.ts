@@ -46,7 +46,7 @@ export interface FilmsAPI {
 }
 
 export interface Review {
-  id: number
+  id: string
   user_id: string
   user?: string
   created_at: Date

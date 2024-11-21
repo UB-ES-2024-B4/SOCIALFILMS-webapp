@@ -18,6 +18,7 @@ const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
   "find_movie_by_id",
   { movie_id: route.params.id }
 )) as { data: Film; error: any };
+
 const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
   "get_reviews",
   { _movie_id: route.params.id }
@@ -40,7 +41,7 @@ const selectRating = (star: number) => {
 };
 
 const submitReview = async () => {
-  const user_id = user.value?.id;
+  const user_id = user.value?.id
 
   if (!user_id) {
     toast.add({
@@ -55,8 +56,24 @@ const submitReview = async () => {
 
     try {
       const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value})
+      console.log(reviewData)
       if (!reviewError) {
           toast.add({ severity: 'success', summary: 'Reseña subida', detail: 'Tu reseña se ha publicado con éxito.', life: 3000 });
+          const new_review: Review = {
+            id: reviewData,
+            user_id: user_id || '', 
+            user: user.value?.user_metadata.username,
+            created_at: new Date(),
+            comment: comment.value || '',
+            likes: 0,
+            dislikes: 0,
+            shared_count: 0,
+            rating: rating.value,
+            editable: true,
+            spoilers: checked.value
+          }
+        
+          reviews.push(new_review)
           visible.value = false;
       } else {
         if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
@@ -85,11 +102,11 @@ try {
   console.error(e);
 }
 
-const reviews =
+const reviews = reactive<Review[]>(
   dataReviews?.map((review) => ({
     ...review,
     created_at: new Date(review.created_at),
-  })) || [];
+  })) || []);
 
 const posterTranslateY = ref(-112);
 const scrollThreshold = 200;
@@ -106,6 +123,13 @@ const handleScroll = () => {
     posterTranslateY.value = Math.max(newTranslateY, -112);
   } else {
     posterTranslateY.value = -112;
+  }
+};
+
+const deleteReview = (review_id: string) => {
+  const index = reviews.findIndex((review) => review.id === review_id);
+  if (index !== -1) {
+    reviews.splice(index, 1);
   }
 };
 
@@ -409,6 +433,7 @@ const visibleDrawerCast = ref(false);
           <div class="flex items-center gap-8 mb-4">
             <h2 class="text-3xl font-bold">Reviews</h2>
             <Button
+              v-if="user"
               label="Añadir review"
               variant="outlined"
               @click="visible = true"
@@ -420,6 +445,7 @@ const visibleDrawerCast = ref(false);
               :review="review"
               :key="index"
               :film="dataMovie"
+              @delete-review="deleteReview"
             ></ReviewCard>
           </div>
           <p v-else class="text-gray-600 dark:text-gray-400">

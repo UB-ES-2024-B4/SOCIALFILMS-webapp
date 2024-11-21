@@ -7,6 +7,7 @@ import { timeAgo } from "~/utils/timeFunctions";
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const toast = useToast();
+const confirm = useConfirm();
 
 const props = defineProps({
   review: {
@@ -22,7 +23,9 @@ const props = defineProps({
 const like = ref(false);
 
 const openEditDialog = () => {
-  visible.value = true;
+  if (!visible.value) {
+    visible.value = true;
+  }
 };
 
 const menu = ref();
@@ -33,7 +36,7 @@ const authorItems = ref([
     command: openEditDialog,
     disabled: props.review.editable === false,
   },
-  { label: "Eliminar", icon: "pi pi-trash" },
+  { label: "Eliminar", icon: "pi pi-trash", command: () => { confirmPosition('bottomright')}},
 ]);
 
 const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag" }];
@@ -42,10 +45,51 @@ const toggle = (event) => {
   menu.value.toggle(event);
 };
 
+const emit = defineEmits<{
+  (event: 'delete-review', review_id: string): void;
+}>();
+
+const confirmPosition = async (position) => {
+  if (!confirmVisible.value) {
+    confirmVisible.value = true;
+  }
+  confirm.require({
+      group: 'positioned',
+      message: '¿Estás seguro de que deseas eliminar esta reseña?',
+      header: 'Eliminar reseña',
+      icon: 'pi pi-info-circle',
+      position: position,
+      rejectProps: {
+          label: 'Cancelar',
+          severity: 'secondary',
+          outlined: true
+      },
+      acceptProps: {
+          label: 'Eliminar',
+          severity: 'danger'
+      },
+      accept: async () => {
+        const { data: reviewData, error: reviewError } = await supabase.rpc('delete_review', {_review_id: props.review.id })
+        if (reviewError) {
+            toast.add({ severity: 'error', summary: 'Error al eliminar', detail: 'No se a podido eliminar la reseña', life: 3000 })
+        } else {
+            toast.add({ severity: 'success', summary: 'Eliminación exitosa', detail: 'Tu reseña se ha eliminado correctamente.', life: 3000 });
+            emit('delete-review', props.review.id);
+            visible.value = false;
+        }
+        confirmVisible.value = false;
+      },
+      reject: () => {
+          confirmVisible.value = false;
+      }
+    });
+};
+
 const spoiler = ref(true)
 const isBlurred = ref(true)
 const checked = ref(false)
 const visible = ref(false)
+const confirmVisible = ref(false);
 const rating = ref(1)
 const comment = ref('')
 const numCharacters = computed(() => {
@@ -79,6 +123,9 @@ const submitReview = async () => {
     } else {
         toast.add({ severity: 'success', summary: 'Actualización exitosa', detail: 'Tu reseña se ha actualizado correctamente.', life: 3000 });
         visible.value = false;
+        props.review.comment = comment.value ?? ''
+        props.review.rating = rating.value
+        spoiler.value = checked.value
     }
 }
 
@@ -86,6 +133,7 @@ const submitReview = async () => {
 
 <template>
   <Toast />
+  <ConfirmDialog group="positioned" v-model:visible="confirmVisible" />
   <Dialog v-model:visible="visible" modal header="Editar reseña">
     <div class="flex flex-col mt-4 space-y-4">
       <div class="flex space-x-8">
