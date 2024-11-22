@@ -3,10 +3,11 @@ ON public."Review-Reactions"
 FOR INSERT
 TO authenticated
 WITH CHECK (
-    review_id IS DISTINCT FROM ALL (
-        SELECT review_id
+     NOT EXISTS (
+        SELECT 1
         FROM public."Review-Reactions"
-        WHERE user_id = auth.uid()
+        WHERE review_id = "Review-Reactions".review_id
+        AND user_id = auth.uid()
     )
 );
 
