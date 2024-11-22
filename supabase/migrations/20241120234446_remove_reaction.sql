@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.remove_reaction(_user_id UUID, _review_id UUID)
+CREATE OR REPLACE FUNCTION public.remove_reaction(_review_id UUID)
 RETURNS void
 LANGUAGE plpgsql
 AS $$
@@ -8,7 +8,7 @@ BEGIN
   -- Obtener la reacción actual del usuario
   SELECT reaction INTO current_reaction
   FROM public."Review-Reactions"
-  WHERE user_id = _user_id AND review_id = _review_id;
+  WHERE user_id = auth.uid() AND review_id = _review_id;
 
   -- Si no hay reacción, salir
   IF current_reaction IS NULL THEN
@@ -17,7 +17,7 @@ BEGIN
 
   -- Eliminar la reacción
   DELETE FROM public."Review-Reactions"
-  WHERE user_id = _user_id AND review_id = _review_id;
+  WHERE user_id = auth.uid() AND review_id = _review_id;
 
   -- Actualizar contadores en Reviews
   IF current_reaction = 'like' THEN

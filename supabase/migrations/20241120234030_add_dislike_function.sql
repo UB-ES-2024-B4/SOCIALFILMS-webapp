@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.add_dislike(_user_id UUID, _review_id UUID)
+CREATE OR REPLACE FUNCTION public.add_dislike(_review_id UUID)
 RETURNS void
 LANGUAGE plpgsql
 AS $$
@@ -7,12 +7,12 @@ BEGIN
   IF EXISTS (
     SELECT 1
     FROM public."Review-Reactions"
-    WHERE user_id = _user_id AND review_id = _review_id
+    WHERE user_id = auth.uid() AND review_id = _review_id
   ) THEN
     -- Si la reacción actual es like, cambiar a dislike
     UPDATE public."Review-Reactions"
     SET reaction = 'dislike'
-    WHERE user_id = _user_id AND review_id = _review_id AND reaction = 'like';
+    WHERE user_id = auth.uid() AND review_id = _review_id AND reaction = 'like';
 
     -- Actualizar contadores en Reviews
     UPDATE public."Reviews"
@@ -21,7 +21,7 @@ BEGIN
   ELSE
     -- Si no hay reacción, insertar un dislike
     INSERT INTO public."Review-Reactions" (user_id, review_id, reaction)
-    VALUES (_user_id, _review_id, 'dislike');
+    VALUES (auth.uid(), _review_id, 'dislike');
 
     -- Incrementar contador de dislikes
     UPDATE public."Reviews"

@@ -1,6 +1,6 @@
 set check_function_bodies = off;
 
-CREATE OR REPLACE FUNCTION public.add_like(_user_id uuid, _review_id uuid)
+CREATE OR REPLACE FUNCTION public.add_like(_review_id uuid)
  RETURNS void
  LANGUAGE plpgsql
 AS $function$
@@ -9,12 +9,12 @@ BEGIN
   IF EXISTS (
     SELECT 1
     FROM public."Review-Reactions"
-    WHERE user_id = _user_id AND review_id = _review_id
+    WHERE user_id = auth.uid() AND review_id = _review_id
   ) THEN
     -- Si la reacción actual es dislike, cambiar a like
     UPDATE public."Review-Reactions"
     SET reaction = 'like'
-    WHERE user_id = _user_id AND review_id = _review_id AND reaction = 'dislike';
+    WHERE user_id = auth.uid() AND review_id = _review_id AND reaction = 'dislike';
 
     -- Actualizar contadores en Reviews
     UPDATE public."Reviews"
@@ -23,7 +23,7 @@ BEGIN
   ELSE
     -- Si no hay reacción, insertar un like
     INSERT INTO public."Review-Reactions" (user_id, review_id, reaction)
-    VALUES (_user_id, _review_id, 'like');
+    VALUES (auth.uid(), _review_id, 'like');
 
     -- Incrementar contador de likes
     UPDATE public."Reviews"

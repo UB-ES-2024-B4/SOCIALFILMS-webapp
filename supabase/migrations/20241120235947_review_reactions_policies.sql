@@ -2,7 +2,7 @@ CREATE POLICY insert_reaction
 ON public."Review-Reactions"
 FOR INSERT
 TO authenticated
-USING (
+WITH CHECK (
     NOT EXISTS (
         SELECT 1
         FROM public."Review-Reactions"
