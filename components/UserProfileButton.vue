@@ -133,28 +133,29 @@ const loadReviewsAndMovies = async () => {
 
 const handleSubmitProfileEdit = async () => {
   try {
-    const { data, error } = await supabase.auth.updateUser({
-      email: email.value,
-      password: 'Updated_12',
-      data: { username: username.value },
-    });
-
-    if (error) {
-      toast.add({
-        severity: "error",
-        summary: "Error al actualizar perfil",
-        detail: `No se pudo actualizar tu perfil: ${errorUserUpdate.message}`,
-        life: 5000,
+    if (username.value !== user.value?.user_metadata.username || email.value !== user.value?.email){
+      const { data, error } = await supabase.auth.updateUser({
+        email: email.value,
+        data: { username: username.value },
       });
-      throw new Error(`Error updating user: ${error.message}`);
-    }
 
-    toast.add({
-      severity: "success",
-      summary: "Perfil actualizado",
-      detail: "Se ha actualizado tu perfil con éxito",
-      life: 3000,
-    });
+      if (error) {
+        toast.add({
+          severity: "error",
+          summary: "Error al actualizar perfil",
+          detail: `No se pudo actualizar tu perfil: ${error.message}`,
+          life: 5000,
+        });
+        throw new Error(`Error updating user: ${error.message}`);
+      }
+
+      toast.add({
+        severity: "success",
+        summary: "Perfil actualizado",
+        detail: "Se ha actualizado tu perfil con éxito",
+        life: 3000,
+      });
+    }
 
     if (current_password.value && new_password.value) {
       const { data: dataUpdatePassword, error: errorUpdatePassword } = await supabase.rpc("change_password", { 
