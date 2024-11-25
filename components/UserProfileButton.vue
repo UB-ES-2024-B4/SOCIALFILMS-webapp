@@ -281,7 +281,7 @@ const handleSubmitProfileEdit = async () => {
                 <h2 class="text-gray-400 text-lg">{{ user?.email }}</h2>
               </div>
 
-              <div class="flex justify-center items-center gap-4 mt-6">
+              <div v-show="false" class="flex justify-center items-center gap-4 mt-6">
                 <Button label="Compartir perfil" variant="outlined" icon="pi pi-share-alt" severity="contrast" />
                 <Button label="Ver perfil" variant="outlined" severity="contrast" />
               </div>
