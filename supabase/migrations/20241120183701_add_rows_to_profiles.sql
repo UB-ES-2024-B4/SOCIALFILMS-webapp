@@ -64,30 +64,6 @@ $function$
 
 drop function if exists "public"."update_profile"(_user_id uuid, _username text, _email text);
 
---Actualiza los datos de un perfil que se hayan modificado en auth.user
-CREATE OR REPLACE FUNCTION public.handle_update_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public 
-AS $$
-BEGIN
-
-  UPDATE public.profiles
-  SET
-    email = NEW.email
-  WHERE id = NEW.id; 
-
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER on_auth_user_updated
-  AFTER UPDATE ON auth.users
-  FOR EACH ROW
-  EXECUTE PROCEDURE public.handle_update_user();
-
-
 
 --Elimina un perfil si se ha eliminado de auth.users
 CREATE OR REPLACE FUNCTION public.handle_delete_user()
