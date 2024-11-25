@@ -22,11 +22,20 @@ alter table "public"."profiles" add column "bio" text;
 
 alter table "public"."profiles" add column "country" countries_enum;
 
-CREATE OR REPLACE FUNCTION public.update_profile(_user_id uuid, _username text, _email text, _bio text, _age integer, _country countries_enum)
+alter table "public"."profiles" add column "real_name" text;
+
+alter table "public"."profiles" add column "last_name" text;
+
+--En profile solo se pueden modificar el username, la bio, edad, pais y nombre real.
+CREATE OR REPLACE FUNCTION public.update_profile(_username text, _bio text, _age integer, _country countries_enum, _real_name text, _last_name text) 
  RETURNS text
  LANGUAGE plpgsql
 AS $function$
+DECLARE
+  _user_id uuid;
 BEGIN
+
+  _user_id := auth.uid();
 
   IF EXISTS (
     SELECT 1
@@ -34,19 +43,15 @@ BEGIN
     WHERE id = _user_id
   ) THEN
 
+
     UPDATE public."profiles"
     SET
       username = _username,
-      email = _email,
       bio = _bio,
       age = _age,
-      country = _country
-
-    WHERE id = _user_id;
-
-
-    UPDATE auth.users
-    SET email = _email
+      country = _country,
+      real_name = _real_name,
+      last_name = _last_name
     WHERE id = _user_id;
 
     RETURN 'Profile updated successfully.';
@@ -58,3 +63,49 @@ $function$
 ;
 
 drop function if exists "public"."update_profile"(_user_id uuid, _username text, _email text);
+
+--Actualiza los datos de un perfil que se hayan modificado en auth.user
+CREATE OR REPLACE FUNCTION public.handle_update_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public 
+AS $$
+BEGIN
+
+  UPDATE public.profiles
+  SET
+    email = NEW.email
+  WHERE id = NEW.id; 
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_updated
+  AFTER UPDATE ON auth.users
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.handle_update_user();
+
+
+
+--Elimina un perfil si se ha eliminado de auth.users
+CREATE OR REPLACE FUNCTION public.handle_delete_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+
+  DELETE FROM public.profiles
+  WHERE id = OLD.id;
+
+  RETURN OLD;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_deleted
+  AFTER DELETE ON auth.users
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.handle_delete_user();
