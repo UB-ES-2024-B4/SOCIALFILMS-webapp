@@ -96,8 +96,23 @@ const numCharacters = computed(() => {
   return comment.value.length;
 });
 
-const like = ref(false);
-const dislike = ref(false);
+const like = ref();
+const dislike = ref();
+
+try {
+  const { data: reaction, error: errorReaction } = await supabase.rpc('get_user_reaction_review', { _review_id: props.review.id });
+  if (errorReaction) throw errorReaction; 
+  if (reaction === 'like') like.value = true
+  else if (reaction === 'dislike') dislike.value = true
+} catch (error) {
+  switch (error.code) {
+    case 'P0001':
+      like.value = false
+      dislike.value = false
+      break;
+  }
+}
+
 
 const handleRemoveReaction = async () => {
   const { error } = await supabase.rpc('remove_reaction', { _review_id: props.review.id })
@@ -115,30 +130,32 @@ const handleReaction = async (type: string) => {
     if (type === 'like') {
       if (like.value){
         await handleRemoveReaction();
+        review.likes -= 1;
       }
       else {
         await handleAddReaction('like');
  
         if (dislike.value) {
           dislike.value = false;
-          props.review.dislikes -= 1;
+          review.dislikes -= 1;
         }
-        props.review.likes += 1;
+        review.likes += 1;
       }
       like.value = !like.value;
     }
     else {
       if (dislike.value){
         await handleRemoveReaction();
+        review.dislikes -= 1;
       }
       else {
         await handleAddReaction('dislike');
 
         if (like.value) {
           like.value = false;
-          props.review.likes -= 1;
+          review.likes -= 1;
         }
-        props.review.dislikes += 1;
+        review.dislikes += 1;
       }
       dislike.value = !dislike.value;
     } 
@@ -386,6 +403,7 @@ const submitReview = async () => {
           :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
           aria-label="Like"
           rounded
+          :disabled="!user"
           @click="handleReaction('like')"
         />
         {{ review.likes == 0 ? "" : review.likes }}
@@ -398,6 +416,7 @@ const submitReview = async () => {
           :icon="dislike ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
           aria-label="Dislike"
           rounded
+          :disabled="!user"
           @click="handleReaction('dislike')"
         />
         {{ review.dislikes == 0 ? "" : review.dislikes }}
