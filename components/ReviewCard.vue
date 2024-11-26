@@ -28,6 +28,12 @@ const openEditDialog = () => {
   }
 };
 
+const openReportDialog = () => {
+  if (!visible_report.value) {
+    visible_report.value = true;
+  }
+};
+
 const menu = ref();
 const authorItems = ref([
   {
@@ -39,7 +45,16 @@ const authorItems = ref([
   { label: "Eliminar", icon: "pi pi-trash", command: () => { confirmPosition('bottomright')}},
 ]);
 
-const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag" }];
+const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag",  command: openReportDialog}];
+
+const reportReason = ref('')
+const value_otros = ref(null);
+const reportOptions = ref([
+  { label: 'Contenido Ofensivo', icon: 'pi pi-flag', value: 'Contenido Ofensivo'},
+  { label: 'Spam', icon: 'pi pi-times-circle', value: 'Spam'},
+  { label: 'Desinformación', icon: 'pi pi-exclamation-circle', value: 'Desinformación' },
+  { label: 'Otros', icon: 'pi pi-ellipsis-h', value: 'Otros' },
+]);
 
 const toggle = (event) => {
   menu.value.toggle(event);
@@ -88,13 +103,21 @@ const confirmPosition = async (position) => {
 const spoiler = ref(true)
 const isBlurred = ref(true)
 const checked = ref(false)
-const visible = ref(false)
 const confirmVisible = ref(false);
 const rating = ref(1)
 const comment = ref('')
 const numCharacters = computed(() => {
   return comment.value.length;
 });
+
+const visible = ref(false)
+const visible_report = ref(false)
+
+const setActiveReason = (reason: string) => { 
+  reportReason.value = reason;
+};
+
+const isActive = (reason: string) => computed(() => reportReason.value === reason);
 
 onMounted(() => {
     comment.value = props.review.comment ?? ''
@@ -208,7 +231,6 @@ const submitReview = async () => {
           {{ numCharacters }} / 255
         </span>
       </div>
-
         <div v-if="user" class="flex justify-between">
           <Button label="Cancelar" severity="secondary" @click="visible=false" />
           <div class="flex items-center gap-7">
@@ -220,6 +242,72 @@ const submitReview = async () => {
           </div>
         </div>
     </div>
+  </Dialog>
+
+  <Dialog v-model:visible="visible_report" modal class="w-[50rem]" :draggable="false">
+    <template #header>
+      <div class="flex flex-row items-start mt-3 ml-3">
+        <div class="flex flex-col gap-2 items-start">
+          <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Reportar reseña</h1>
+          <p class="text-lg text-gray-600 dark:text-gray-300">No le diremos nada a <strong>{{ review.user ? review.user : "User not found" }}</strong></p>
+        </div>
+      </div>
+    </template>
+      <Tabs value="0">
+          <TabList>
+              <Tab value="0">Contenido Ofensivo</Tab>
+              <Tab value="1">Spam</Tab>
+              <Tab value="2">Desinformación</Tab>
+              <Tab value="3">Otros</Tab>
+          </TabList>
+          <TabPanels>
+              <TabPanel value="0">
+                <p class="text-gray-600 dark:text-gray-100">Está prohibido el contenido que promueva odio, violencia, discriminación o acoso hacia cualquier individuo o grupo por razones de étnia, género, orientación sexual, religión, nacionalidad, discapacidad, entre otros.</p><br/>
+                <p class="text-gray-600 dark:text-gray-100">Ejemplos de contenido ofensivo incluyen:</p>
+
+                <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
+                  <li>Lenguaje vulgar o amenazas.</li>
+                  <li>Insultos o comentarios despectivos.</li>
+                  <li>Contenido que incite a la violencia o discriminación.</li>
+                </ul>
+              </TabPanel>
+              <TabPanel value="1">
+                <p class="text-gray-600 dark:text-gray-100">Está prohibido enviar mensajes no solicitados, promociones excesivas o contenido irrelevante con el único fin de obtener beneficios personales o comerciales.</p><br/>
+                <p class="text-gray-600 dark:text-gray-100">Ejemplos de contenido ofensivo incluyen:</p>
+
+                <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
+                  <li>Publicidad masiva no solicitada.</li>
+                  <li>Enlaces repetidos que no aportan valor.</li>
+                  <li>Mensajes con fines de phishing o fraude.</li>
+                </ul>
+              </TabPanel>
+              <TabPanel value="2">
+                <p class="text-gray-600 dark:text-gray-100">Está prohibido difundir información falsa o engañosa que pueda causar daño a la comunidad, como noticias inventadas, teorías conspirativas o datos erróneos.</p><br/>
+                <p class="text-gray-600 dark:text-gray-100">Ejemplos de contenido ofensivo incluyen:</p>
+
+                <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
+                  <li>Difusión de noticias falsas o engañosas.</li>
+                  <li>Propagación de teorías conspirativas sin evidencia.</li>
+                  <li>Información que pueda poner en peligro la salud o seguridad de las personas.</li>
+                </ul>
+              </TabPanel>
+              <TabPanel value="3">
+                <p class="text-gray-600 dark:text-gray-100">Nuestra prioridad es ofrecer un entorno seguro y solidario. También fomentar interacciones auténticas manteniendo el contenido y las cuentas engañosas al margen de nuestra plataforma.</p><br/>
+                <p class="text-gray-600 dark:text-gray-100">Si tu denuncia no encaja en las categorías anteriores, por favor explícanos brevemente el motivo.</p><br/>
+
+                <FloatLabel variant="in">
+                  <Textarea id="over_label" v-model="value_otros" rows="3" cols="30" class="resize-none w-full" />
+                  <label for="in_label" class="text-gray-600 text-sm">Denuncia</label>
+              </FloatLabel>
+              </TabPanel>
+          </TabPanels>
+      </Tabs>
+    <template #footer>
+      <div class="flex gap-2 items-end">
+        <Button label="Cancelar" severity="secondary" @click="visible=false" />
+        <Button label="Denunciar" @click="submitReview" />
+      </div>
+    </template>
   </Dialog>
 
   <div
