@@ -1,13 +1,13 @@
 describe('Login functionality', () => {
   const baseUrl = 'https://socialfilms.nuxt.dev/';
 
-  it('navigates to the login page', () => {
+  it('Navega a la pagina de login', () => {
     cy.visit(baseUrl);
     cy.contains('Inicia sessió').click(); 
     cy.url().should('include', '/login'); 
   });
 
-  it('logs in with valid credentials', () => {
+  it('Inicia sesión con credenciales validas', () => {
     cy.visit(baseUrl);
     cy.contains('Inicia sessió').click(); 
     cy.url().should('include', '/login');
@@ -23,7 +23,7 @@ describe('Login functionality', () => {
     cy.url().should('include', '/');
   });
 
-  it('shows error for invalid credentials', () => {
+  it('Muestra error para credenciales invalidas', () => {
     cy.visit(baseUrl);
     cy.contains('Inicia sessió').click(); 
     cy.url().should('include', '/login');
