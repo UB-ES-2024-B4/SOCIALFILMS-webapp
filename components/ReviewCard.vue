@@ -15,8 +15,12 @@ const props = defineProps({
     required: true,
   },
   film: {
-    type: Object as PropType<Film>,
+    type: Object as PropType<Film | undefined>,
     required: true,
+  },
+  showFilm: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -224,6 +228,8 @@ const submitReview = async () => {
     }
 }
 
+const showPotserFilm = ref(false)
+
 </script>
 
 <template>
@@ -236,24 +242,24 @@ const submitReview = async () => {
           <h2
             class="font-bold whitespace-nowrap text-2xl text-gray-800 dark:text-gray-100 leading-tight"
           >
-            {{ film.title }}
+            {{ film?.title }}
           </h2>
 
           <div class="flex items-center space-x-1.5 mt-3">
             <span
               :class="
-                film.adult
+                film?.adult
                   ? 'tag_dialog bg-red-500/20 border border-red-500 whitespace-nowrap text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400'
                   : 'tag_dialog bg-green-500/20 border border-green-500 whitespace-nowrap text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'
               "
             >
-              {{ film.adult ? "R" : "PG-13" }}
+              {{ film?.adult ? "R" : "PG-13" }}
             </span>
             <span
               class="tag_dialog border border-gray-400 whitespace-nowrap text-gray-800 dark:text-gray-200"
             >
               <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
-              {{ film.release_date }}
+              {{ film?.release_date }}
             </span>
             <span
               class="tag_dialog border border-gray-400 text-gray-800 dark:text-gray-200"
@@ -261,7 +267,7 @@ const submitReview = async () => {
               <i
                 class="pi pi-star-fill text-yellow-400 dark:text-yellow-400 mr-1.5 text-[0.8rem]"
               ></i>
-              {{ film.vote_average.toFixed(1) }}
+              {{ film?.vote_average.toFixed(1) }}
             </span>
           </div>
 
@@ -284,8 +290,8 @@ const submitReview = async () => {
           </div>
         </div>
         <img
-          :src="'https://image.tmdb.org/t/p/original' + film.poster_path"
-          :alt="`${film.title} poster`"
+          :src="'https://image.tmdb.org/t/p/original' + film?.poster_path"
+          :alt="`${film?.title} poster`"
           class="w-2/3 h-72 object-cover rounded-lg"
         />
       </div>
@@ -357,6 +363,14 @@ const submitReview = async () => {
           </div>
         </div>
         <Button
+          v-if="showFilm"
+          label="Película"
+          severity="secondary"
+          :icon="showPotserFilm ? 'pi pi-eye-slash' : 'pi pi-eye'"
+          rounded
+          @click="showPotserFilm = !showPotserFilm"
+        />
+        <Button
           type="button"
           severity="secondary"
           icon="pi pi-ellipsis-v"
@@ -371,56 +385,76 @@ const submitReview = async () => {
       </div>
 
     </div>
+    
+    <div class="flex gap-5 justify-between">
+      <div class="flex flex-col items-start relative">
+        <!-- Comment review -->
+        <p 
+          v-if="spoiler && isBlurred"
+          class="absolute top-0 left-0 w-full text-lg font-medium z-10 transition-all duration-500">
+          ⚠️ Esta review contiene spoilers!
+        </p>
 
-    <div class="flex flex-col items-start relative">
-      <p 
-        v-if="spoiler && isBlurred"
-        class="absolute top-0 left-0 w-full text-lg font-medium z-10 transition-all duration-500">
-        ⚠️ Esta review contiene spoilers!
-      </p>
+        <p :class="[ 'text-lg transition-all duration-500 relative', spoiler && isBlurred ? 'blur-md' : '' ]">
+          {{ review.comment }}
+        </p>
 
-      <p :class="[ 'text-lg transition-all duration-500 relative', spoiler && isBlurred ? 'blur-md' : '' ]">
-        {{ review.comment }}
-      </p>
-
-      <Button 
-          v-if="spoiler"
-          class="mt-3"
-          :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
-          @click="isBlurred = !isBlurred"
-          rounded
-          variant="outlined"
-          :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
-      />
-    </div>
-
-    <div class="flex gap-3 mt-2">
-      <span
-        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
-      >
-        <Button
-          severity="secondary"
-          :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
-          aria-label="Like"
-          rounded
-          :disabled="!user"
-          @click="handleReaction('like')"
+        <Button 
+            v-if="spoiler"
+            class="mt-3"
+            :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+            @click="isBlurred = !isBlurred"
+            rounded
+            variant="outlined"
+            :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
         />
-        {{ review.likes == 0 ? "" : review.likes }}
-      </span>
-      <span
-        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
-      >
-        <Button
-          severity="secondary"
-          :icon="dislike ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
-          aria-label="Dislike"
-          rounded
-          :disabled="!user"
-          @click="handleReaction('dislike')"
-        />
-        {{ review.dislikes == 0 ? "" : review.dislikes }}
-      </span>
+
+        <!-- Like and dislike buttons -->
+        <div class="flex gap-3 mt-2">
+          <span
+            class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
+          >
+            <Button
+              severity="secondary"
+              :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
+              aria-label="Like"
+              rounded
+              :disabled="!user"
+              @click="handleReaction('like')"
+            />
+            {{ review.likes == 0 ? "" : review.likes }}
+          </span>
+          <span
+            class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
+          >
+            <Button
+              severity="secondary"
+              :icon="dislike ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
+              aria-label="Dislike"
+              rounded
+              :disabled="!user"
+              @click="handleReaction('dislike')"
+            />
+            {{ review.dislikes == 0 ? "" : review.dislikes }}
+          </span>
+        </div>
+      </div>
+      <div
+        v-if="showFilm && showPotserFilm"
+        v-tooltip.left="film?.title"
+        class="bg-slate-100 dark:bg-zinc-700 p-1.5 rounded-xl -mt-2 cursor-pointer hover:shadow-xl hover:-translate-y-[0.15rem] transition-all duration-500"
+        @click="navigateTo(`/movies/${film?.id}`);">
+        <img
+          class="w-40 object-cover rounded-lg"
+          style="
+            box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04),
+              0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+          "
+          :src="'https://image.tmdb.org/t/p/original' + film?.poster_path"
+          :alt="`${film?.title} poster`"
+          >
+        </img>
+      </div>
     </div>
   </div>
 </template>

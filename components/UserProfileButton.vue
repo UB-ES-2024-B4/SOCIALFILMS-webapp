@@ -365,6 +365,7 @@ const handleSubmitProfileEdit = async () => {
                   :review="review"
                   :key="index"
                   :film="review.film"
+                  :showFilm="true"
                 >
                 </ReviewCard>
               </div>

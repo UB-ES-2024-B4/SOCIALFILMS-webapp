@@ -11,27 +11,45 @@ definePageMeta({
 
 const user = useSupabaseUser();
 const following = ref(false);
-const reviews = reactive<Review[]>([]);
+
+const reviewsWithMovies = ref<Review[]>([]);
+const isLoadingReviews = ref(false);
 
 try {
-  const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
+	isLoadingReviews.value = true;
+
+	const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
 		"get_reviews",
-		{ _user_id: user?.value.id }
+		{ _user_id: user.value?.id }
 	)) as { data: Review[]; error: any };
 
-  if (errorReviews) throw errorReviews;
+	if (errorReviews) throw errorReviews;
 
-  reviews.splice(
-    0,
-    reviews.length,
-    ...dataReviews.map((review) => ({
-      ...review,
-      created_at: new Date(review.created_at),
-    }))
-  );
+	const reviews =
+		dataReviews?.map((review) => ({
+			...review,
+			created_at: new Date(review.created_at),
+		})) || [];
 
-} catch (e) {
-  console.error(e);
+	const moviesPromises = reviews.map(async (review) => {
+		const { data: movieData, error: movieError } = await supabase.rpc(
+			"find_movie_by_id",
+			{ movie_id: review.movie_id }
+		);
+		if (movieError) throw movieError;
+
+		return {
+			...review,
+			film: movieData,
+		};
+	});
+
+	reviewsWithMovies.value = await Promise.all(moviesPromises);
+	console.log(reviewsWithMovies)
+} catch (error) {
+	console.error("Error loading reviews or movies:", error);
+} finally {
+	isLoadingReviews.value = false;
 }
 
 const { data, error } = (await supabase.rpc("get_trending_movies_of_week")) as {
@@ -120,16 +138,21 @@ const navigateToMovie = (id: number) => {
 		<div class="pt-[12rem] px-20">
 			<Divider/>
 			<div class="flex justify-between mt-7 w-full">
-				<div class="flex flex-col gap-8 w-[calc(100%-420px)]">
-					<div v-if="true" class="flex flex-col gap-2.5">
+				<div class="flex flex-col gap-8 w-[calc(100%-550px)]">
+					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Sobre mí</h2>
-						<p class="text-justify">
+						<p v-if="true" class="text-lg text-justify">
 							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas imperdiet est et mauris tristique, id cursus eros interdum. Nam et dolor erat. Proin nec dolor pharetra turpis tincidunt viverra. Duis sit amet diam condimentum, dapibus magna sit amet, pharetra dui. Aenean nec lacus lorem. Cras et egestas metus. Pellentesque fermentum elit at ante tempor, nec facilisis magna eleifend. Nunc eget tempus tortor, a viverra metus. Fusce varius vulputate tortor. Donec bibendum metus ac magna molestie, id rhoncus lorem malesuada. Duis maximus viverra nisl, at finibus quam accumsan non.
 						</p>
+						<p v-else class="text-gray-500 text-lg italic">
+							Este usuario aún no ha escrito nada sobre sí mismo.
+						</p>
 					</div>
-					<div class="flex flex-col gap-5">
+					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Películas favoritas</h2>
 						<Carousel
+							v-if="true"
+							class="mt-2.5"
 							:value="data.results"
 							:numVisible="2"
 							:numScroll="1"
@@ -146,19 +169,25 @@ const navigateToMovie = (id: number) => {
 								></FilmCard>
 							</template>
 						</Carousel>
+						<p v-else class="text-gray-500 text-lg italic">
+							Este usuario aún no tiene películas favoritas.
+						</p>
 					</div>
 				</div>
-				<div v-if="true" class="flex flex-col gap-3.5 w-[350px]">
-					<h2 class="font-bold text-2xl">{{ (reviews.length ? reviews.length : 0) + ' Reseñas' }}</h2>
-					<div v-if="reviews.length" class="space-y-4">
+				<div v-if="true" class="flex flex-col gap-2.5 w-[480px]">
+					<h2 class="font-bold text-2xl">{{ (reviewsWithMovies.length ? reviewsWithMovies.length : 0) + ' Reseñas' }}</h2>
+					<div v-if="reviewsWithMovies.length" class="space-y-4 mt-1">
             <ReviewCard
-              v-for="(review, index) in reviews"
-              :review="review"
-              :key="index"
-              :film="dataMovie"
-              @delete-review="deleteReview"
+							v-for="(review, index) in reviewsWithMovies"
+							:review="review"
+							:key="index"
+							:film="review.film"
+							:showFilm="true"
             ></ReviewCard>
           </div>
+					<p v-else class="text-gray-500 text-lg italic">
+						Este usuario aún no ha escrito ninguna reseña.
+					</p>
 				</div>
 			</div>
 		</div>
