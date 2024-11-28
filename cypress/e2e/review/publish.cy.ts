@@ -18,11 +18,11 @@ describe('Publish and delete review functionality', () => {
                 _user_id: userId,
                 _movie_id: movieId,
             },
-            failOnStatusCode: false, // Evita fallos si el endpoint devuelve un error
+            failOnStatusCode: false, 
         }).then((response) => {
-            expect(response.status).to.be.oneOf([200, 204]); // Permitir códigos de éxito esperados
+            expect(response.status).to.be.oneOf([200, 204]); 
 
-            const reviews = response.body || []; // Si body es null, usar un array vacío
+            const reviews = response.body || []; 
             if (reviews.length > 0) {
                 reviewId = reviews[0].id;
                 cy.request({
@@ -36,7 +36,7 @@ describe('Publish and delete review functionality', () => {
                         _review_id: reviewId,
                     },
                 }).then((deleteResponse) => {
-                    expect(deleteResponse.status).to.eq(204); // Confirmar borrado exitoso
+                    expect(deleteResponse.status).to.eq(204); 
                 });
             }
         });
@@ -123,16 +123,16 @@ describe('Publish and delete review functionality', () => {
         cy.get('.p-toast-detail') 
             .should('contain.text', 'Tu reseña se ha publicado con éxito.');
         cy.visit(`${baseUrl}movies/${movieId}`);
-        cy.contains('Marc') // Asegúrate de que la tarjeta contiene el nombre del usuario
-            .should('exist') // Verifica que el nombre aparece
+        cy.contains('Marc') 
+            .should('exist') 
             .parent()
             .parent()
             .parent()
-            .parent() // Navega al contenedor de la tarjeta de reseña
+            .parent() 
             .within(() => {
-                cy.contains(' ⚠️ Esta review contiene spoilers! ').should('exist'); // Verifica que el mensaje de spoilers esté visible
-                cy.contains('Mostrar').click(); // Clica en el botón Mostrar
-                cy.contains('Muy buena pelicula').should('be.visible'); // Verifica que el comentario es visible
+                cy.contains(' ⚠️ Esta review contiene spoilers! ').should('exist'); 
+                cy.contains('Mostrar').click(); 
+                cy.contains('Muy buena pelicula').should('be.visible');
             });
         
         cy.request({
