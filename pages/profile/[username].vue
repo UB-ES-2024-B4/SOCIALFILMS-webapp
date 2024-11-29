@@ -111,11 +111,11 @@ const navigateToMovie = (id: number) => {
 						<div class="flex items-center gap-8">
 							<div class="flex text-center items-center">
 								<div class="text-[1.3rem] font-bold mr-[5px]">1249</div>
-								<div class="text-xl text-gray-800 font-light">seguidores</div>
+								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">seguidores</div>
 							</div>
 							<div class="flex text-center items-center">
 								<div class="text-[1.4rem] font-bold mr-[5px]">586</div>
-								<div class="text-xl text-gray-800 font-light">siguiendo</div>
+								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">siguiendo</div>
 							</div>
 						</div>
 						<!-- Follow and Share Buttons -->
@@ -138,7 +138,7 @@ const navigateToMovie = (id: number) => {
 		<div class="pt-[12rem] px-20">
 			<Divider/>
 			<div class="flex justify-between mt-7 w-full">
-				<div class="flex flex-col gap-8 w-[calc(100%-550px)]">
+				<div class="flex flex-col gap-8 w-[calc(100%-520px)]">
 					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Sobre mí</h2>
 						<p v-if="true" class="text-lg text-justify">
@@ -174,7 +174,7 @@ const navigateToMovie = (id: number) => {
 						</p>
 					</div>
 				</div>
-				<div v-if="true" class="flex flex-col gap-2.5 w-[480px]">
+				<div v-if="true" class="flex flex-col gap-2.5 w-[450px]">
 					<h2 class="font-bold text-2xl">{{ (reviewsWithMovies.length ? reviewsWithMovies.length : 0) + ' Reseñas' }}</h2>
 					<div v-if="reviewsWithMovies.length" class="space-y-4 mt-1">
             <ReviewCard

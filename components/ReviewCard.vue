@@ -45,8 +45,13 @@ const authorItems = ref([
 
 const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag" }];
 
-const toggle = (event) => {
+const toggleMenu = (event) => {
   menu.value.toggle(event);
+};
+
+const popoverFilm = ref();
+const togglePopover = (event) => {
+  popoverFilm.value.toggle(event);
 };
 
 const emit = defineEmits<{
@@ -228,7 +233,7 @@ const submitReview = async () => {
     }
 }
 
-const showPotserFilm = ref(false)
+const showFilmPopover = ref(false)
 
 </script>
 
@@ -349,7 +354,7 @@ const showPotserFilm = ref(false)
           style="border-radius: 30px"
         >
           <div
-            class="bg-slate-50 dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2"
+            class="bg-white dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2"
             style="
               border-radius: 30px;
               box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04),
@@ -364,17 +369,45 @@ const showPotserFilm = ref(false)
         </div>
         <Button
           v-if="showFilm"
-          label="Película"
+          v-tooltip.right="'Info película'"
+          type="button"
           severity="secondary"
-          :icon="showPotserFilm ? 'pi pi-eye-slash' : 'pi pi-eye'"
           rounded
-          @click="showPotserFilm = !showPotserFilm"
-        />
+          @click="togglePopover"
+        >
+          <template #icon>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-1.5A1.125 1.125 0 0 1 18 18.375M20.625 4.5H3.375m17.25 0c.621 0 1.125.504 1.125 1.125M20.625 4.5h-1.5C18.504 4.5 18 5.004 18 5.625m3.75 0v1.5c0 .621-.504 1.125-1.125 1.125M3.375 4.5c-.621 0-1.125.504-1.125 1.125M3.375 4.5h1.5C5.496 4.5 6 5.004 6 5.625m-3.75 0v1.5c0 .621.504 1.125 1.125 1.125m0 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m1.5-3.75C5.496 8.25 6 7.746 6 7.125v-1.5M4.875 8.25C5.496 8.25 6 8.754 6 9.375v1.5m0-5.25v5.25m0-5.25C6 5.004 6.504 4.5 7.125 4.5h9.75c.621 0 1.125.504 1.125 1.125m1.125 2.625h1.5m-1.5 0A1.125 1.125 0 0 1 18 7.125v-1.5m1.125 2.625c-.621 0-1.125.504-1.125 1.125v1.5m2.625-2.625c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125M18 5.625v5.25M7.125 12h9.75m-9.75 0A1.125 1.125 0 0 1 6 10.875M7.125 12C6.504 12 6 12.504 6 13.125m0-2.25C6 11.496 5.496 12 4.875 12M18 10.875c0 .621-.504 1.125-1.125 1.125M18 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m-12 5.25v-5.25m0 5.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125m-12 0v-1.5c0-.621-.504-1.125-1.125-1.125M18 18.375v-5.25m0 5.25v-1.5c0-.621.504-1.125 1.125-1.125M18 13.125v1.5c0 .621.504 1.125 1.125 1.125M18 13.125c0-.621.504-1.125 1.125-1.125M6 13.125v1.5c0 .621-.504 1.125-1.125 1.125M6 13.125C6 12.504 5.496 12 4.875 12m-1.5 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M19.125 12h1.5m0 0c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h1.5m14.25 0h1.5" />
+            </svg>
+          </template>
+        </Button>
+        <Popover ref="popoverFilm">
+          <div class="rounded flex flex-col w-44 sm:w-56">
+            <img class="rounded mx-auto" :src="'https://image.tmdb.org/t/p/original' + film?.poster_path" :alt="`${film?.title} poster`" />
+            <div class="pt-4">
+              <div class="flex flex-row justify-between items-start gap-2 mb-4">
+                <div class="w-44 sm:w-2/3">
+                  <span class="font-medium text-slate-500 dark:text-slate-400 text-sm truncate block">{{ film?.genres?.map((genre) => genre.name).join(" • ") }}</span>
+                  <div class="text-lg font-semibold mt-1">{{ film?.title }}</div>
+                </div>
+                <div class="bg-slate-100 dark:bg-zinc-700 p-1" style="border-radius: 30px">
+                  <div class="bg-white dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2" style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                    <span class="text-slate-900 dark:text-slate-200 font-medium text-sm">{{ film?.vote_average }}</span>
+                    <i class="pi pi-star-fill text-yellow-500"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <Button icon="pi pi-arrow-up-right" label="Ver película" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
+              </div>
+            </div>
+          </div>
+        </Popover>
         <Button
           type="button"
           severity="secondary"
           icon="pi pi-ellipsis-v"
-          @click="toggle"
+          @click="toggleMenu"
           rounded
         />
         <Menu
@@ -386,75 +419,52 @@ const showPotserFilm = ref(false)
 
     </div>
     
-    <div class="flex gap-5 justify-between">
-      <div class="flex flex-col items-start relative">
-        <!-- Comment review -->
-        <p 
-          v-if="spoiler && isBlurred"
-          class="absolute top-0 left-0 w-full text-lg font-medium z-10 transition-all duration-500">
-          ⚠️ Esta review contiene spoilers!
-        </p>
-
-        <p :class="[ 'text-lg transition-all duration-500 relative', spoiler && isBlurred ? 'blur-md' : '' ]">
-          {{ review.comment }}
-        </p>
-
-        <Button 
-            v-if="spoiler"
-            class="mt-3"
-            :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
-            @click="isBlurred = !isBlurred"
-            rounded
-            variant="outlined"
-            :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
+    <div class="flex flex-col items-start relative">
+      <p 
+        v-if="spoiler && isBlurred"
+        class="absolute top-0 left-0 w-full text-lg font-medium z-10 transition-all duration-500">
+        ⚠️ Esta review contiene spoilers!
+      </p>
+      <p :class="[ 'text-lg transition-all duration-500 relative', spoiler && isBlurred ? 'blur-md' : '' ]">
+        {{ review.comment }}
+      </p>
+      <Button 
+          v-if="spoiler"
+          class="mt-3"
+          :icon="(!isBlurred && spoiler) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+          @click="isBlurred = !isBlurred"
+          rounded
+          variant="outlined"
+          :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
+      />
+    </div>
+    <div class="flex gap-3 mt-1">
+      <span
+        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
+      >
+        <Button
+          severity="secondary"
+          :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
+          aria-label="Like"
+          rounded
+          :disabled="!user"
+          @click="handleReaction('like')"
         />
-
-        <!-- Like and dislike buttons -->
-        <div class="flex gap-3 mt-2">
-          <span
-            class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
-          >
-            <Button
-              severity="secondary"
-              :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
-              aria-label="Like"
-              rounded
-              :disabled="!user"
-              @click="handleReaction('like')"
-            />
-            {{ review.likes == 0 ? "" : review.likes }}
-          </span>
-          <span
-            class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
-          >
-            <Button
-              severity="secondary"
-              :icon="dislike ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
-              aria-label="Dislike"
-              rounded
-              :disabled="!user"
-              @click="handleReaction('dislike')"
-            />
-            {{ review.dislikes == 0 ? "" : review.dislikes }}
-          </span>
-        </div>
-      </div>
-      <div
-        v-if="showFilm && showPotserFilm"
-        v-tooltip.left="film?.title"
-        class="bg-slate-100 dark:bg-zinc-700 p-1.5 rounded-xl -mt-2 cursor-pointer hover:shadow-xl hover:-translate-y-[0.15rem] transition-all duration-500"
-        @click="navigateTo(`/movies/${film?.id}`);">
-        <img
-          class="w-40 object-cover rounded-lg"
-          style="
-            box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04),
-              0px 1px 2px 0px rgba(0, 0, 0, 0.06);
-          "
-          :src="'https://image.tmdb.org/t/p/original' + film?.poster_path"
-          :alt="`${film?.title} poster`"
-          >
-        </img>
-      </div>
+        {{ review.likes == 0 ? "" : review.likes }}
+      </span>
+      <span
+        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
+      >
+        <Button
+          severity="secondary"
+          :icon="dislike ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
+          aria-label="Dislike"
+          rounded
+          :disabled="!user"
+          @click="handleReaction('dislike')"
+        />
+        {{ review.dislikes == 0 ? "" : review.dislikes }}
+      </span>
     </div>
   </div>
 </template>
