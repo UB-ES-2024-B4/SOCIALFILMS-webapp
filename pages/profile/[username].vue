@@ -1,16 +1,31 @@
 <script setup lang="ts">
-import type { Review, FilmsAPI } from "~/types";
+import type { Review, FilmsAPI, Profile } from "~/types";
 import ReviewCard from "~/components/ReviewCard.vue";
 
 const supabase = useSupabaseClient();
 const route = useRoute();
+const toast = useToast()
 
 definePageMeta({
   layout: "navbar",
 });
 
-const user = useSupabaseUser();
 const following = ref(false);
+const profile = ref<Profile>();
+
+try {
+	const { data: dataProfile, error: errorProfile } = (await supabase.rpc(
+		"get_profile_by_username",
+		{ _username: route.params.username }
+	)) as { data: Profile; error: any };
+
+	if (errorProfile) throw errorProfile;
+
+	profile.value = dataProfile;
+
+} catch (error) {
+	console.error("Error loading profile:", error);
+}
 
 const reviewsWithMovies = ref<Review[]>([]);
 const isLoadingReviews = ref(false);
@@ -20,7 +35,7 @@ try {
 
 	const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
 		"get_reviews",
-		{ _user_id: user.value?.id }
+		{ _user_id: profile?.value.id }
 	)) as { data: Review[]; error: any };
 
 	if (errorReviews) throw errorReviews;
@@ -89,6 +104,29 @@ const navigateToMovie = (id: number) => {
   navigateTo(`/movies/${id}`);
 };
 
+const shareProfile = () => {
+	const currentURL = window.location.href;
+	navigator.clipboard.writeText(currentURL)
+			.then(() => {
+					toast.add({
+							severity: "success",
+							summary: "Enlace copiado",
+							detail: "El enlace se ha copiado al portapapeles.",
+							life: 3000,
+					});
+					console.log("Enlace copiado al portapapeles");
+			})
+			.catch((err) => {
+					toast.add({
+							severity: "error",
+							summary: "Error al copiar",
+							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							life: 3000,
+					});
+					console.error("Error al copiar el enlace: ", err);
+			});
+};
+
 </script>
 
 <template>
@@ -110,11 +148,11 @@ const navigateToMovie = (id: number) => {
 						<!-- Followers & Followings -->
 						<div class="flex items-center gap-8">
 							<div class="flex text-center items-center">
-								<div class="text-[1.3rem] font-bold mr-[5px]">1249</div>
+								<div class="text-[1.3rem] font-bold mr-[5px]">{{ profile?.followers }}</div>
 								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">seguidores</div>
 							</div>
 							<div class="flex text-center items-center">
-								<div class="text-[1.4rem] font-bold mr-[5px]">586</div>
+								<div class="text-[1.4rem] font-bold mr-[5px]"> {{ profile?.following }}</div>
 								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">siguiendo</div>
 							</div>
 						</div>
@@ -124,13 +162,18 @@ const navigateToMovie = (id: number) => {
 								:label="following ? 'Seguiendo' : 'Seguir'" 
 								:icon="following ? 'pi pi-check' : 'pi pi-user-plus'" 
 								@click="following = !following" />
-							<Button label="Compartir perfil" variant="outlined" icon="pi pi-send" severity="contrast" />
+							<Button 
+								label="Compartir perfil"
+								variant="outlined"
+								icon="pi pi-send"
+								severity="contrast" 
+								@click="shareProfile" />
 						</div>
 					</div>
 				</div>
 				<div class="mt-5">
-					<h1 class="font-extrabold text-3xl">Arfi Maulana</h1>
-					<h3 class="text-gray-500 text-xl">{{ '@' + route.params.username }}</h3>
+					<h1 class="font-extrabold text-3xl">{{ profile?.real_name + ' ' + profile?.last_name }}</h1>
+					<h3 class="text-gray-500 text-xl">{{ '@' + profile?.username }}</h3>
 				</div>
 			</div>
     </div>
@@ -141,8 +184,8 @@ const navigateToMovie = (id: number) => {
 				<div class="flex flex-col gap-8 w-[calc(100%-520px)]">
 					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Sobre mí</h2>
-						<p v-if="true" class="text-lg text-justify">
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas imperdiet est et mauris tristique, id cursus eros interdum. Nam et dolor erat. Proin nec dolor pharetra turpis tincidunt viverra. Duis sit amet diam condimentum, dapibus magna sit amet, pharetra dui. Aenean nec lacus lorem. Cras et egestas metus. Pellentesque fermentum elit at ante tempor, nec facilisis magna eleifend. Nunc eget tempus tortor, a viverra metus. Fusce varius vulputate tortor. Donec bibendum metus ac magna molestie, id rhoncus lorem malesuada. Duis maximus viverra nisl, at finibus quam accumsan non.
+						<p v-if="profile?.bio" class="text-lg text-justify">
+							{{ profile?.bio }}
 						</p>
 						<p v-else class="text-gray-500 text-lg italic">
 							Este usuario aún no ha escrito nada sobre sí mismo.

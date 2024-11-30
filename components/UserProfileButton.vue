@@ -213,6 +213,29 @@ const handleSubmitProfileEdit = async () => {
   }
 };
 
+const shareProfile = () => {
+	const currentURL = window.location.href;
+	navigator.clipboard.writeText(currentURL)
+			.then(() => {
+					toast.add({
+							severity: "success",
+							summary: "Enlace copiado",
+							detail: "El enlace se ha copiado al portapapeles.",
+							life: 3000,
+					});
+					console.log("Enlace copiado al portapapeles");
+			})
+			.catch((err) => {
+					toast.add({
+							severity: "error",
+							summary: "Error al copiar",
+							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							life: 3000,
+					});
+					console.error("Error al copiar el enlace: ", err);
+			});
+};
+
 </script>
 
 <template>
@@ -282,7 +305,7 @@ const handleSubmitProfileEdit = async () => {
               </div>
 
               <div class="flex justify-center items-center gap-4 mt-6">
-                <Button label="Compartir perfil" variant="outlined" icon="pi pi-send" severity="contrast" />
+                <Button label="Compartir perfil" variant="outlined" icon="pi pi-send" severity="contrast" @click="shareProfile" />
                 <Button label="Ver perfil" variant="outlined" severity="contrast" @click="visibleDialogProfileSettings = false; navigateTo('/profile/'+user?.user_metadata.username);" />
               </div>
             </div>

@@ -233,8 +233,6 @@ const submitReview = async () => {
     }
 }
 
-const showFilmPopover = ref(false)
-
 </script>
 
 <template>
@@ -332,15 +330,16 @@ const showFilmPopover = ref(false)
     class="w-full flex flex-col p-6 gap-3 border-[1.5px] border-gray-400 rounded-xl shadow-sm hover:shadow-lg transition-all duration-500 hover:border-violet-400 bg-white/80 dark:bg-black/60 dark:border-gray-500/70"
   >
     <div class="flex items-center justify-between">
-      <div class="flex items-center">
+      <div class="flex items-center" >
         <Avatar
           :label="review.user ? review.user[0] : 'T'"
-          class="mr-2.5"
+          class="mr-2.5 cursor-pointer"
           size="large"
           shape="circle"
+          @click="navigateTo(`/profile/${review.user}`)"
         />
         <div class="inline-flex items-baseline sm:flex-col">
-          <h1 class="text-2xl font-bold">
+          <h1 class="text-2xl font-bold cursor-pointer" @click="navigateTo(`/profile/${review.user}`)">
             {{ review.user ? review.user : "User not found" }}
           </h1>
           <h2 class="ml-1.5 text-gray-500 dark:text-gray-400">
