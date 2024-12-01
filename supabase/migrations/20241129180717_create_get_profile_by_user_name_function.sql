@@ -13,9 +13,11 @@ BEGIN
       id,
       username,
       email,
-      usr_birth,
-      usr_description,
-      usr_gender
+      birth_date, 
+      country, 
+      bio, 
+      real_name, 
+      last_name
     FROM public.profiles
     WHERE username = _username
   ) p;

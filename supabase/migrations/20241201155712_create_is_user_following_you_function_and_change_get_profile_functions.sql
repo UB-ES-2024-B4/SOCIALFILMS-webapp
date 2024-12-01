@@ -43,9 +43,11 @@ BEGIN
       id,
       username,
       email,
-      usr_birth,
-      usr_description,
-      usr_gender,
+      birth_date, 
+      country, 
+      bio, 
+      real_name, 
+      last_name,
       CASE WHEN EXISTS (
         SELECT 1
         FROM public.followers
@@ -81,14 +83,18 @@ BEGIN
       id,
       username,
       email,
-      usr_birth,
-      usr_description,
-      usr_gender,
+      birth_date, 
+      country, 
+      bio, 
+      real_name, 
+      last_name,
+      (SELECT COUNT(*) FROM public.followers WHERE following_username = _username) AS followers,
+      (SELECT COUNT(*) FROM public.followers WHERE follower_username = _username) AS following,
       CASE WHEN EXISTS (
         SELECT 1
         FROM public.followers
-        WHERE following_username = _your_username 
-          AND follower_username = _username
+        WHERE following_username = _username 
+          AND follower_username = _your_username
       ) THEN true
       ELSE false
       END AS is_following
