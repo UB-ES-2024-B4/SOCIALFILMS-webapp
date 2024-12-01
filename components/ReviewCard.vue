@@ -7,6 +7,7 @@ import { timeAgo } from "~/utils/timeFunctions";
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const toast = useToast();
+const confirm = useConfirm();
 
 const props = defineProps({
   review: {
@@ -19,10 +20,12 @@ const props = defineProps({
   },
 });
 
-const like = ref(false);
+const review = reactive<Review>({ ...props.review });
 
 const openEditDialog = () => {
-  visible.value = true;
+  if (!visible.value) {
+    visible.value = true;
+  }
 };
 
 const menu = ref();
@@ -33,7 +36,7 @@ const authorItems = ref([
     command: openEditDialog,
     disabled: props.review.editable === false,
   },
-  { label: "Eliminar", icon: "pi pi-trash" },
+  { label: "Eliminar", icon: "pi pi-trash", command: () => { confirmPosition('bottomright')}},
 ]);
 
 const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag" }];
@@ -42,15 +45,151 @@ const toggle = (event) => {
   menu.value.toggle(event);
 };
 
+const emit = defineEmits<{
+  (event: 'delete-review', review_id: string): void;
+}>();
+
+const confirmPosition = async (position) => {
+  if (!confirmVisible.value) {
+    confirmVisible.value = true;
+  }
+  confirm.require({
+      group: 'positioned',
+      message: '¿Estás seguro de que deseas eliminar esta reseña?',
+      header: 'Eliminar reseña',
+      icon: 'pi pi-info-circle',
+      position: position,
+      rejectProps: {
+          label: 'Cancelar',
+          severity: 'secondary',
+          outlined: true
+      },
+      acceptProps: {
+          label: 'Eliminar',
+          severity: 'danger'
+      },
+      accept: async () => {
+        const { data: reviewData, error: reviewError } = await supabase.rpc('delete_review', {_review_id: props.review.id })
+        if (reviewError) {
+            toast.add({ severity: 'error', summary: 'Error al eliminar', detail: 'No se ha podido eliminar la reseña', life: 3000 })
+        } else {
+            toast.add({ severity: 'success', summary: 'Eliminación exitosa', detail: 'Tu reseña se ha eliminado correctamente.', life: 3000 });
+            emit('delete-review', props.review.id);
+            visible.value = false;
+        }
+        confirmVisible.value = false;
+      },
+      reject: () => {
+          confirmVisible.value = false;
+      }
+    });
+};
+
 const spoiler = ref(true)
 const isBlurred = ref(true)
 const checked = ref(false)
 const visible = ref(false)
+const confirmVisible = ref(false);
 const rating = ref(1)
 const comment = ref('')
 const numCharacters = computed(() => {
   return comment.value.length;
 });
+
+const like = ref();
+const dislike = ref();
+
+try {
+  const { data: reaction, error: errorReaction } = await supabase.rpc('get_user_reaction_review', { _review_id: props.review.id });
+  if (errorReaction) throw errorReaction; 
+  if (reaction === 'like') like.value = true
+  else if (reaction === 'dislike') dislike.value = true
+} catch (error) {
+  switch (error.code) {
+    case 'P0001':
+      like.value = false
+      dislike.value = false
+      break;
+  }
+}
+
+
+const handleRemoveReaction = async () => {
+  const { error } = await supabase.rpc('remove_reaction', { _review_id: props.review.id })
+  if (error) throw new Error("DELETE_REACTION_ERROR");
+}
+
+const handleAddReaction = async (reactionType: string) => {
+  const rpcFunction = reactionType === 'like' ? 'add_like' : 'add_dislike';
+  const { error } = await supabase.rpc(rpcFunction, { _review_id: props.review.id });
+  if (error) throw new Error(reactionType === 'like' ? "ADD_LIKE_ERROR" : "ADD_DISLIKE_ERROR");
+};
+
+const handleReaction = async (type: string) => {
+  try {
+    if (type === 'like') {
+      if (like.value){
+        await handleRemoveReaction();
+        review.likes -= 1;
+      }
+      else {
+        await handleAddReaction('like');
+ 
+        if (dislike.value) {
+          dislike.value = false;
+          review.dislikes -= 1;
+        }
+        review.likes += 1;
+      }
+      like.value = !like.value;
+    }
+    else {
+      if (dislike.value){
+        await handleRemoveReaction();
+        review.dislikes -= 1;
+      }
+      else {
+        await handleAddReaction('dislike');
+
+        if (like.value) {
+          like.value = false;
+          review.likes -= 1;
+        }
+        review.dislikes += 1;
+      }
+      dislike.value = !dislike.value;
+    } 
+  } catch (error) {
+    handleReactionError(error.message);
+  }
+};
+
+const handleReactionError = (errorCode: string) => {
+  const errorMessages = {
+    DELETE_REACTION_ERROR: {
+      severity: 'error',
+      summary: 'Error al eliminar la reacción',
+      detail: 'No se ha podido eliminar la reacción a la reseña',
+    },
+    ADD_LIKE_ERROR: {
+      severity: 'error',
+      summary: 'Error al añadir like',
+      detail: 'No se ha podido añadir like a la reseña',
+    },
+    ADD_DISLIKE_ERROR: {
+      severity: 'error',
+      summary: 'Error al añadir dislike',
+      detail: 'No se ha podido añadir dislike a la reseña',
+    },
+  };
+
+  const toastMessage = errorMessages[errorCode];
+  if (toastMessage) {
+    toast.add({ ...toastMessage, life: 3000 });
+  } else {
+    console.error("Error no identificado:", errorCode);
+  }
+};
 
 onMounted(() => {
     comment.value = props.review.comment ?? ''
@@ -79,6 +218,9 @@ const submitReview = async () => {
     } else {
         toast.add({ severity: 'success', summary: 'Actualización exitosa', detail: 'Tu reseña se ha actualizado correctamente.', life: 3000 });
         visible.value = false;
+        props.review.comment = comment.value ?? ''
+        props.review.rating = rating.value
+        spoiler.value = checked.value
     }
 }
 
@@ -86,6 +228,7 @@ const submitReview = async () => {
 
 <template>
   <Toast />
+  <ConfirmDialog group="positioned" v-model:visible="confirmVisible" />
   <Dialog v-model:visible="visible" modal header="Editar reseña">
     <div class="flex flex-col mt-4 space-y-4">
       <div class="flex space-x-8">
@@ -260,7 +403,8 @@ const submitReview = async () => {
           :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
           aria-label="Like"
           rounded
-          @click="like = true"
+          :disabled="!user"
+          @click="handleReaction('like')"
         />
         {{ review.likes == 0 ? "" : review.likes }}
       </span>
@@ -269,10 +413,11 @@ const submitReview = async () => {
       >
         <Button
           severity="secondary"
-          :icon="like ? 'pi pi-thumbs-down' : 'pi pi-thumbs-down-fill'"
+          :icon="dislike ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
           aria-label="Dislike"
           rounded
-          @click="like = false"
+          :disabled="!user"
+          @click="handleReaction('dislike')"
         />
         {{ review.dislikes == 0 ? "" : review.dislikes }}
       </span>

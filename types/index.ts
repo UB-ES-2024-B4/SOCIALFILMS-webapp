@@ -46,9 +46,10 @@ export interface FilmsAPI {
 }
 
 export interface Review {
-  id: number
+  id: string
   user_id: string
   user?: string
+  movie_id: string
   created_at: Date
   comment: string
   likes: number
@@ -57,6 +58,7 @@ export interface Review {
   rating: number
   editable: boolean
   spoilers: boolean
+  film?: Film
 }
 
 export interface CreditsAPI {
