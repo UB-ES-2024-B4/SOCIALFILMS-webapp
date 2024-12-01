@@ -44,6 +44,7 @@ const handleSignUp = async (activateCallback: (step: string) => void) => {
   Object.keys(credentialsStatus).forEach((key) => {
     credentialsStatus[key] = false;
   });
+  additionalInfoStatus.failedCreateProfile = false;
 
   try {
     signUpLoading.value = true;
@@ -295,7 +296,7 @@ const isNotFilled = computed(() => {
                 </transition>
               </div>
               <div class="flex pt-3 justify-end">
-                <Button label="Next" icon="pi pi-arrow-right" @click="activateCallback('2')" />
+                <Button label="Següent" icon="pi pi-arrow-right" @click="activateCallback('2')" />
               </div>
             </div>
           </StepPanel>
@@ -363,6 +364,7 @@ const isNotFilled = computed(() => {
                 <Button
                   label="Completar registre"
                   icon="pi pi-check"
+                  :loading="signUpLoading"
                   @click="handleSignUp(activateCallback)"
                 />
               </div>
