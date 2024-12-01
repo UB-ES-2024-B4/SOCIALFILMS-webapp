@@ -15,8 +15,12 @@ const props = defineProps({
     required: true,
   },
   film: {
-    type: Object as PropType<Film>,
+    type: Object as PropType<Film | undefined>,
     required: true,
+  },
+  showFilm: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -41,8 +45,13 @@ const authorItems = ref([
 
 const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag" }];
 
-const toggle = (event) => {
+const toggleMenu = (event) => {
   menu.value.toggle(event);
+};
+
+const popoverFilm = ref();
+const togglePopover = (event) => {
+  popoverFilm.value.toggle(event);
 };
 
 const emit = defineEmits<{
@@ -236,24 +245,24 @@ const submitReview = async () => {
           <h2
             class="font-bold whitespace-nowrap text-2xl text-gray-800 dark:text-gray-100 leading-tight"
           >
-            {{ film.title }}
+            {{ film?.title }}
           </h2>
 
           <div class="flex items-center space-x-1.5 mt-3">
             <span
               :class="
-                film.adult
+                film?.adult
                   ? 'tag_dialog bg-red-500/20 border border-red-500 whitespace-nowrap text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400'
                   : 'tag_dialog bg-green-500/20 border border-green-500 whitespace-nowrap text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'
               "
             >
-              {{ film.adult ? "R" : "PG-13" }}
+              {{ film?.adult ? "R" : "PG-13" }}
             </span>
             <span
               class="tag_dialog border border-gray-400 whitespace-nowrap text-gray-800 dark:text-gray-200"
             >
               <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
-              {{ film.release_date }}
+              {{ film?.release_date }}
             </span>
             <span
               class="tag_dialog border border-gray-400 text-gray-800 dark:text-gray-200"
@@ -261,7 +270,7 @@ const submitReview = async () => {
               <i
                 class="pi pi-star-fill text-yellow-400 dark:text-yellow-400 mr-1.5 text-[0.8rem]"
               ></i>
-              {{ film.vote_average.toFixed(1) }}
+              {{ film?.vote_average.toFixed(1) }}
             </span>
           </div>
 
@@ -284,8 +293,8 @@ const submitReview = async () => {
           </div>
         </div>
         <img
-          :src="'https://image.tmdb.org/t/p/original' + film.poster_path"
-          :alt="`${film.title} poster`"
+          :src="'https://image.tmdb.org/t/p/original' + film?.poster_path"
+          :alt="`${film?.title} poster`"
           class="w-2/3 h-72 object-cover rounded-lg"
         />
       </div>
@@ -321,15 +330,16 @@ const submitReview = async () => {
     class="w-full flex flex-col p-6 gap-3 border-[1.5px] border-gray-400 rounded-xl shadow-sm hover:shadow-lg transition-all duration-500 hover:border-violet-400 bg-white/80 dark:bg-black/60 dark:border-gray-500/70"
   >
     <div class="flex items-center justify-between">
-      <div class="flex items-center">
+      <div class="flex items-center" >
         <Avatar
           :label="review.user ? review.user[0] : 'T'"
-          class="mr-2.5"
+          class="mr-2.5 cursor-pointer"
           size="large"
           shape="circle"
+          @click="navigateTo(`/profile/${review.user}`)"
         />
         <div class="inline-flex items-baseline sm:flex-col">
-          <h1 class="text-2xl font-bold">
+          <h1 class="text-2xl font-bold cursor-pointer" @click="navigateTo(`/profile/${review.user}`)">
             {{ review.user ? review.user : "User not found" }}
           </h1>
           <h2 class="ml-1.5 text-gray-500 dark:text-gray-400">
@@ -343,7 +353,7 @@ const submitReview = async () => {
           style="border-radius: 30px"
         >
           <div
-            class="bg-slate-50 dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2"
+            class="bg-white dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2"
             style="
               border-radius: 30px;
               box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04),
@@ -357,10 +367,46 @@ const submitReview = async () => {
           </div>
         </div>
         <Button
+          v-if="showFilm"
+          v-tooltip.right="'Info película'"
+          type="button"
+          severity="secondary"
+          rounded
+          @click="togglePopover"
+        >
+          <template #icon>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-1.5A1.125 1.125 0 0 1 18 18.375M20.625 4.5H3.375m17.25 0c.621 0 1.125.504 1.125 1.125M20.625 4.5h-1.5C18.504 4.5 18 5.004 18 5.625m3.75 0v1.5c0 .621-.504 1.125-1.125 1.125M3.375 4.5c-.621 0-1.125.504-1.125 1.125M3.375 4.5h1.5C5.496 4.5 6 5.004 6 5.625m-3.75 0v1.5c0 .621.504 1.125 1.125 1.125m0 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m1.5-3.75C5.496 8.25 6 7.746 6 7.125v-1.5M4.875 8.25C5.496 8.25 6 8.754 6 9.375v1.5m0-5.25v5.25m0-5.25C6 5.004 6.504 4.5 7.125 4.5h9.75c.621 0 1.125.504 1.125 1.125m1.125 2.625h1.5m-1.5 0A1.125 1.125 0 0 1 18 7.125v-1.5m1.125 2.625c-.621 0-1.125.504-1.125 1.125v1.5m2.625-2.625c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125M18 5.625v5.25M7.125 12h9.75m-9.75 0A1.125 1.125 0 0 1 6 10.875M7.125 12C6.504 12 6 12.504 6 13.125m0-2.25C6 11.496 5.496 12 4.875 12M18 10.875c0 .621-.504 1.125-1.125 1.125M18 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m-12 5.25v-5.25m0 5.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125m-12 0v-1.5c0-.621-.504-1.125-1.125-1.125M18 18.375v-5.25m0 5.25v-1.5c0-.621.504-1.125 1.125-1.125M18 13.125v1.5c0 .621.504 1.125 1.125 1.125M18 13.125c0-.621.504-1.125 1.125-1.125M6 13.125v1.5c0 .621-.504 1.125-1.125 1.125M6 13.125C6 12.504 5.496 12 4.875 12m-1.5 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M19.125 12h1.5m0 0c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h1.5m14.25 0h1.5" />
+            </svg>
+          </template>
+        </Button>
+        <Popover ref="popoverFilm">
+          <div class="rounded flex flex-col w-44 sm:w-56">
+            <img class="rounded mx-auto" :src="'https://image.tmdb.org/t/p/original' + film?.poster_path" :alt="`${film?.title} poster`" />
+            <div class="pt-4">
+              <div class="flex flex-row justify-between items-start gap-2 mb-4">
+                <div class="w-44 sm:w-2/3">
+                  <span class="font-medium text-slate-500 dark:text-slate-400 text-sm truncate block">{{ film?.genres?.map((genre) => genre.name).join(" • ") }}</span>
+                  <div class="text-lg font-semibold mt-1">{{ film?.title }}</div>
+                </div>
+                <div class="bg-slate-100 dark:bg-zinc-700 p-1" style="border-radius: 30px">
+                  <div class="bg-white dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2" style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                    <span class="text-slate-900 dark:text-slate-200 font-medium text-sm">{{ film?.vote_average }}</span>
+                    <i class="pi pi-star-fill text-yellow-500"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <Button icon="pi pi-arrow-up-right" label="Ver película" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
+              </div>
+            </div>
+          </div>
+        </Popover>
+        <Button
           type="button"
           severity="secondary"
           icon="pi pi-ellipsis-v"
-          @click="toggle"
+          @click="toggleMenu"
           rounded
         />
         <Menu
@@ -371,18 +417,16 @@ const submitReview = async () => {
       </div>
 
     </div>
-
+    
     <div class="flex flex-col items-start relative">
       <p 
         v-if="spoiler && isBlurred"
         class="absolute top-0 left-0 w-full text-lg font-medium z-10 transition-all duration-500">
         ⚠️ Esta review contiene spoilers!
       </p>
-
       <p :class="[ 'text-lg transition-all duration-500 relative', spoiler && isBlurred ? 'blur-md' : '' ]">
         {{ review.comment }}
       </p>
-
       <Button 
           v-if="spoiler"
           class="mt-3"
@@ -393,8 +437,7 @@ const submitReview = async () => {
           :label="(!isBlurred && spoiler) ? 'Ocultar' : 'Mostrar'"
       />
     </div>
-
-    <div class="flex gap-3 mt-2">
+    <div class="flex gap-3 mt-1">
       <span
         class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
       >

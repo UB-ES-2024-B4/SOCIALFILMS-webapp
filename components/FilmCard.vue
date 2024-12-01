@@ -56,7 +56,7 @@ const liked = ref(false);
     <div class="px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
       <h2 class="font-bold text-xl truncate">{{ film.title }}</h2>
       <h3 class="text-sm text-gray-300 mt-[2px] truncate">
-        {{ film.genre_ids.map((id) => genres[id]).join(" • ") }}
+        {{ film?.genre_ids?.map((id) => genres[id]).join(" • ") }}
       </h3>
       <div class="flex items-center space-x-1.5 mt-3">
         <span
