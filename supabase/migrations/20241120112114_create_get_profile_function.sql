@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION public.get_profile(_user_id uuid)
 AS $function$
   SELECT json_agg(row_to_json(r))
   FROM (
-    SELECT username, age, country, bio, real_name, last_name
+    SELECT username, birth_date, country, bio, real_name, last_name
     FROM public."profiles"
     WHERE id = _user_id
   ) r;

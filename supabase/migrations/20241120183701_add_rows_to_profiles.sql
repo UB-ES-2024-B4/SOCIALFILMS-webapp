@@ -16,18 +16,18 @@ create type "public"."countries_enum" as enum ('Afghanistan', 'Albania', 'Algeri
 
 --Añadidos age, bio y country a la tabla profiles y actualizados sus metodos CRUD
 
-alter table "public"."profiles" add column "age" smallint;
+alter table "public"."profiles" add column "birth_date" DATE NOT NULL;
 
 alter table "public"."profiles" add column "bio" text;
 
-alter table "public"."profiles" add column "country" countries_enum;
+alter table "public"."profiles" add column "country" countries_enum NOT NULL;
 
-alter table "public"."profiles" add column "real_name" text;
+alter table "public"."profiles" add column "real_name" text NOT NULL;
 
-alter table "public"."profiles" add column "last_name" text;
+alter table "public"."profiles" add column "last_name" text NOT NULL;
 
 --En profile solo se pueden modificar el username, la bio, edad, pais y nombre real.
-CREATE OR REPLACE FUNCTION public.update_profile(_username text, _bio text, _age integer, _country countries_enum, _real_name text, _last_name text) 
+CREATE OR REPLACE FUNCTION public.update_profile(_username text, _bio text, _birth_date DATE, _country countries_enum, _real_name text, _last_name text) 
  RETURNS text
  LANGUAGE plpgsql
 AS $function$
@@ -48,7 +48,7 @@ BEGIN
     SET
       username = _username,
       bio = _bio,
-      age = _age,
+      birth_date = _birth_date,
       country = _country,
       real_name = _real_name,
       last_name = _last_name
@@ -56,7 +56,8 @@ BEGIN
 
     RETURN 'Profile updated successfully.';
   ELSE
-    RETURN 'Profile does not exist';
+    RAISE EXCEPTION 'Profile does not exist'
+    USING ERRCODE = 'PR0001';
   END IF;
 END;
 $function$
