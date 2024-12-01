@@ -16,15 +16,15 @@ create type "public"."countries_enum" as enum ('Afghanistan', 'Albania', 'Algeri
 
 --Añadidos age, bio y country a la tabla profiles y actualizados sus metodos CRUD
 
-alter table "public"."profiles" add column "birth_date" DATE NOT NULL;
+alter table "public"."profiles" add column "birth_date" DATE;
 
 alter table "public"."profiles" add column "bio" text;
 
-alter table "public"."profiles" add column "country" countries_enum NOT NULL;
+alter table "public"."profiles" add column "country" countries_enum;
 
-alter table "public"."profiles" add column "real_name" text NOT NULL;
+alter table "public"."profiles" add column "real_name" text;
 
-alter table "public"."profiles" add column "last_name" text NOT NULL;
+alter table "public"."profiles" add column "last_name" text;
 
 --En profile solo se pueden modificar el username, la bio, edad, pais y nombre real.
 CREATE OR REPLACE FUNCTION public.update_profile(_username text, _bio text, _birth_date DATE, _country countries_enum, _real_name text, _last_name text) 
