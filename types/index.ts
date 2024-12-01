@@ -107,14 +107,14 @@ export interface Profile {
   id?: string
   email?: string
   username: string
-  followers: number
-  following: number
+  followers?: number
+  following?: number
   age: string
   country: string
   bio: string
   real_name: string
   last_name: string
-  is_user_following: boolean
+  is_following?: boolean
 }
 
 export const countries = [

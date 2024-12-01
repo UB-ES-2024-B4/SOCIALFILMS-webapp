@@ -10,7 +10,6 @@ definePageMeta({
   layout: "navbar",
 });
 
-const following = ref(false);
 const profile = ref<Profile>();
 
 try {
@@ -22,6 +21,7 @@ try {
 	if (errorProfile) throw errorProfile;
 
 	profile.value = dataProfile;
+	console.log(dataProfile)
 
 } catch (error) {
 	console.error("Error loading profile:", error);
@@ -127,6 +127,62 @@ const shareProfile = () => {
 			});
 };
 
+const handleFollow = async () => {
+	try {
+		if (profile.value?.is_following) {
+			const { error } = (await supabase.rpc(
+				"unfollow_user",
+				{ _following_username: route.params.username }
+			))
+			if (error) throw error;
+		}
+		else {
+			const { error } = (await supabase.rpc(
+				"follow_user",
+				{ _following_username: route.params.username }
+			))
+			if (error) throw error;
+		}
+
+		if (profile.value?.is_following) {
+			profile.value.followers--;
+			profile.value.is_following = false;
+		} else {
+			profile.value.followers++;
+			profile.value.is_following = true;
+		}
+	} catch (error) {
+		console.error(error);
+		let summary = "Oops, algo salió mal";
+    let detail = "Hubo un problema al realizar seguir al usuario.";
+
+		switch (error.code) {
+			case 'F0001':
+				summary = "Ya estás siguiendo a este usuario";
+				detail = "Parece que ya sigues al usuario.";
+				break;
+			case 'F0002':
+				summary = "Usuario no encontrado";
+				detail = "No se encontró el usuario que intentas seguir.";
+				break;
+			case 'F0003':
+				summary = "No puedes seguirte a ti mismo";
+				detail = "Esta acción no está permitida.";
+				break;
+			case 'F0004':
+				summary = "No estás siguiendo a este usuario";
+				detail = "Parece que no sigues al usuario.";
+				break;
+		}
+		toast.add({
+			severity: "error",
+			summary,
+			detail,
+			life: 3000,
+		});
+	}
+}
+
 </script>
 
 <template>
@@ -159,9 +215,9 @@ const shareProfile = () => {
 						<!-- Follow and Share Buttons -->
 						<div class="flex justify-center items-center gap-4">
 							<Button 
-								:label="following ? 'Seguiendo' : 'Seguir'" 
-								:icon="following ? 'pi pi-check' : 'pi pi-user-plus'" 
-								@click="following = !following" />
+								:label="profile?.is_following ? 'Seguiendo' : 'Seguir'" 
+								:icon="profile?.is_following ? 'pi pi-check' : 'pi pi-user-plus'" 
+								@click="handleFollow" />
 							<Button 
 								label="Compartir perfil"
 								variant="outlined"
