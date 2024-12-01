@@ -21,7 +21,6 @@ try {
 	if (errorProfile) throw errorProfile;
 
 	profile.value = dataProfile;
-	console.log(dataProfile)
 
 } catch (error) {
 	console.error("Error loading profile:", error);

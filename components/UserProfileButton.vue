@@ -2,7 +2,7 @@
 import "primeicons/primeicons.css";
 import { useToast } from "primevue/usetoast";
 import ReviewCard from "~/components/ReviewCard.vue";
-import type { Review } from "~/types";
+import type { Review, Profile } from "~/types";
 
 const toast = useToast();
 const supabase = useSupabaseClient();
@@ -16,6 +16,23 @@ const invalidNewPassword = ref(false)
 
 const visibleDialogProfileSettings = ref(false);
 const photoUploaded = ref('https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png');
+
+const profile = ref<Profile>();
+
+try {
+	const { data: dataProfile, error: errorProfile } = (await supabase.rpc(
+		"get_profile_by_id",
+		{ _user_id: user.value?.id }
+	)) as { data: Profile; error: any };
+
+	if (errorProfile) throw errorProfile;
+
+	profile.value = dataProfile;
+  console.log(dataProfile)
+
+} catch (error) {
+	console.error("Error loading profile:", error);
+}
 
 const onUploadPhoto = (event) => {
     const file = event.files[0];
@@ -248,7 +265,7 @@ const shareProfile = () => {
       class="w-10 h-10 rounded-full object-cover"
     />
     <div class="text-left">
-      <p class="text-white text-sm font-semibold">Arfi Maulana</p>
+      <p class="text-white text-sm font-semibold">{{ profile?.real_name + ' ' + profile?.last_name }}</p>
       <p class="text-gray-300 text-xs">{{ '@' + user?.user_metadata.username }}</p>
     </div>
     <Button
