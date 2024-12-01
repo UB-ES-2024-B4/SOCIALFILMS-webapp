@@ -36,3 +36,17 @@ REFERENCES auth.users (id) ON DELETE CASCADE;
 ALTER TABLE public."Report"
 ADD CONSTRAINT report_review_id_fkey FOREIGN KEY (review_id)
 REFERENCES public."Reviews" (id) ON DELETE CASCADE;
+
+CREATE POLICY insert_report_for_authenticated_users
+    ON public."Report"
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+         NOT EXISTS (
+            SELECT 1
+            FROM public."Report"
+            WHERE review_id = "Report".review_id
+            AND user_id = "Report".user_id
+            AND user_id = auth.uid()
+        )
+);

@@ -15,6 +15,16 @@ BEGIN
     -- Insertar el reporte
     INSERT INTO public."Report" (user_id, review_id, reason, other_reason)
     VALUES (auth.uid(), _review_id, _reason, _other_reason);
+
+    PERFORM pg_notify(
+        'new_report', -- Nombre del canal
+        json_build_object(
+            'user_id', auth.uid(),
+            'review_id', _review_id,
+            'reason', _reason,
+            'other_reason', _other_reason
+        )::text -- Mensaje en formato JSON convertido a texto
+    );
 END;
 $$;
 
@@ -47,3 +57,4 @@ AS $$
     FROM public."Report"
     WHERE review_id = _review_id;
 $$;
+
