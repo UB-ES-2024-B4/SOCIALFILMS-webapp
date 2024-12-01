@@ -120,7 +120,12 @@ const isNotFilled = computed(() => {
     !credentials.email ||
     !credentials.password ||
     !credentials.passwordToConfirm ||
-    isDifferentPassword.value
+    isDifferentPassword.value ||
+    !additionalInfo.name ||
+    !additionalInfo.surname ||
+    !additionalInfo.birthDate ||
+    !additionalInfo.country ||
+    !additionalInfo.bio
   );
 });
 </script>
@@ -365,6 +370,7 @@ const isNotFilled = computed(() => {
                   label="Completar registre"
                   icon="pi pi-check"
                   :loading="signUpLoading"
+                  :disabled="isNotFilled"
                   @click="handleSignUp(activateCallback)"
                 />
               </div>
