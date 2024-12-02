@@ -60,18 +60,18 @@ const handleSignUp = async (activateCallback: (step: string) => void) => {
     });
     if (error) throw error;
 
-    const { error: errorProfile } = (await supabase.rpc("update_profile", {
+    const { error: errorProfile } = await supabase.rpc("update_profile", {
       _username: credentials.username,
       _bio: additionalInfo.bio,
       _birth_date: additionalInfo.birthDate,
       _country: additionalInfo.country,
       _real_name: additionalInfo.name,
       _last_name: additionalInfo.surname,
-    }))
+    });
 
-    if (errorProfile) throw new Error("Profile create error: ", errorProfile.message);
+    if (errorProfile)
+      throw new Error("Profile create error: ", errorProfile.message);
     modalInfo.value = true;
-
   } catch (error) {
     console.log(error);
     console.log(error.code);
@@ -91,12 +91,11 @@ const handleSignUp = async (activateCallback: (step: string) => void) => {
         credentialsStatus.passwordWeak = true;
         activateCallback("1");
         break;
-      
+
       default:
-        if (error.message.includes('Profile create')) {
+        if (error.message.includes("Profile create")) {
           additionalInfoStatus.failedCreateProfile = true;
-        }
-        else {
+        } else {
           credentialsStatus.failedAuth = true;
           activateCallback("1");
         }
@@ -211,7 +210,8 @@ const isNotFilled = computed(() => {
                       id="on_label_email"
                       v-model="credentials.email"
                       :invalid="
-                        credentialsStatus.failedAuth || credentialsStatus.emailExists
+                        credentialsStatus.failedAuth ||
+                        credentialsStatus.emailExists
                       "
                     />
                     <label for="on_label_email">Correu electrònic</label>
@@ -281,7 +281,9 @@ const isNotFilled = computed(() => {
                     <Password
                       id="on_label_confirm_password"
                       v-model="credentials.password"
-                      :invalid="isDifferentPassword || credentialsStatus.failedAuth"
+                      :invalid="
+                        isDifferentPassword || credentialsStatus.failedAuth
+                      "
                       :feedback="false"
                       toggleMask
                     />
@@ -296,12 +298,16 @@ const isNotFilled = computed(() => {
                     v-if="isDifferentPassword"
                     severity="error"
                     icon="pi pi-times-circle"
-                    >Les contrasenyes no coinxideixen</Message
+                    >Les contrasenyes no coincideixen</Message
                   >
                 </transition>
               </div>
               <div class="flex pt-3 justify-end">
-                <Button label="Següent" icon="pi pi-arrow-right" @click="activateCallback('2')" />
+                <Button
+                  label="Següent"
+                  icon="pi pi-arrow-right"
+                  @click="activateCallback('2')"
+                />
               </div>
             </div>
           </StepPanel>
@@ -315,7 +321,7 @@ const isNotFilled = computed(() => {
                     v-model="additionalInfo.name"
                     :invalid="additionalInfoStatus.failedCreateProfile"
                     fluid
-                    />
+                  />
                   <label for="on_label_name">Nom</label>
                 </FloatLabel>
                 <FloatLabel variant="on">
@@ -330,21 +336,23 @@ const isNotFilled = computed(() => {
               </div>
               <div class="flex gap-3">
                 <FloatLabel variant="on">
-                  <DatePicker 
-                    class="flex-1" 
+                  <DatePicker
+                    class="flex-1"
                     v-model="additionalInfo.birthDate"
                     dateFormat="dd/mm/yy"
-                    :invalid="additionalInfoStatus.failedCreateProfile" />
+                    :invalid="additionalInfoStatus.failedCreateProfile"
+                  />
                   <label for="on_label_age">Data de naixement</label>
                 </FloatLabel>
                 <FloatLabel variant="on">
-                  <Select 
+                  <Select
                     class="w-[11.8rem]"
-                    v-model="additionalInfo.country" 
+                    v-model="additionalInfo.country"
                     :invalid="additionalInfoStatus.failedCreateProfile"
-                    :options="countries" 
-                    optionLabel="name" 
-                    optionValue="name" />
+                    :options="countries"
+                    optionLabel="name"
+                    optionValue="name"
+                  />
                   <label for="on_label_country">País</label>
                 </FloatLabel>
               </div>
@@ -379,7 +387,7 @@ const isNotFilled = computed(() => {
           </StepPanel>
         </StepPanels>
       </Stepper>
-        
+
       <div class="flex flex-col">
         <span
           class="inline-flex items-center justify-center text-gray-500 dark:text-gray-300"
