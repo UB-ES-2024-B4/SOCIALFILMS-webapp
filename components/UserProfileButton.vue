@@ -484,6 +484,7 @@ const isNotFilledProfile = computed(() => {
                   <h2 class="font-semibold">Fecha de nacimiento</h2>
                   <DatePicker 
                     v-model="profileUpdated.birth_date" 
+                    dateFormat="dd/mm/yy"
                     class="w-[27rem]" />
                 </div>
                 <Divider />
