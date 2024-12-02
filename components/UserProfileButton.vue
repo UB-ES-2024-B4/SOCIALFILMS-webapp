@@ -3,6 +3,7 @@ import "primeicons/primeicons.css";
 import { useToast } from "primevue/usetoast";
 import ReviewCard from "~/components/ReviewCard.vue";
 import type { Review, Profile } from "~/types";
+import { countries } from "~/types";
 
 const toast = useToast();
 const supabase = useSupabaseClient();
@@ -18,6 +19,7 @@ const visibleDialogProfileSettings = ref(false);
 const photoUploaded = ref('https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png');
 
 const profile = ref<Profile>();
+const profileUpdated = ref<Profile>();
 
 try {
 	const { data: dataProfile, error: errorProfile } = (await supabase.rpc(
@@ -28,8 +30,8 @@ try {
 	if (errorProfile) throw errorProfile;
 
 	profile.value = dataProfile;
-  console.log(dataProfile)
-
+  profile.value.birth_date = new Date(profile.value.birth_date);
+  profileUpdated.value = { ...profile.value };
 } catch (error) {
 	console.error("Error loading profile:", error);
 }
@@ -87,8 +89,13 @@ const items = ref([
   },
 ]);
 
-const activeTab = ref('profile');
+const activeTab = ref('account');
 const menuItemsDialogProfileSettings = ref([
+  {
+    label: "Cuenta",
+    icon: "pi pi-cog",
+    value: "account",
+  },
   {
     label: "Perfil",
     icon: "pi pi-user-edit",
@@ -148,10 +155,12 @@ const loadReviewsAndMovies = async () => {
   }
 };
 
-const handleSubmitProfileEdit = async () => {
+const handleSubmitAccountUpdated = async () => {
   try {
-    if (username.value !== user.value?.user_metadata.username || email.value !== user.value?.email){
-      const { data, error } = await supabase.auth.updateUser({
+    let usernameChanged = username.value !== user.value?.user_metadata.username;
+    console.log(username.value, user.value?.user_metadata.username, usernameChanged)
+    if (usernameChanged || email.value !== user.value?.email){
+      const { error } = await supabase.auth.updateUser({
         email: email.value,
         data: { username: username.value },
       });
@@ -159,19 +168,29 @@ const handleSubmitProfileEdit = async () => {
       if (error) {
         toast.add({
           severity: "error",
-          summary: "Error al actualizar perfil",
-          detail: `No se pudo actualizar tu perfil: ${error.message}`,
+          summary: "Error al actualizar cuenta",
+          detail: `No se pudo actualizar tu cuenta: ${error.message}`,
           life: 5000,
         });
         throw new Error(`Error updating user: ${error.message}`);
       }
 
-      toast.add({
-        severity: "success",
-        summary: "Perfil actualizado",
-        detail: "Se ha actualizado tu perfil con éxito",
-        life: 3000,
-      });
+      if (email.value !== user.value?.email) {
+        toast.add({
+          severity: "warn",
+          summary: "Cambio de email pendiente",
+          detail: "Hemos enviado un enlace de confirmación a tu nuevo email. Por favor, revisa tu bandeja de entrada y sigue las instrucciones para completar el cambio.",
+          life: 20000,
+        });
+      }
+      if (usernameChanged){
+        toast.add({
+          severity: "success",
+          summary: "Nombre de usuario actualizado",
+          detail: "Se ha actualizado tu nombre de usuario con éxito",
+          life: 3000,
+        });
+      }
     }
 
     if (current_password.value && new_password.value) {
@@ -218,7 +237,7 @@ const handleSubmitProfileEdit = async () => {
       });
     }
     
-    visibleDialogProfileSettings.value = false
+    visibleDialogProfileSettings.value = false;
 
   } catch (error) {
     if (error.message.includes('updating user')) {
@@ -227,6 +246,42 @@ const handleSubmitProfileEdit = async () => {
     } else if (error.message.includes('updating password')) {
       console.error('Error in updatePassword RPC:', error.message);
     }
+  }
+};
+
+const handleSubmitProfileUpdated = async () => {
+  try {
+    if (JSON.stringify(profile.value) !== JSON.stringify(profileUpdated.value)) {
+      const { error } = (await supabase.rpc("update_profile", {
+        _username: user.value?.user_metadata.username,
+        _bio: profileUpdated.value?.bio,
+        _birth_date: profileUpdated.value?.birth_date,
+        _country: profileUpdated.value?.country,
+        _real_name: profileUpdated.value?.real_name,
+        _last_name: profileUpdated.value?.last_name,
+      }))
+
+      if (error) {
+        toast.add({
+          severity: "error",
+          summary: "Error al actualizar perfil",
+          detail: `No se pudo actualizar tu perfil: ${error.message}`,
+          life: 5000,
+        });
+        throw new Error(`Error updating profile: ${error.message}`);
+      }
+
+      toast.add({
+        severity: "success",
+        summary: "Perfil actualizado",
+        detail: "Se ha actualizado tu perfil con éxito",
+        life: 3000,
+      });
+      profile.value = { ...profileUpdated.value };
+    }
+    visibleDialogProfileSettings.value = false;
+  } catch (error) {
+    console.error(error.message);
   }
 };
 
@@ -252,6 +307,23 @@ const shareProfile = () => {
 					console.error("Error al copiar el enlace: ", err);
 			});
 };
+
+const isNotFilledAccount = computed(() => {
+  return (
+    !username.value ||
+    !email.value
+  );
+});
+
+const isNotFilledProfile = computed(() => {
+  return (
+    !profileUpdated.value?.real_name ||
+    !profileUpdated.value.last_name ||
+    !profileUpdated.value.birth_date ||
+    !profileUpdated.value.country ||
+    !profileUpdated.value.bio
+  );
+});
 
 </script>
 
@@ -327,8 +399,8 @@ const shareProfile = () => {
               </div>
             </div>
             
-            <!-- Profile -->
-            <form v-if="activeTab === 'profile'" @submit.prevent="handleSubmitProfileEdit" class="flex flex-col mt-2 mx-10">
+            <!-- Account -->
+            <form v-if="activeTab === 'account'" @submit.prevent="handleSubmitAccountUpdated" class="flex flex-col mt-2 mx-10">
               <Divider />
               <div class="flex items-start justify-between my-1">
                 <h2 class="font-semibold">Nombre de usuario</h2>
@@ -389,7 +461,55 @@ const shareProfile = () => {
               <div class="flex justify-end items-center mt-2 mb-6">
                 <div class="flex justify-center items-center gap-4">
                   <Button label="Cancelar" variant="outlined" severity="secondary" @click="visibleDialogProfileSettings = false" />
-                  <Button type="submit" label="Guardar cambios" />
+                  <Button type="submit" label="Guardar cambios" :disabled="isNotFilledAccount" />
+                </div>
+              </div>
+            </form>
+            <!-- Profile -->
+            <form v-if="activeTab === 'profile'" 
+              @submit.prevent="handleSubmitProfileUpdated" 
+              class="flex flex-col mt-2 mx-10"
+            >
+              <div class="overflow-y-auto" style="max-height: calc(100vh - 350px);">
+                <Divider />
+                <div class="flex items-start justify-between my-1">
+                  <h2 class="font-semibold">Nombre y apellidos</h2>
+                  <div class="flex items-center gap-4 w-[27rem]">
+                    <InputText fluid v-model="profileUpdated.real_name" />
+                    <InputText fluid v-model="profileUpdated.last_name" />
+                  </div>
+                </div>
+                <Divider />
+                <div class="flex items-start justify-between my-1">
+                  <h2 class="font-semibold">Fecha de nacimiento</h2>
+                  <DatePicker 
+                    v-model="profileUpdated.birth_date" 
+                    class="w-[27rem]" />
+                </div>
+                <Divider />
+                <div class="flex items-start justify-between my-1">
+                  <h2 class="font-semibold">País</h2>
+                  <Select 
+                    class="w-[27rem]"
+                    v-model="profileUpdated.country"
+                    :options="countries" 
+                    optionLabel="name" 
+                    optionValue="name" />
+                </div>
+                <Divider />
+                <div class="flex items-start justify-between my-1">
+                  <h2 class="font-semibold">Biografía</h2>
+                  <Textarea
+                    class="w-[27rem]"
+                    v-model="profileUpdated.bio"
+                    rows="3" />
+                </div>
+              </div>
+              <Divider />
+              <div class="flex justify-end items-center mt-2 mb-6">
+                <div class="flex justify-center items-center gap-4">
+                  <Button label="Cancelar" variant="outlined" severity="secondary" @click="visibleDialogProfileSettings = false" />
+                  <Button type="submit" label="Guardar cambios" :disabled="isNotFilledProfile" />
                 </div>
               </div>
             </form>
