@@ -109,7 +109,7 @@ export interface Profile {
   username: string
   followers?: number
   following?: number
-  age: string
+  birth_date: Date
   country: string
   bio: string
   real_name: string
