@@ -24,6 +24,30 @@ const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
   { _movie_id: route.params.id }
 )) as { data: Review[]; error: any };
 
+const searchQuery = ref("")
+const dataReviewsRef = ref(dataReviews || []);
+const isSearchBarVisible = ref(false);
+
+const toggleSearchBar = () => {
+  isSearchBarVisible.value = !isSearchBarVisible.value;
+};
+
+ const filteredReviews = computed(() => {
+  console.log(searchQuery)
+  const reviews = dataReviewsRef.value;
+  if (!searchQuery.value) return reviews;
+
+  return reviews.filter((review) => {
+    const commentMatch = review.comment
+      ?.toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+    const userMatch = review.user
+      ?.toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+    return commentMatch || userMatch;
+  });
+});
+
 const directors = ref<CrewMember[]>();
 const writing = ref<CrewMember[]>();
 const dataCredits = ref<CreditsAPI>();
@@ -102,11 +126,12 @@ try {
   console.error(e);
 }
 
-const reviews = reactive<Review[]>(
-  dataReviews?.map((review) => ({
+const reviews = computed(() => {
+  return filteredReviews.value.map((review) => ({
     ...review,
     created_at: new Date(review.created_at),
-  })) || []);
+  }));
+});
 
 const posterTranslateY = ref(-112);
 const scrollThreshold = 200;
@@ -430,14 +455,31 @@ const visibleDrawerCast = ref(false);
           </div>
         </div>
         <div class="px-4 py-10 md:px-10">
-          <div class="flex items-center gap-8 mb-4">
-            <h2 class="text-3xl font-bold">Reviews</h2>
-            <Button
-              v-if="user"
-              label="Añadir review"
-              variant="outlined"
-              @click="visible = true"
-            />
+          <div class="flex items-center justify-between gap-8 mb-4">
+            <div class="flex items-center gap-8">
+              <h2 class="text-3xl font-bold">Reviews</h2>
+              <Button
+                v-if="user"
+                label="Añadir review"
+                variant="outlined"
+                class="text-violet-900 outline-violet-900"
+                @click="visible = true"
+              />
+            </div>
+
+            <div class="search-container relative">
+              <span
+                class="absolute inset-y-0 left-4 flex items-center text-violet-900"
+              >
+                <i class="pi pi-search"></i>
+              </span>
+              <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Buscar review"
+                class="absolut pl-12 pr-2 py-2 rounded-full bg-violet-400/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-400/80 transition-shadow duration-300"
+              />
+            </div>
           </div>
           <div v-if="reviews.length" class="space-y-4">
             <ReviewCard
@@ -448,8 +490,11 @@ const visibleDrawerCast = ref(false);
               @delete-review="deleteReview"
             ></ReviewCard>
           </div>
-          <p v-else class="text-gray-600 dark:text-gray-400">
+          <p v-else-if="searchQuery.value" class="text-gray-600 dark:text-gray-400">
             Encara no hi ha ressenyes.
+          </p>
+          <p v-else class="text-gray-600 dark:text-gray-400">
+            No se encontraron resultados.
           </p>
         </div>
       </div>
@@ -473,5 +518,15 @@ const visibleDrawerCast = ref(false);
   background-color: rgb(167 139 250 / 0.5);
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+input[type="text"] {
+  width: 165px;
+  transition: width 0.4s ease-in-out;
+}
+
+/* When the input field gets focus, expand it to the left */
+input[type="text"]:focus {
+  width: 300px; /* Define el ancho al expandirse */
 }
 </style>
