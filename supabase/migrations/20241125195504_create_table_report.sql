@@ -50,3 +50,6 @@ CREATE POLICY insert_report_for_authenticated_users
             AND user_id = auth.uid()
         )
 );
+
+
+

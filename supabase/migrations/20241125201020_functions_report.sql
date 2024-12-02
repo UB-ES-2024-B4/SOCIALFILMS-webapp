@@ -15,16 +15,6 @@ BEGIN
     -- Insertar el reporte
     INSERT INTO public."Report" (user_id, review_id, reason, other_reason)
     VALUES (auth.uid(), _review_id, _reason, _other_reason);
-
-    PERFORM pg_notify(
-        'new_report', -- Nombre del canal
-        json_build_object(
-            'user_id', auth.uid(),
-            'review_id', _review_id,
-            'reason', _reason,
-            'other_reason', _other_reason
-        )::text -- Mensaje en formato JSON convertido a texto
-    );
 END;
 $$;
 
@@ -58,3 +48,27 @@ AS $$
     WHERE review_id = _review_id;
 $$;
 
+CREATE OR REPLACE FUNCTION notify_report_insert()
+RETURNS trigger AS
+$$
+BEGIN
+  -- Enviar notificación HTTP a la Edge Function (URL de la función)
+  PERFORM http_post(
+    'https://jxbspkcbkgmtnrvylrqa.supabase.co/functions/v1/send-mail',  -- URL de tu función Edge
+    json_build_object(
+      'user_id', NEW.user_id,
+      'review_id', NEW.review_id,
+      'motivo', NEW.reason,
+      'motivo_ad', COALESCE(NEW.other_reason, '')
+    )::text,
+    'Content-Type: application/json'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER report_insert_trigger
+AFTER INSERT ON public."Report"
+FOR EACH ROW
+EXECUTE FUNCTION notify_report_insert();
