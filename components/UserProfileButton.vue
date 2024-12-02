@@ -2,7 +2,7 @@
 import "primeicons/primeicons.css";
 import { useToast } from "primevue/usetoast";
 import ReviewCard from "~/components/ReviewCard.vue";
-import type { Review } from "~/types";
+import type { Review, Profile } from "~/types";
 
 const toast = useToast();
 const supabase = useSupabaseClient();
@@ -16,6 +16,23 @@ const invalidNewPassword = ref(false)
 
 const visibleDialogProfileSettings = ref(false);
 const photoUploaded = ref('https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png');
+
+const profile = ref<Profile>();
+
+try {
+	const { data: dataProfile, error: errorProfile } = (await supabase.rpc(
+		"get_profile_by_id",
+		{ _user_id: user.value?.id }
+	)) as { data: Profile; error: any };
+
+	if (errorProfile) throw errorProfile;
+
+	profile.value = dataProfile;
+  console.log(dataProfile)
+
+} catch (error) {
+	console.error("Error loading profile:", error);
+}
 
 const onUploadPhoto = (event) => {
     const file = event.files[0];
@@ -213,6 +230,29 @@ const handleSubmitProfileEdit = async () => {
   }
 };
 
+const shareProfile = () => {
+	const currentURL = window.location.href;
+	navigator.clipboard.writeText(currentURL)
+			.then(() => {
+					toast.add({
+							severity: "success",
+							summary: "Enlace copiado",
+							detail: "El enlace se ha copiado al portapapeles.",
+							life: 3000,
+					});
+					console.log("Enlace copiado al portapapeles");
+			})
+			.catch((err) => {
+					toast.add({
+							severity: "error",
+							summary: "Error al copiar",
+							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							life: 3000,
+					});
+					console.error("Error al copiar el enlace: ", err);
+			});
+};
+
 </script>
 
 <template>
@@ -225,7 +265,7 @@ const handleSubmitProfileEdit = async () => {
       class="w-10 h-10 rounded-full object-cover"
     />
     <div class="text-left">
-      <p class="text-white text-sm font-semibold">Arfi Maulana</p>
+      <p class="text-white text-sm font-semibold">{{ profile?.real_name + ' ' + profile?.last_name }}</p>
       <p class="text-gray-300 text-xs">{{ '@' + user?.user_metadata.username }}</p>
     </div>
     <Button
@@ -281,9 +321,9 @@ const handleSubmitProfileEdit = async () => {
                 <h2 class="text-gray-400 text-lg">{{ user?.email }}</h2>
               </div>
 
-              <div v-show="false" class="flex justify-center items-center gap-4 mt-6">
-                <Button label="Compartir perfil" variant="outlined" icon="pi pi-share-alt" severity="contrast" />
-                <Button label="Ver perfil" variant="outlined" severity="contrast" />
+              <div class="flex justify-center items-center gap-4 mt-6">
+                <Button label="Compartir perfil" variant="outlined" icon="pi pi-send" severity="contrast" @click="shareProfile" />
+                <Button label="Ver perfil" variant="outlined" severity="contrast" @click="visibleDialogProfileSettings = false; navigateTo('/profile/'+user?.user_metadata.username);" />
               </div>
             </div>
             
@@ -365,6 +405,7 @@ const handleSubmitProfileEdit = async () => {
                   :review="review"
                   :key="index"
                   :film="review.film"
+                  :showFilm="true"
                 >
                 </ReviewCard>
               </div>
