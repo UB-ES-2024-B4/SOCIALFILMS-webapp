@@ -26,14 +26,9 @@ const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
 
 const searchQuery = ref("")
 const dataReviewsRef = ref(dataReviews || []);
-const isSearchBarVisible = ref(false);
-
-const toggleSearchBar = () => {
-  isSearchBarVisible.value = !isSearchBarVisible.value;
-};
 
  const filteredReviews = computed(() => {
-  console.log(searchQuery)
+  console.log(searchQuery.value)
   const reviews = dataReviewsRef.value;
   if (!searchQuery.value) return reviews;
 
@@ -44,7 +39,7 @@ const toggleSearchBar = () => {
     const userMatch = review.user
       ?.toLowerCase()
       .includes(searchQuery.value.toLowerCase());
-    return commentMatch || userMatch;
+    return userMatch || commentMatch;
   });
 });
 
@@ -127,6 +122,7 @@ try {
 }
 
 const reviews = computed(() => {
+  console.log(filteredReviews.value)
   return filteredReviews.value.map((review) => ({
     ...review,
     created_at: new Date(review.created_at),
@@ -483,9 +479,9 @@ const visibleDrawerCast = ref(false);
           </div>
           <div v-if="reviews.length" class="space-y-4">
             <ReviewCard
-              v-for="(review, index) in reviews"
+              v-for="review in reviews"
               :review="review"
-              :key="index"
+              :key="review.id"
               :film="dataMovie"
               @delete-review="deleteReview"
             ></ReviewCard>
