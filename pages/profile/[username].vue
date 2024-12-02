@@ -73,17 +73,17 @@ const { data, error } = (await supabase.rpc("get_trending_movies_of_week")) as {
 
 const responsiveOptions = ref([
     {
-        breakpoint: '2000px',
+        breakpoint: '2500px',
         numVisible: 6,
         numScroll: 2
     },
     {
-        breakpoint: '1750px',
+        breakpoint: '2250px',
         numVisible: 5,
         numScroll: 2
     },
     {
-        breakpoint: '1600px',
+        breakpoint: '2000px',
         numVisible: 4,
         numScroll: 2
     },
@@ -93,7 +93,7 @@ const responsiveOptions = ref([
         numScroll: 1
     },
     {
-        breakpoint: '1200px',
+        breakpoint: '1250px',
         numVisible: 1,
         numScroll: 1
     }
