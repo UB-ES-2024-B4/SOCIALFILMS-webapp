@@ -25,11 +25,14 @@ const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
 )) as { data: Review[]; error: any };
 
 const searchQuery = ref("")
-const dataReviewsRef = ref(dataReviews || []);
 
- const filteredReviews = computed(() => {
-  console.log(searchQuery.value)
-  const reviews = dataReviewsRef.value;
+const reviews = reactive<Review[]>(
+  dataReviews?.map((review) => ({
+    ...review,
+    created_at: new Date(review.created_at),
+  })) || []);
+
+const filteredReviews = computed(() => {
   if (!searchQuery.value) return reviews;
 
   return reviews.filter((review) => {
@@ -120,14 +123,6 @@ try {
 } catch (e) {
   console.error(e);
 }
-
-const reviews = computed(() => {
-  console.log(filteredReviews.value)
-  return filteredReviews.value.map((review) => ({
-    ...review,
-    created_at: new Date(review.created_at),
-  }));
-});
 
 const posterTranslateY = ref(-112);
 const scrollThreshold = 200;
@@ -458,7 +453,6 @@ const visibleDrawerCast = ref(false);
                 v-if="user"
                 label="Añadir review"
                 variant="outlined"
-                class="text-violet-900 outline-violet-900"
                 @click="visible = true"
               />
             </div>
@@ -473,20 +467,20 @@ const visibleDrawerCast = ref(false);
                 type="text"
                 v-model="searchQuery"
                 placeholder="Buscar review"
-                class="absolut pl-12 pr-2 py-2 rounded-full bg-violet-400/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-400/80 transition-shadow duration-300"
+                class="absolut pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
               />
             </div>
           </div>
-          <div v-if="reviews.length" class="space-y-4">
+          <div v-if="filteredReviews.length" class="space-y-4">
             <ReviewCard
-              v-for="review in reviews"
+              v-for="review in filteredReviews"
               :review="review"
               :key="review.id"
               :film="dataMovie"
               @delete-review="deleteReview"
             ></ReviewCard>
           </div>
-          <p v-else-if="searchQuery.value" class="text-gray-600 dark:text-gray-400">
+          <p v-else-if="!reviews.length" class="text-gray-600 dark:text-gray-400">
             Encara no hi ha ressenyes.
           </p>
           <p v-else class="text-gray-600 dark:text-gray-400">
@@ -521,7 +515,6 @@ input[type="text"] {
   transition: width 0.4s ease-in-out;
 }
 
-/* When the input field gets focus, expand it to the left */
 input[type="text"]:focus {
   width: 300px; /* Define el ancho al expandirse */
 }
