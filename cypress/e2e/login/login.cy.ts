@@ -1,5 +1,5 @@
 describe('Login functionality', () => {
-  const baseUrl = 'https://socialfilms.nuxt.dev/';
+  const baseUrl = Cypress.env('URL');
 
   it('Navega a la pagina de login', () => {
     cy.visit(baseUrl);

@@ -1,5 +1,5 @@
 describe('Publish and delete review functionality', () => {
-    const baseUrl = 'https://socialfilms.nuxt.dev/';
+    const baseUrl = Cypress.env('URL');
     const email = 'marclosquino2@gmail.com';
     const password = 'Amen1+';
     let userId = '062cd767-f3fa-4bcf-9bee-230062f19fb0'; 
