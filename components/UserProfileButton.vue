@@ -32,6 +32,7 @@ try {
 	profile.value = dataProfile;
   profile.value.birth_date = new Date(profile.value.birth_date);
   profileUpdated.value = { ...profile.value };
+
 } catch (error) {
 	console.error("Error loading profile:", error);
 }
