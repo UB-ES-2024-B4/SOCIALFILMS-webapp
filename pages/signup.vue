@@ -333,6 +333,7 @@ const isNotFilled = computed(() => {
                   <DatePicker 
                     class="flex-1" 
                     v-model="additionalInfo.birthDate"
+                    dateFormat="dd/mm/yy"
                     :invalid="additionalInfoStatus.failedCreateProfile" />
                   <label for="on_label_age">Data de naixement</label>
                 </FloatLabel>
