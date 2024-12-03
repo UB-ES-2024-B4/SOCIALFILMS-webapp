@@ -4,6 +4,6 @@ module.exports = {
   SUPABASE_URL: "https://jxbspkcbkgmtnrvylrqa.supabase.co",
 
   //URL para dev o prod, ustedes escogen.
-  URL: "https://socialfilms.nuxt.dev",
-  //URL: "http://localhost:3000",
+  // URL: "https://release-v1-1-0-rc2.socialfilms.pages.dev",
+  URL: "http://localhost:3000",
 };
