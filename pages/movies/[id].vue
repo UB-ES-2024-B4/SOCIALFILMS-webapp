@@ -18,10 +18,33 @@ const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
   "find_movie_by_id",
   { movie_id: route.params.id }
 )) as { data: Film; error: any };
+
 const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
   "get_reviews",
   { _movie_id: route.params.id }
 )) as { data: Review[]; error: any };
+
+const searchQuery = ref("")
+
+const reviews = reactive<Review[]>(
+  dataReviews?.map((review) => ({
+    ...review,
+    created_at: new Date(review.created_at),
+  })) || []);
+
+const filteredReviews = computed(() => {
+  if (!searchQuery.value) return reviews;
+
+  return reviews.filter((review) => {
+    const commentMatch = review.comment
+      ?.toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+    const userMatch = review.user
+      ?.toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+    return userMatch || commentMatch;
+  });
+});
 
 const directors = ref<CrewMember[]>();
 const writing = ref<CrewMember[]>();
@@ -40,7 +63,7 @@ const selectRating = (star: number) => {
 };
 
 const submitReview = async () => {
-  const user_id = user.value?.id;
+  const user_id = user.value?.id
 
   if (!user_id) {
     toast.add({
@@ -55,8 +78,24 @@ const submitReview = async () => {
 
     try {
       const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value})
+      console.log(reviewData)
       if (!reviewError) {
           toast.add({ severity: 'success', summary: 'Reseña subida', detail: 'Tu reseña se ha publicado con éxito.', life: 3000 });
+          const new_review: Review = {
+            id: reviewData,
+            user_id: user_id || '', 
+            user: user.value?.user_metadata.username,
+            created_at: new Date(),
+            comment: comment.value || '',
+            likes: 0,
+            dislikes: 0,
+            shared_count: 0,
+            rating: rating.value,
+            editable: true,
+            spoilers: checked.value
+          }
+        
+          reviews.push(new_review)
           visible.value = false;
       } else {
         if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
@@ -85,12 +124,6 @@ try {
   console.error(e);
 }
 
-const reviews =
-  dataReviews?.map((review) => ({
-    ...review,
-    created_at: new Date(review.created_at),
-  })) || [];
-
 const posterTranslateY = ref(-112);
 const scrollThreshold = 200;
 
@@ -106,6 +139,13 @@ const handleScroll = () => {
     posterTranslateY.value = Math.max(newTranslateY, -112);
   } else {
     posterTranslateY.value = -112;
+  }
+};
+
+const deleteReview = (review_id: string) => {
+  const index = reviews.findIndex((review) => review.id === review_id);
+  if (index !== -1) {
+    reviews.splice(index, 1);
   }
 };
 
@@ -406,24 +446,45 @@ const visibleDrawerCast = ref(false);
           </div>
         </div>
         <div class="px-4 py-10 md:px-10">
-          <div class="flex items-center gap-8 mb-4">
-            <h2 class="text-3xl font-bold">Reviews</h2>
-            <Button
-              label="Añadir review"
-              variant="outlined"
-              @click="visible = true"
-            />
+          <div class="flex items-center justify-between gap-8 mb-4">
+            <div class="flex items-center gap-8">
+              <h2 class="text-3xl font-bold">Reviews</h2>
+              <Button
+                v-if="user"
+                label="Añadir review"
+                variant="outlined"
+                @click="visible = true"
+              />
+            </div>
+
+            <div class="search-container relative">
+              <span
+                class="absolute inset-y-0 left-4 flex items-center text-violet-900"
+              >
+                <i class="pi pi-search"></i>
+              </span>
+              <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Buscar review"
+                class="absolut pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
+              />
+            </div>
           </div>
-          <div v-if="reviews.length" class="space-y-4">
+          <div v-if="filteredReviews.length" class="space-y-4">
             <ReviewCard
-              v-for="(review, index) in reviews"
+              v-for="review in filteredReviews"
               :review="review"
-              :key="index"
+              :key="review.id"
               :film="dataMovie"
+              @delete-review="deleteReview"
             ></ReviewCard>
           </div>
-          <p v-else class="text-gray-600 dark:text-gray-400">
+          <p v-else-if="!reviews.length" class="text-gray-600 dark:text-gray-400">
             Encara no hi ha ressenyes.
+          </p>
+          <p v-else class="text-gray-600 dark:text-gray-400">
+            No se encontraron resultados.
           </p>
         </div>
       </div>
@@ -447,5 +508,14 @@ const visibleDrawerCast = ref(false);
   background-color: rgb(167 139 250 / 0.5);
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+input[type="text"] {
+  width: 165px;
+  transition: width 0.4s ease-in-out;
+}
+
+input[type="text"]:focus {
+  width: 300px; /* Define el ancho al expandirse */
 }
 </style>
