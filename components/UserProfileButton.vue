@@ -287,8 +287,7 @@ const handleSubmitProfileUpdated = async () => {
 };
 
 const shareProfile = () => {
-	const currentURL = window.location.href;
-	navigator.clipboard.writeText(currentURL)
+	navigator.clipboard.writeText(`${window.location.origin}/profile/${user.value?.user_metadata.username}`)
 			.then(() => {
 					toast.add({
 							severity: "success",
