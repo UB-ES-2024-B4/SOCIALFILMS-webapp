@@ -12,7 +12,6 @@
   "dependencies": {
     "@nuxtjs/google-fonts": "^3.2.0",
     "@primevue/themes": "^4.2.1",
-    "nodemailer": "^6.9.16",
     "nuxt": "^3.13.2",
     "nuxt-app": "file:",
     "primeicons": "^7.0.0",

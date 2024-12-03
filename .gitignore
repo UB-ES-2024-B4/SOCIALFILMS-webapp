@@ -19,9 +19,8 @@ logs
 .idea
 
 # Local env files
-backend/.env
+.env
 .env.*
 !.env.example
 
 Postman-win64-Setup.exe
-
