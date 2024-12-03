@@ -65,7 +65,11 @@ onUnmounted(() => {
       :class="{ '-translate-y-[125%]': !isNavbarVisible }"
     >
       <div class="flex items-center">
-        <span class="ml-10 mr-12 text-2xl text-white font-bold">LOGO</span>
+        <img
+          src="/logo.png"
+          alt="SocialFilms Logo"
+          class="h-12 w-auto ml-10 mr-10"
+        />
         <button
           v-for="item in menuItems"
           :key="item.path"
@@ -81,6 +85,7 @@ onUnmounted(() => {
           {{ item.label }}
         </button>
       </div>
+
       <div class="flex items-center gap-4">
         <form @submit.prevent="handleSubmitSearch" class="relative max-w-xs">
           <span
