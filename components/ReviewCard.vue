@@ -309,7 +309,7 @@ const submitReport = async () => {
                 <p class="text-gray-600 dark:text-gray-100">Si tu denuncia no encaja en las categorías anteriores, por favor explícanos brevemente el motivo.</p><br/>
 
                 <FloatLabel variant="in">
-                  <Textarea id="over_label" v-model="value_otros" rows="3" cols="30" class="resize-none w-full" />
+                  <Textarea maxlength="250" id="over_label" v-model="value_otros" rows="3" cols="30" class="resize-none w-full" />
                   <label for="in_label" class="text-gray-600 text-sm">Denuncia</label>
               </FloatLabel>
               </TabPanel>
