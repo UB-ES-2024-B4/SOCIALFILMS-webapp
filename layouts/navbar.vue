@@ -66,9 +66,9 @@ onUnmounted(() => {
     >
       <div class="flex items-center">
         <img
-          src="/logo1.png"
+          src="/logo.png"
           alt="SocialFilms Logo"
-          class="h-8 w-auto ml-10 mr-10"
+          class="h-12 w-auto ml-10 mr-10"
         />
         <button
           v-for="item in menuItems"
