@@ -47,15 +47,6 @@ const authorItems = ref([
 
 const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag",  command: openReportDialog}];
 
-const reportReason = ref('')
-const value_otros = ref(null);
-const reportOptions = ref([
-  { label: 'Contenido Ofensivo', icon: 'pi pi-flag', value: 'Contenido Ofensivo'},
-  { label: 'Spam', icon: 'pi pi-times-circle', value: 'Spam'},
-  { label: 'Desinformación', icon: 'pi pi-exclamation-circle', value: 'Desinformación' },
-  { label: 'Otros', icon: 'pi pi-ellipsis-h', value: 'Otros' },
-]);
-
 const toggle = (event) => {
   menu.value.toggle(event);
 };
@@ -113,12 +104,6 @@ const numCharacters = computed(() => {
 const visible = ref(false)
 const visible_report = ref(false)
 
-const setActiveReason = (reason: string) => { 
-  reportReason.value = reason;
-};
-
-const isActive = (reason: string) => computed(() => reportReason.value === reason);
-
 onMounted(() => {
     comment.value = props.review.comment ?? ''
     rating.value = props.review.rating ?? 1
@@ -152,6 +137,37 @@ const submitReview = async () => {
     }
 }
 
+const actualReportReason = ref('0');
+const value_otros = ref(null);
+const reportOptions = [
+  { label: 'Contenido Ofensivo', value: '0'},
+  { label: 'Spam', value: '1'},
+  { label: 'Desinformación', value: '2' },
+  { label: 'Otros', value: '3' },
+];
+const isLoadingReport = ref(false);
+
+const submitReport = async () => {
+  const user_id = user.value?.id;
+
+  if (!user_id) {
+    toast.add({ severity: "error", summary: "Error", detail: "Debes estar logueado para reportar una reseña.", life: 3000})
+    visible.value = false;
+    return;
+  }
+    isLoadingReport.value = true;
+    const reason = reportOptions.find((option) => option.value === actualReportReason.value)?.label;
+    console.log(reason)
+    const { data: reportData, error: reportError } = await supabase.rpc('add_report', {_review_id: props.review.id, _reason: reason, _other_reason: value_otros.value })
+    if (reportError) {
+        toast.add({ severity: 'error', summary: 'Error al reportar', detail: 'No sé ha podido enviar el reporte, intentalo más tarde', life: 3000 })
+        visible_report.value = false
+    } else {
+        toast.add({ severity: 'success', summary: 'Reporte exitoso', detail: 'Tu reporte se ha enviado correctamente.', life: 3000 });
+        visible_report.value = false
+    }
+    isLoadingReport.value = false;
+}
 </script>
 
 <template>
@@ -253,12 +269,9 @@ const submitReview = async () => {
         </div>
       </div>
     </template>
-      <Tabs value="0">
+      <Tabs v-model:value="actualReportReason">
           <TabList>
-              <Tab value="0">Contenido Ofensivo</Tab>
-              <Tab value="1">Spam</Tab>
-              <Tab value="2">Desinformación</Tab>
-              <Tab value="3">Otros</Tab>
+            <Tab v-for="reportReason in reportOptions" :key="reportReason.label" :value="reportReason.value"> {{ reportReason.label }}</Tab>
           </TabList>
           <TabPanels>
               <TabPanel value="0">
@@ -305,7 +318,7 @@ const submitReview = async () => {
     <template #footer>
       <div class="flex gap-2 items-end">
         <Button label="Cancelar" severity="secondary" @click="visible=false" />
-        <Button label="Denunciar" @click="submitReview" />
+        <Button label="Denunciar" :loading="isLoadingReport" @click="submitReport" />
       </div>
     </template>
   </Dialog>
