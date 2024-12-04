@@ -46,6 +46,16 @@ const filteredReviews = computed(() => {
   });
 });
 
+const visibleCount = reactive({ count: 5 });
+
+const visibleReviews = computed(() => {
+  return filteredReviews.value?.slice(0, visibleCount.count);
+});
+
+const loadMoreReviews = () => {
+  visibleCount.count = Math.min(visibleCount.count + 5, filteredReviews.value.length);
+};
+
 const directors = ref<CrewMember[]>();
 const writing = ref<CrewMember[]>();
 const dataCredits = ref<CreditsAPI>();
@@ -96,6 +106,9 @@ const submitReview = async () => {
           }
         
           reviews.push(new_review)
+          rating.value = 1
+          comment.value = ""
+          checked.value = false
           visible.value = false;
       } else {
         if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
@@ -473,12 +486,12 @@ const visibleDrawerCast = ref(false);
           </div>
           <div v-if="filteredReviews.length" class="space-y-4">
             <ReviewCard
-              v-for="review in filteredReviews"
+              v-for="(review) in visibleReviews"
               :review="review"
               :key="review.id"
               :film="dataMovie"
               @delete-review="deleteReview"
-            ></ReviewCard>
+            ></ReviewCard>  
           </div>
           <p v-else-if="!reviews.length" class="text-gray-600 dark:text-gray-400">
             Encara no hi ha ressenyes.
@@ -486,6 +499,11 @@ const visibleDrawerCast = ref(false);
           <p v-else class="text-gray-600 dark:text-gray-400">
             No se encontraron resultados.
           </p>
+          <div v-if="visibleCount.count < filteredReviews.length" class="flex items-center justify-center gap-4 mt-4">
+            <hr class="w-1/4 border-t-2 border-violet-500">
+            <Button icon="pi pi-chevron-down" rounded severity="help" @click="loadMoreReviews" />
+            <hr class="w-1/4 border-t-2 border-violet-500">
+          </div>
         </div>
       </div>
     </div>
