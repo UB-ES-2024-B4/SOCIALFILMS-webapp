@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import "primeicons/primeicons.css";
 import { onMounted } from "vue";
-import type { Review, Film } from "~/types";
+import type { Review, Film, Profile } from "~/types";
 import { timeAgo } from "~/utils/timeFunctions";
 
 const supabase = useSupabaseClient();
@@ -33,8 +33,8 @@ const openEditDialog = () => {
 };
 
 const openReportDialog = () => {
-  if (!visible_report.value) {
-    visible_report.value = true;
+  if (!visibleReport.value) {
+    visibleReport.value = true;
   }
 };
 
@@ -111,7 +111,7 @@ const numCharacters = computed(() => {
 });
 
 const visible = ref(false)
-const visible_report = ref(false)
+const visibleReport = ref(false)
 const like = ref();
 const dislike = ref();
 
@@ -141,7 +141,11 @@ const handleAddReaction = async (reactionType: string) => {
   if (error) throw new Error(reactionType === 'like' ? "ADD_LIKE_ERROR" : "ADD_DISLIKE_ERROR");
 };
 
-const handleReaction = async (type: string) => {
+const isProcessingReaction = ref(false);
+const handleReaction = async (type: 'like' | 'dislike') => {
+  if (isProcessingReaction.value) return;
+  isProcessingReaction.value = true;
+
   try {
     if (type === 'like') {
       if (like.value){
@@ -177,6 +181,8 @@ const handleReaction = async (type: string) => {
     } 
   } catch (error) {
     handleReactionError(error.message);
+  } finally {
+    isProcessingReaction.value = false;
   }
 };
 
@@ -264,13 +270,82 @@ const submitReport = async () => {
     const { data: reportData, error: reportError } = await supabase.rpc('add_report', {_review_id: props.review.id, _reason: reason, _other_reason: value_otros.value })
     if (reportError) {
         toast.add({ severity: 'error', summary: 'Error al reportar', detail: 'No sé ha podido enviar el reporte, intentalo más tarde', life: 3000 })
-        visible_report.value = false
+        visibleReport.value = false
     } else {
         toast.add({ severity: 'success', summary: 'Reporte exitoso', detail: 'Tu reporte se ha enviado correctamente.', life: 3000 });
-        visible_report.value = false
+        visibleReport.value = false
     }
     isLoadingReport.value = false;
 }
+
+const visibleDialogUsersReaction = ref(false);
+const reationTypeModal = ref();
+const usersReaction = ref<Profile[]>();
+
+const showUsersReactions = async (type: 'like' | 'dislike') => {
+  visibleDialogUsersReaction.value = true;
+  reationTypeModal.value = type;
+
+  try {
+    let reactionFuction = type === 'like' ? 'get_users_liked_review' : 'get_users_disliked_review';
+    const { data, error } = await supabase.rpc(reactionFuction, { _review_id: props.review.id }) as { data: Profile[]; error: any };;
+    if (error) throw error;
+
+    usersReaction.value = data || [];
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const handleFollow = async (profile: Profile) => {
+  if (profile.isProcessingFollow) return;
+  profile.isProcessingFollow = true;
+
+	try {
+    let followFunction = profile.is_following ? 'unfollow_user' : 'follow_user';
+
+    const { error } = (await supabase.rpc(
+      followFunction,
+      { _following_username: profile.username }
+    ))
+    if (error) throw error;
+
+    profile.is_following = !profile.is_following;
+
+	} catch (error) {
+		console.error(error);
+		let summary = "Oops, algo salió mal";
+    let detail = "Hubo un problema al realizar seguir al usuario.";
+
+		switch (error.code) {
+			case 'F0001':
+				summary = "Ya estás siguiendo a este usuario";
+				detail = "Parece que ya sigues al usuario.";
+				break;
+			case 'F0002':
+				summary = "Usuario no encontrado";
+				detail = "No se encontró el usuario que intentas seguir.";
+				break;
+			case 'F0003':
+				summary = "No puedes seguirte a ti mismo";
+				detail = "Esta acción no está permitida.";
+				break;
+			case 'F0004':
+				summary = "No estás siguiendo a este usuario";
+				detail = "Parece que no sigues al usuario.";
+				break;
+		}
+		toast.add({
+			severity: "error",
+			summary,
+			detail,
+			life: 3000,
+		});
+	} finally {
+    profile.isProcessingFollow = false;
+  }
+}
+
 </script>
 
 <template>
@@ -363,7 +438,7 @@ const submitReport = async () => {
     </div>
   </Dialog>
 
-  <Dialog v-model:visible="visible_report" modal class="w-[50rem]" :draggable="false">
+  <Dialog v-model:visible="visibleReport" modal class="w-[50rem]" :draggable="false">
     <template #header>
       <div class="flex flex-row items-start mt-3 ml-3">
         <div class="flex flex-col gap-2 items-start">
@@ -420,10 +495,39 @@ const submitReport = async () => {
       </Tabs>
     <template #footer>
       <div class="flex gap-2 items-end">
-        <Button label="Cancelar" severity="secondary" @click="visible=false" />
+        <Button label="Cancelar" severity="secondary" @click="visibleReport=false" />
         <Button label="Denunciar" :loading="isLoadingReport" @click="submitReport" />
       </div>
     </template>
+  </Dialog>
+  
+  <Dialog v-model:visible="visibleDialogUsersReaction" modal :header="reationTypeModal === 'like' ? `M'agrades` : `No m'agrades`" :style="{ width: '22rem' }" :draggable="false">
+    <div class="space-y-4">
+      <div v-for="userReaction in usersReaction" class="flex items-center justify-between">
+        <div class="flex items-center gap-1">
+          <Avatar
+            :label="review.user ? review.user[0] : 'T'"
+            class="mr-2.5 cursor-pointer"
+            size="large"
+            shape="circle"
+            @click="navigateTo(`/profile/${review.user}`)"
+          />
+          <div class="flex flex-col">
+            <span class="font-semibold cursor-pointer leading-tight" @click="navigateTo(`/profile/${review.user}`)">{{ userReaction?.username }}</span>
+            <span class="text-gray-500/80 leading-tight">{{ userReaction?.real_name + ' ' + userReaction?.last_name }}</span>
+          </div>
+        </div>
+        <Button
+          v-show="userReaction?.username !== user?.user_metadata.username"
+          :label="userReaction?.is_following ? 'Siguiendo' : 'Seguir'"
+          :icon="userReaction?.is_following ? 'pi pi-check' : 'pi pi-user-plus'"
+          :severity="userReaction?.is_following ? 'secondary' : ''"
+          :loading="userReaction?.isProcessingFollow"
+          size="small"
+          @click="handleFollow(userReaction)" 
+        />
+      </div>
+    </div>
   </Dialog>
 
   <div
@@ -539,28 +643,30 @@ const submitReport = async () => {
     </div>
     <div class="flex gap-3 mt-1">
       <span
-        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
+        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400 cursor-pointer"
+        @click="showUsersReactions('like')"
       >
         <Button
           severity="secondary"
           :icon="like ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
           aria-label="Like"
           rounded
-          :disabled="!user"
-          @click="handleReaction('like')"
+          :disabled="!user || isProcessingReaction"
+          @click.stop="handleReaction('like')"
         />
         {{ review.likes == 0 ? "" : review.likes }}
       </span>
       <span
-        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400"
+        class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-400 cursor-pointer"
+        @click.stop="showUsersReactions('dislike')"
       >
         <Button
           severity="secondary"
           :icon="dislike ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'"
           aria-label="Dislike"
           rounded
-          :disabled="!user"
-          @click="handleReaction('dislike')"
+          :disabled="!user || isProcessingReaction"
+          @click.stop="handleReaction('dislike')"
         />
         {{ review.dislikes == 0 ? "" : review.dislikes }}
       </span>

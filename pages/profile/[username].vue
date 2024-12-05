@@ -126,7 +126,12 @@ const shareProfile = () => {
 			});
 };
 
+const isProcessingFollow = ref(false);
+
 const handleFollow = async () => {
+	if (isProcessingFollow.value) return;
+  isProcessingFollow.value = true;
+
 	try {
 		if (profile.value?.is_following) {
 			const { error } = (await supabase.rpc(
@@ -179,7 +184,9 @@ const handleFollow = async () => {
 			detail,
 			life: 3000,
 		});
-	}
+	} finally {
+    isProcessingFollow.value = false;
+  }
 }
 
 </script>
@@ -216,6 +223,7 @@ const handleFollow = async () => {
 							<Button 
 								:label="profile?.is_following ? 'Seguiendo' : 'Seguir'" 
 								:icon="profile?.is_following ? 'pi pi-check' : 'pi pi-user-plus'" 
+								:loading="isProcessingFollow"
 								@click="handleFollow" />
 							<Button 
 								label="Compartir perfil"
