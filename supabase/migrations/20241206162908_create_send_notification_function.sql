@@ -67,7 +67,7 @@ BEGIN
     RAISE EXCEPTION 'Sender and receiver must be mutually following each other to send notifications'
     USING ERRCODE = 'F0005';
   END IF;
-  
+
   -- Insert the follow relationship
   INSERT INTO public.notifications (created_at, sender_id, receiver_id, movie_id, is_read, is_seen, sender_username, receiver_username)
   VALUES (NOW(), _sender_id, _receiver_id, _movie_id, false, false, _sender_username, _receiver_username);
@@ -96,5 +96,10 @@ for select
 to public
 using (true);
 
-
+create policy "Enable delete for users based on receiver_id"
+on "public"."notifications"
+as permissive
+for delete
+to public
+using ((( SELECT auth.uid() AS uid) = receiver_id));
 
