@@ -52,6 +52,22 @@ BEGIN
     USING ERRCODE = 'F0004';
   END IF;
 
+  -- Check if sender and receiver are mutually following each other
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.followers
+    WHERE follower_id = _sender_id
+      AND following_id = _receiver_id
+  ) OR NOT EXISTS (
+    SELECT 1
+    FROM public.followers
+    WHERE follower_id = _receiver_id
+      AND following_id = _sender_id
+  ) THEN
+    RAISE EXCEPTION 'Sender and receiver must be mutually following each other to send notifications'
+    USING ERRCODE = 'F0005';
+  END IF;
+  
   -- Insert the follow relationship
   INSERT INTO public.notifications (created_at, sender_id, receiver_id, movie_id, is_read, is_seen, sender_username, receiver_username)
   VALUES (NOW(), _sender_id, _receiver_id, _movie_id, false, false, _sender_username, _receiver_username);
