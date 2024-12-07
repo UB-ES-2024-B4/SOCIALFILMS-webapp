@@ -205,3 +205,53 @@ BEGIN
   );
 END;$function$
 ;
+
+CREATE OR REPLACE FUNCTION public.set_all_is_seen(_is_seen bool)
+ RETURNS JSON
+ LANGUAGE plpgsql
+AS $function$DECLARE
+  _receiver_id UUID;
+  _receiver_username TEXT;
+BEGIN
+  -- get receiver user id and receiver username
+  SELECT auth.uid() INTO _receiver_id;
+  SELECT username INTO _receiver_username FROM public.profiles WHERE id = _receiver_id;
+  
+  -- Check if username does not exist
+  IF _receiver_id IS NULL THEN
+    RAISE EXCEPTION 'User % does not exist', _receiver_username
+    USING ERRCODE = 'F0002';
+  END IF;
+
+  -- Check if username does not exist
+  IF _receiver_username IS NULL THEN
+    RAISE EXCEPTION 'User % does not exist', _receiver_username
+    USING ERRCODE = 'F0003';
+  END IF;
+
+  -- Check if there are any notifications to update
+  IF EXISTS (
+    SELECT 1
+    FROM public.notifications
+    WHERE receiver_username = _receiver_username
+      AND is_seen != _is_seen
+  ) THEN
+    -- Update all notifications for the receiver_user to set is_seen = TRUE
+    UPDATE public.notifications
+    SET is_seen = _is_seen
+    WHERE receiver_username = _receiver_username;
+
+    RETURN json_build_object(
+      'success', TRUE,
+      'message', 'All is_seen notifications have been updated successfully'
+    );
+  ELSE
+    -- No notifications to update
+    RETURN json_build_object(
+      'success', FALSE,
+      'message', 'No is_seen notifications found to be updated'
+    );
+  END IF;
+
+END;$function$
+;
