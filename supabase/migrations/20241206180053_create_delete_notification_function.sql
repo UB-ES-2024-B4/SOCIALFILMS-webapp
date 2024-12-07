@@ -63,12 +63,18 @@ BEGIN
 END;$function$
 ;
 
-create policy "Enable delete for users based on user_id"
+create policy "Enable delete for users based on receiver_id"
 on "public"."notifications"
 as permissive
 for delete
 to public
 using ((( SELECT auth.uid() AS uid) = receiver_id));
 
+create policy "Enable update for users based on receiver_id"
+on "public"."notifications"
+as permissive
+for UPDATE
+to public
+using ((( SELECT auth.uid() AS uid) = receiver_id));
 
 
