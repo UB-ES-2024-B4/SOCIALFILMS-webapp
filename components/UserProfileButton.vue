@@ -46,7 +46,7 @@ const onUploadPhoto = (event) => {
     };
     console.log(photoUploaded)
 
-    toast.add({ severity: 'info', summary: 'Foto de perfil cambiada', detail: 'Foto de perfil cambiada con éxito', life: 3000 });
+    toast.add({ severity: 'info', summary: 'Foto de perfil canviada', detail: 'Foto de perfil canviada amb èxit', life: 3000 });
 };
 
 const menu = ref();
@@ -93,7 +93,7 @@ const items = ref([
 const activeTab = ref('account');
 const menuItemsDialogProfileSettings = ref([
   {
-    label: "Cuenta",
+    label: "Compte",
     icon: "pi pi-cog",
     value: "account",
   },
@@ -103,7 +103,7 @@ const menuItemsDialogProfileSettings = ref([
     value: "profile",
   },
   {
-    label: "Reviews",
+    label: "Ressenyes",
     icon: "pi pi-comments",
     value: "reviews",
   },
@@ -169,26 +169,26 @@ const handleSubmitAccountUpdated = async () => {
       if (error) {
         toast.add({
           severity: "error",
-          summary: "Error al actualizar cuenta",
-          detail: `No se pudo actualizar tu cuenta: ${error.message}`,
+          summary: "Error en actualitzar el compte",
+          detail: `No s'ha pogut actualitzar el teu compte: ${error.message}`,
           life: 5000,
         });
-        throw new Error(`Error updating user: ${error.message}`);
+        throw new Error(`Error actualitzant l'usuari: ${error.message}`);
       }
 
       if (email.value !== user.value?.email) {
         toast.add({
           severity: "warn",
-          summary: "Cambio de email pendiente",
-          detail: "Hemos enviado un enlace de confirmación a tu nuevo email. Por favor, revisa tu bandeja de entrada y sigue las instrucciones para completar el cambio.",
+          summary: "Canvi d'email pendent",
+          detail: "Hem enviat un enllaç de confirmació al teu nou email. Si us plau, revisa la teva safata d'entrada i segueix les instruccions per completar el canvi.",
           life: 20000,
         });
       }
       if (usernameChanged){
         toast.add({
           severity: "success",
-          summary: "Nombre de usuario actualizado",
-          detail: "Se ha actualizado tu nombre de usuario con éxito",
+          summary: "Nom d'usuari actualitzat",
+          detail: "S'ha actualitzat el teu nom d'usuari amb èxit",
           life: 3000,
         });
       }
@@ -202,23 +202,23 @@ const handleSubmitAccountUpdated = async () => {
         });
 
       if (errorUpdatePassword) {
-        let summary = "Error al cambiar contraseña";
-        let detail = "Hubo un problema al actualizar tu contraseña.";
+        let summary = "Error al canviar la contrasenya";
+        let detail = "Hi ha un problema al actualitzar la teva contrasenya.";
 
         switch (errorUpdatePassword.code) {
           case 'P0001':
-            summary = "Contraseña actual incorrecta";
-            detail = "Has introducido una contraseña actual incorrecta.";
+            summary = "Contrasenya actual incorrecta";
+            detail = "Has introduït una contrasenya actual incorrecta.";
             invalidCurrentPassword.value = true;
             break;
           case 'P0002':
-            summary = "Error al actualizar contraseña";
-            detail = "No se ha podido actualizar a la contraseña nueva, prueba más tarde.";
+            summary = "Error al actualitzar la contrasenya";
+            detail = "No s'ha pogut actualitzar a la nova contrasenya, prova més tard.";
             invalidNewPassword.value = true;
             break;
           case 'P0003':
-            summary = "Contraseña débil";
-            detail = "La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula, un número y un símbolo.";
+            summary = "Contrasenya feble";
+            detail = "La contrasenya ha de tenir almenys 6 caràcters, una majúscula, una minúscula, un número i un símbol.";
             invalidNewPassword.value = true;
             break;
         }
@@ -228,12 +228,12 @@ const handleSubmitAccountUpdated = async () => {
           detail,
           life: 5000,
         });
-        throw new Error(`Error updating password: ${errorUpdatePassword.message}`);
+        throw new Error(`Error actualitzant la contrasenya: ${errorUpdatePassword.message}`);
       }
       toast.add({
         severity: "success",
-        summary: "Contraseña actualizada",
-        detail: "Se ha actualizado tu contraseña con éxito",
+        summary: "Contrasenya actualitzada",
+        detail: "S'ha actualitzat la teva contrasenya amb èxit",
         life: 3000,
       });
     }
@@ -265,8 +265,8 @@ const handleSubmitProfileUpdated = async () => {
       if (error) {
         toast.add({
           severity: "error",
-          summary: "Error al actualizar perfil",
-          detail: `No se pudo actualizar tu perfil: ${error.message}`,
+          summary: "Error al actualitzar el perfil",
+          detail: `No s'ha pogut actualitzar el teu perfil: ${error.message}`,
           life: 5000,
         });
         throw new Error(`Error updating profile: ${error.message}`);
@@ -274,8 +274,8 @@ const handleSubmitProfileUpdated = async () => {
 
       toast.add({
         severity: "success",
-        summary: "Perfil actualizado",
-        detail: "Se ha actualizado tu perfil con éxito",
+        summary: "Perfil actualitzat",
+        detail: "S'ha actualitzat el teu perfil amb èxit",
         life: 3000,
       });
       profile.value = { ...profileUpdated.value };
@@ -291,20 +291,20 @@ const shareProfile = () => {
 			.then(() => {
 					toast.add({
 							severity: "success",
-							summary: "Enlace copiado",
-							detail: "El enlace se ha copiado al portapapeles.",
+							summary: "Enllaç copiat",
+							detail: "L'enllaç s'ha copiat al porta papers.",
 							life: 3000,
 					});
-					console.log("Enlace copiado al portapapeles");
+					console.log("Enllaç copiat al portapapers");
 			})
 			.catch((err) => {
 					toast.add({
 							severity: "error",
 							summary: "Error al copiar",
-							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							detail: "No s'ha pogut copiar l'enllaç. Prova-ho de nou.",
 							life: 3000,
 					});
-					console.error("Error al copiar el enlace: ", err);
+					console.error("Error al copiar l'enllaç: ", err);
 			});
 };
 
@@ -333,7 +333,7 @@ const isNotFilledProfile = computed(() => {
   >
     <img
       src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
-      alt="Profile"
+      alt="Perfil"
       class="w-10 h-10 rounded-full object-cover"
     />
     <div class="text-left">
@@ -355,7 +355,7 @@ const isNotFilledProfile = computed(() => {
     <Dialog 
       v-model:visible="visibleDialogProfileSettings" 
       modal 
-      header="Profile Settings"
+      header="Configuració del perfil"
       class="w-[60rem]"
       :draggable="false" >
       <template #container>
@@ -395,7 +395,7 @@ const isNotFilledProfile = computed(() => {
 
               <div class="flex justify-center items-center gap-4 mt-6">
                 <Button label="Compartir perfil" variant="outlined" icon="pi pi-send" severity="contrast" @click="shareProfile" />
-                <Button label="Ver perfil" variant="outlined" severity="contrast" @click="visibleDialogProfileSettings = false; navigateTo('/profile/'+user?.user_metadata.username);" />
+                <Button label="Veure perfil" variant="outlined" severity="contrast" @click="visibleDialogProfileSettings = false; navigateTo('/profile/'+user?.user_metadata.username);" />
               </div>
             </div>
             
@@ -403,31 +403,31 @@ const isNotFilledProfile = computed(() => {
             <form v-if="activeTab === 'account'" @submit.prevent="handleSubmitAccountUpdated" class="flex flex-col mt-2 mx-10">
               <Divider />
               <div class="flex items-start justify-between my-1">
-                <h2 class="font-semibold">Nombre de usuario</h2>
+                <h2 class="font-semibold">Nom d'usuari</h2>
                 <IconField>
                   <InputIcon class="pi pi-at" />
-                  <InputText class="w-[27rem]" v-model="username" placeholder="Nombre de usuario" />
+                  <InputText class="w-[27rem]" v-model="username" placeholder="Nom d'usuari" />
                 </IconField>
               </div>
               <Divider />
               <div class="flex items-start justify-between my-1">
-                <h2 class="font-semibold">Correo electrónico</h2>
+                <h2 class="font-semibold">Correu electrònic</h2>
                 <IconField>
                   <InputIcon class="pi pi-envelope" />
-                  <InputText class="w-[27rem]" v-model="email" placeholder="Correo electrónico" />
+                  <InputText class="w-[27rem]" v-model="email" placeholder="Correu electrònic" />
                 </IconField>
               </div>
               <Divider />
               <div class="flex items-start justify-between my-1">
-                <h2 class="font-semibold">Contraseña</h2>
+                <h2 class="font-semibold">Contrasenya</h2>
                 <div class="flex items-center gap-4 w-[27rem]">
                   <FloatLabel variant="on">
                     <Password fluid id="current_password" v-model="current_password" :feedback="false" :invalid="invalidCurrentPassword" toggleMask />
-                    <label for="current_password">Contraseña actual</label>
+                    <label for="current_password">Contrasenya actual</label>
                   </FloatLabel>
                   <FloatLabel variant="on">
                     <Password fluid id="new_password"v-model="new_password" :feedback="false" :invalid="invalidNewPassword" toggleMask />
-                    <label for="new_password">Nueva contraseña</label>
+                    <label for="new_password">Nova contrasenya</label>
                   </FloatLabel>
                 </div>
               </div>
@@ -460,8 +460,8 @@ const isNotFilledProfile = computed(() => {
               <Divider /> -->
               <div class="flex justify-end items-center mt-2 mb-6">
                 <div class="flex justify-center items-center gap-4">
-                  <Button label="Cancelar" variant="outlined" severity="secondary" @click="visibleDialogProfileSettings = false" />
-                  <Button type="submit" label="Guardar cambios" :disabled="isNotFilledAccount" />
+                  <Button label="Cancel·lar" variant="outlined" severity="secondary" @click="visibleDialogProfileSettings = false" />
+                  <Button type="submit" label="Desar canvis" :disabled="isNotFilledAccount" />
                 </div>
               </div>
             </form>
@@ -473,7 +473,7 @@ const isNotFilledProfile = computed(() => {
               <div class="overflow-y-auto" style="max-height: calc(100vh - 350px);">
                 <Divider />
                 <div class="flex items-start justify-between my-1">
-                  <h2 class="font-semibold">Nombre y apellidos</h2>
+                  <h2 class="font-semibold">Nom i cognoms</h2>
                   <div class="flex items-center gap-4 w-[27rem]">
                     <InputText fluid v-model="profileUpdated.real_name" />
                     <InputText fluid v-model="profileUpdated.last_name" />
@@ -481,7 +481,7 @@ const isNotFilledProfile = computed(() => {
                 </div>
                 <Divider />
                 <div class="flex items-start justify-between my-1">
-                  <h2 class="font-semibold">Fecha de nacimiento</h2>
+                  <h2 class="font-semibold">Data de naixement</h2>
                   <DatePicker 
                     v-model="profileUpdated.birth_date" 
                     dateFormat="dd/mm/yy"
@@ -499,7 +499,7 @@ const isNotFilledProfile = computed(() => {
                 </div>
                 <Divider />
                 <div class="flex items-start justify-between my-1">
-                  <h2 class="font-semibold">Biografía</h2>
+                  <h2 class="font-semibold">Biografia</h2>
                   <Textarea
                     class="w-[27rem]"
                     v-model="profileUpdated.bio"
@@ -509,8 +509,8 @@ const isNotFilledProfile = computed(() => {
               <Divider />
               <div class="flex justify-end items-center mt-2 mb-6">
                 <div class="flex justify-center items-center gap-4">
-                  <Button label="Cancelar" variant="outlined" severity="secondary" @click="visibleDialogProfileSettings = false" />
-                  <Button type="submit" label="Guardar cambios" :disabled="isNotFilledProfile" />
+                  <Button label="Cancel·lar" variant="outlined" severity="secondary" @click="visibleDialogProfileSettings = false" />
+                  <Button type="submit" label="Desar canvis" :disabled="isNotFilledProfile" />
                 </div>
               </div>
             </form>

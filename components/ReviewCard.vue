@@ -432,7 +432,7 @@ const handleFollow = async (profile: Profile) => {
         </span>
       </div>
         <div v-if="user" class="flex justify-between">
-          <Button label="Cancelar" severity="secondary" @click="visible=false" />
+          <Button label="Cancel·lar" severity="secondary" @click="visible=false" />
           <div class="flex items-center gap-7">
             <div class="relative flex items-center justify-center">
               <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
