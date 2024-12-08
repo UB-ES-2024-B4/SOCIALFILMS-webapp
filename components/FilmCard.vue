@@ -35,7 +35,7 @@ const liked = ref(false);
         v-if="trending"
         class="absolute top-4 left-0 rounded-r-2xl shadow-md pl-4 pr-3 py-1.5 backdrop-blur bg-black/20 border-y border-r border-white/20 text-xs text-white font-normal"
       >
-        {{ "#" + trendingNumber + " Trending" }}
+        {{ "#" + trendingNumber + " Tendències" }}
       </div>
       <div class="absolute top-4 right-3">
         <button

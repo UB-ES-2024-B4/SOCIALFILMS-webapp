@@ -28,13 +28,13 @@ defineProps({
           <img
             class="w-24 h-24 rounded-full object-cover"
             :src="'https://image.tmdb.org/t/p/w100_and_h100_face' + image"
-            alt="image"
+            alt="imatge"
           />
         </template>
         <template #preview="slotProps">
           <img
             :src="'https://image.tmdb.org/t/p/original' + image"
-            alt="preview"
+            alt="previsualització"
             :style="slotProps.style"
             @click="slotProps.onClick"
           />
@@ -44,7 +44,7 @@ defineProps({
         v-else
         src="https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg"
         class="w-24 h-24 rounded-full object-cover bg-gray-200"
-        alt="No image"
+        alt="Sense imatge"
       />
     </div>
 
