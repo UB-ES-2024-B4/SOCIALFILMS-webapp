@@ -55,7 +55,7 @@ const responsiveOptions = ref([
 <template>
   <div class="mt-32 w-full h-full flex justify-center">
     <div class="w-[89%]">
-      <h2 class="font-extrabold text-3xl pl-16 mb-5">Trending films</h2>
+      <h2 class="font-extrabold text-3xl pl-16 mb-5">Pel·lícules en tendència</h2>
 
       <Carousel
         :value="data.results"

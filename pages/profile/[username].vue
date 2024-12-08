@@ -109,20 +109,20 @@ const shareProfile = () => {
 			.then(() => {
 					toast.add({
 							severity: "success",
-							summary: "Enlace copiado",
-							detail: "El enlace se ha copiado al portapapeles.",
+							summary: "Enllaç copiat",
+							detail: "L'enllaç s'ha copiat al portapapers.",
 							life: 3000,
 					});
-					console.log("Enlace copiado al portapapeles");
+					console.log("Enllaç copiat al portapapers");
 			})
 			.catch((err) => {
 					toast.add({
 							severity: "error",
 							summary: "Error al copiar",
-							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							detail: "No s'ha pogut copiar l'enllaç. Torna-ho a intentar.",
 							life: 3000,
 					});
-					console.error("Error al copiar el enlace: ", err);
+					console.error("Error en copiar l'enllaç: ", err);
 			});
 };
 
@@ -157,25 +157,25 @@ const handleFollow = async () => {
 		}
 	} catch (error) {
 		console.error(error);
-		let summary = "Oops, algo salió mal";
-    let detail = "Hubo un problema al realizar seguir al usuario.";
+		let summary = "Oops, alguna cosa ha anat malament";
+    	let detail = "Hi ha hagut un problema en seguir l'usuari.";
 
 		switch (error.code) {
 			case 'F0001':
-				summary = "Ya estás siguiendo a este usuario";
-				detail = "Parece que ya sigues al usuario.";
+				summary = "Ja segueixes aquest usuari";
+				detail = "Sembla que ja segueixes l'usuari.";
 				break;
 			case 'F0002':
-				summary = "Usuario no encontrado";
-				detail = "No se encontró el usuario que intentas seguir.";
+				summary = "Usuari no trobat";
+				detail = "No s'ha trobat l'usuari que intentes seguir.";
 				break;
 			case 'F0003':
-				summary = "No puedes seguirte a ti mismo";
-				detail = "Esta acción no está permitida.";
+				summary = "No et pots seguir a tu mateix";
+				detail = "Aquesta acció no està permesa.";
 				break;
 			case 'F0004':
-				summary = "No estás siguiendo a este usuario";
-				detail = "Parece que no sigues al usuario.";
+				summary = "No segueixes aquest usuari";
+				detail = "Sembla que no segueixes l'usuari.";
 				break;
 		}
 		toast.add({
@@ -203,7 +203,7 @@ const handleFollow = async () => {
 					<!-- Avatar -->
 					<img 
 						src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp" 
-						alt="Profile" 
+						alt="Perfil" 
 						class="w-44 h-44 rounded-full border-4 border-white shadow-md object-cover"
 					/>
 					<div class="flex justify-between items-center w-full ml-6 mt-16">
@@ -211,17 +211,17 @@ const handleFollow = async () => {
 						<div class="flex items-center gap-8">
 							<div class="flex text-center items-center">
 								<div class="text-[1.3rem] font-bold mr-[5px]">{{ profile?.followers }}</div>
-								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">seguidores</div>
+								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">seguidors</div>
 							</div>
 							<div class="flex text-center items-center">
 								<div class="text-[1.4rem] font-bold mr-[5px]"> {{ profile?.following }}</div>
-								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">siguiendo</div>
+								<div class="text-xl text-gray-800 dark:text-gray-300 font-light">seguint</div>
 							</div>
 						</div>
 						<!-- Follow and Share Buttons -->
 						<div class="flex justify-center items-center gap-4">
 							<Button 
-								:label="profile?.is_following ? 'Seguiendo' : 'Seguir'" 
+								:label="profile?.is_following ? 'Seguint' : 'Seguir'" 
 								:icon="profile?.is_following ? 'pi pi-check' : 'pi pi-user-plus'" 
 								:loading="isProcessingFollow"
 								@click="handleFollow" />
@@ -246,16 +246,16 @@ const handleFollow = async () => {
 			<div class="flex justify-between mt-7 w-full">
 				<div class="flex flex-col gap-8 w-[calc(100%-520px)]">
 					<div class="flex flex-col gap-2.5">
-						<h2 class="font-bold text-2xl">Sobre mí</h2>
+						<h2 class="font-bold text-2xl">Sobre mi</h2>
 						<p v-if="profile?.bio" class="text-lg text-justify">
 							{{ profile?.bio }}
 						</p>
 						<p v-else class="text-gray-500 text-lg italic">
-							Este usuario aún no ha escrito nada sobre sí mismo.
+							Aquest usuari encara no ha escrit res sobre ell mateix.
 						</p>
 					</div>
 					<div class="flex flex-col gap-2.5">
-						<h2 class="font-bold text-2xl">Películas favoritas</h2>
+						<h2 class="font-bold text-2xl">Pel·lícules preferides</h2>
 						<Carousel
 							v-if="true"
 							class="mt-2.5"
@@ -276,12 +276,12 @@ const handleFollow = async () => {
 							</template>
 						</Carousel>
 						<p v-else class="text-gray-500 text-lg italic">
-							Este usuario aún no tiene películas favoritas.
+							Aquest usuari encara no té pel·lícules preferides.
 						</p>
 					</div>
 				</div>
 				<div v-if="true" class="flex flex-col gap-2.5 w-[450px]">
-					<h2 class="font-bold text-2xl">{{ (reviewsWithMovies.length ? reviewsWithMovies.length : 0) + ' Reseñas' }}</h2>
+					<h2 class="font-bold text-2xl">{{ (reviewsWithMovies.length ? reviewsWithMovies.length : 0) + ' Ressenyes' }}</h2>
 					<div v-if="reviewsWithMovies.length" class="space-y-4 mt-1">
             <ReviewCard
 							v-for="(review, index) in reviewsWithMovies"
@@ -292,7 +292,7 @@ const handleFollow = async () => {
             ></ReviewCard>
           </div>
 					<p v-else class="text-gray-500 text-lg italic">
-						Este usuario aún no ha escrito ninguna reseña.
+						Aquest usuari encara no ha escrit cap ressenya.
 					</p>
 				</div>
 			</div>

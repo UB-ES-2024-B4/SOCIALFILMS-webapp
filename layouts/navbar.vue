@@ -17,12 +17,12 @@ const handleSubmitSearch = () => {
 
 const menuItems = ref([
   {
-    label: "Home",
+    label: "Inici",
     icon: "pi pi-home",
     path: "/",
   },
   {
-    label: "Movies",
+    label: "Pel·lícules",
     icon: "pi pi-video",
     path: "/movies",
   },

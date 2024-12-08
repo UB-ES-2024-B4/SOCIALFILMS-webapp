@@ -14,12 +14,12 @@ const query =
     : "";
 
 const optionsSort = ref([
-  { sort_by: "Más vistas", value: "popularity.desc" },
-  { sort_by: "Menos vistas", value: "popularity.asc" },
-  { sort_by: "Más valoradas", value: "vote_count.desc" },
-  { sort_by: "Menos valoradas", value: "vote_count.asc" },
-  { sort_by: "Mejor valoradas", value: "vote_average.desc" },
-  { sort_by: "Peor valoradas", value: "vote_average.asc" },
+  { sort_by: "Més vistes", value: "popularity.desc" },
+  { sort_by: "Menys vistes", value: "popularity.asc" },
+  { sort_by: "Més valorades", value: "vote_count.desc" },
+  { sort_by: "Menys valorades", value: "vote_count.asc" },
+  { sort_by: "Millor valorades", value: "vote_average.desc" },
+  { sort_by: "Pitjor valorades", value: "vote_average.asc" },
 ]);
 const sortValue = ref("popularity.desc");
 

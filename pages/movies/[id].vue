@@ -66,12 +66,7 @@ const submitReview = async () => {
   const user_id = user.value?.id
 
   if (!user_id) {
-    toast.add({
-      severity: "error",
-      summary: "Error",
-      detail: "Debes estar logueado para dejar una reseña.",
-      life: 3000,
-    });
+    toast.add({ severity: "error", summary: "Error", detail: "Has d'estar registrat per deixar una ressenya.", life: 3000 });
     visible.value = false;
     return;
   }
@@ -80,7 +75,7 @@ const submitReview = async () => {
       const { data: reviewData, error: reviewError } = await supabase.rpc('create_review', {_movie_id: dataMovie.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value})
       console.log(reviewData)
       if (!reviewError) {
-          toast.add({ severity: 'success', summary: 'Reseña subida', detail: 'Tu reseña se ha publicado con éxito.', life: 3000 });
+          toast.add({ severity: 'success', summary: 'Ressenya pujada', detail: 'La teva ressenya s\'ha publicat amb èxit.', life: 3000 });
           const new_review: Review = {
             id: reviewData,
             user_id: user_id || '', 
@@ -99,9 +94,9 @@ const submitReview = async () => {
           visible.value = false;
       } else {
         if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
-          toast.add({ severity: 'error', summary: 'Conflicto detectado', detail: 'Ya has dejado una reseña para esta película. No se permiten duplicados.', life: 3000})
+          toast.add({ severity: 'error', summary: 'Conflicte detectat', detail: 'Ja has deixat una ressenya per aquesta pel·lícula. No es permeten duplicats.', life: 3000})
         } else {
-          toast.add({ severity: 'error', summary: 'Error al publicar', detail: 'Por favor, actualiza tu calificación o escribe un comentario válido antes de intentarlo nuevamente.', life: 3000 })
+          toast.add({ severity: 'error', summary: 'Error al publicar', detail: 'Actualitza la teva valoració o escriu un comentari vàlid abans d\'intentar-ho de nou.', life: 3000 })
         }
       }
     } catch (e) {
@@ -164,7 +159,7 @@ const visibleDrawerCast = ref(false);
 
 <template>
   <Toast/>
-  <Dialog v-model:visible="visible" modal header="Nueva reseña">
+  <Dialog v-model:visible="visible" modal header="Nova ressenya">
     <div class="flex flex-col mt-4 space-y-4">
       <div class="flex space-x-8">
         <div class="flex flex-col">
@@ -200,7 +195,7 @@ const visibleDrawerCast = ref(false);
             </span>
           </div>
 
-          <h3 class="mt-auto">Califica del 1 al 10 ({{ rating }})</h3>
+          <h3 class="mt-auto">Qualifica del 1 al 10 ({{ rating }})</h3>
           <div class="flex mb-4 items-center space-x-2">
             <span
               v-for="star in 10"
@@ -231,7 +226,7 @@ const visibleDrawerCast = ref(false);
           rows="4"
           cols="20"
           maxlength="255"
-          placeholder="Escribe tu comentario..."
+          placeholder="Escriu el teu comentari..."
           class="mb-4 w-full"
         />
         <span class="absolute right-2 bottom-[-0.1rem] text-gray-500 text-sm">
@@ -240,7 +235,7 @@ const visibleDrawerCast = ref(false);
       </div>
 
         <div class="flex justify-between items-center">
-          <Button label="Cancelar" severity="secondary" @click="visible=false" />
+          <Button label="Cancel·lar" severity="secondary" @click="visible=false" />
           <div class="flex items-center gap-7">
             <div class="relative flex items-center justify-center">
               <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
@@ -268,7 +263,7 @@ const visibleDrawerCast = ref(false);
   </Drawer>
   <Drawer
     v-model:visible="visibleDrawerScript"
-    header="Guión"
+    header="Guió"
     position="right"
     class="!w-full md:!w-80 lg:!w-[25rem]"
   >
@@ -282,7 +277,7 @@ const visibleDrawerCast = ref(false);
   </Drawer>
   <Drawer
     v-model:visible="visibleDrawerCast"
-    header="Reparto"
+    header="Figurants"
     position="right"
     class="!w-full md:!w-80 lg:!w-[25rem]"
   >
@@ -352,7 +347,7 @@ const visibleDrawerCast = ref(false);
                   </span>
                 </div>
                 <div>
-                  <h3 class="text-3xl font-bold mt-4 mb-1.5">Sinopsis</h3>
+                  <h3 class="text-3xl font-bold mt-4 mb-1.5">Sinopsi</h3>
                   <p>{{ dataMovie.overview }}</p>
                 </div>
               </div>
@@ -392,7 +387,7 @@ const visibleDrawerCast = ref(false);
                       <h4
                         class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1"
                       >
-                        Guión
+                        Guió
                       </h4>
                       <p class="text-gray-600 dark:text-gray-400 max-h-6">
                         {{
@@ -420,7 +415,7 @@ const visibleDrawerCast = ref(false);
                       <h4
                         class="text-lg font-semibold text-violet-500 dark:text-violet-400 mb-1"
                       >
-                        Reparto
+                      Figurants
                       </h4>
                       <p class="text-gray-600 dark:text-gray-400 max-h-6">
                         {{
@@ -436,7 +431,7 @@ const visibleDrawerCast = ref(false);
                       icon="pi pi-angle-right"
                       text
                       rounded
-                      aria-label="More info"
+                      aria-label="Mes info"
                       @click="visibleDrawerCast = true"
                     />
                   </div>
@@ -448,10 +443,10 @@ const visibleDrawerCast = ref(false);
         <div class="px-4 py-10 md:px-10">
           <div class="flex items-center justify-between gap-8 mb-4">
             <div class="flex items-center gap-8">
-              <h2 class="text-3xl font-bold">Reviews</h2>
+              <h2 class="text-3xl font-bold">Ressenyes</h2>
               <Button
                 v-if="user"
-                label="Añadir review"
+                label="Afegir ressenya"
                 variant="outlined"
                 @click="visible = true"
               />
@@ -466,7 +461,7 @@ const visibleDrawerCast = ref(false);
               <input
                 type="text"
                 v-model="searchQuery"
-                placeholder="Buscar review"
+                placeholder="Buscar ressenya"
                 class="absolut pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
               />
             </div>
@@ -484,7 +479,7 @@ const visibleDrawerCast = ref(false);
             Encara no hi ha ressenyes.
           </p>
           <p v-else class="text-gray-600 dark:text-gray-400">
-            No se encontraron resultados.
+            No s'han trobat resultats.
           </p>
         </div>
       </div>

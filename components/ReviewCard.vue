@@ -578,7 +578,7 @@ const handleFollow = async (profile: Profile) => {
         </div>
         <Button
           v-if="showFilm"
-          v-tooltip.right="'Info película'"
+          v-tooltip.right="'Info pel·lícula'"
           type="button"
           severity="secondary"
           rounded
@@ -607,7 +607,7 @@ const handleFollow = async (profile: Profile) => {
                 </div>
               </div>
               <div class="flex gap-2">
-                <Button icon="pi pi-arrow-up-right" label="Ver película" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
+                <Button icon="pi pi-arrow-up-right" label="Veure pel·lícula" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
               </div>
             </div>
           </div>
