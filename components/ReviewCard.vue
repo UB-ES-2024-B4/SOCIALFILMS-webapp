@@ -234,8 +234,8 @@ const submitReview = async () => {
     } else {
         toast.add({ severity: 'success', summary: 'Actualización exitosa', detail: 'Tu reseña se ha actualizado correctamente.', life: 3000 });
         visible.value = false;
-        props.review.comment = comment.value ?? ''
-        props.review.rating = rating.value
+        review.comment = comment.value ?? ''
+        review.rating = rating.value
         spoiler.value = checked.value
     }
 }

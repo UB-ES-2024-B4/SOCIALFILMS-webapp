@@ -19,42 +19,102 @@ const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
   { movie_id: route.params.id }
 )) as { data: Film; error: any };
 
-const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
-  "get_reviews",
-  { _movie_id: route.params.id }
-)) as { data: Review[]; error: any };
+// const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
+//   "get_reviews",
+//   { _movie_id: route.params.id }
+// )) as { data: Review[]; error: any };
 
+const limit = 10
+const offset = ref(0)
+const dataReviews = ref<Review[]>([]);
+const hasMore = ref(false);
 const searchQuery = ref("")
 
-const reviews = reactive<Review[]>(
-  dataReviews?.map((review) => ({
+const { data: dataReviewsPaginated, error: errorReviewsPaginated } = (await supabase.rpc(
+  "get_reviews_paginated",
+  { 
+    _movie_id: route.params.id,
+    _limit: limit,
+    _offset: offset.value,
+    _sort_by: 'most_recent',
+    _filter: null
+  }
+));
+const { reviews: initialReviews, has_more } = dataReviewsPaginated as { reviews: Review[]; has_more: boolean };
+dataReviews.value = initialReviews || [];
+hasMore.value = has_more;
+
+const optionsSort = ref([
+  { sort_by: "Més recents", value: "most_recent" },
+  { sort_by: "Valoració més alta", value: "highest_rating" },
+  { sort_by: "Valoració més baixa", value: "lowest_rating" },
+  { sort_by: "Amb spoilers", value: "with_spoilers" },
+  { sort_by: "Sense spoilers", value: "without_spoilers" },
+]);
+const sortValue = ref("most_recent");
+
+const loadMoreReviews = async () => {
+  offset.value += limit;
+  try {
+    const { data, error } = await supabase.rpc('get_reviews_paginated', {
+        _movie_id: route.params.id,
+        _limit: limit,
+        _offset: offset.value,
+        _sort_by: sortValue.value,
+        _filter: searchQuery.value
+      });
+
+      if (error) throw error;
+
+      const { reviews: reviews_add, has_more } = data as { reviews: Review[]; has_more: boolean };
+      console.log(reviews_add, has_more)
+      dataReviews.value = [...dataReviews.value, ...reviews_add];
+      console.log(dataReviews.value)
+
+      hasMore.value = has_more || false;
+      console.log(reviews)
+
+  } catch (error) {
+    console.error('Error al obtener las reseñas:', error);
+  }
+};
+
+const searchReviews = async () => {
+  offset.value = 0;
+  try {
+    const { data, error } = await supabase.rpc('get_reviews_paginated', {
+        _movie_id: route.params.id,
+        _limit: limit,
+        _offset: offset.value,
+        _sort_by: sortValue.value,
+        _filter: searchQuery.value
+      });
+
+      if (error) throw error;
+
+      const { reviews: reviews_add, has_more } = data as { reviews: Review[]; has_more: boolean };
+      console.log(reviews_add, has_more)
+      dataReviews.value = [...reviews_add];
+      console.log(dataReviews.value)
+
+      hasMore.value = has_more || false;
+      console.log(reviews)
+
+  } catch (error) {
+    console.error('Error al obtener las reseñas:', error);
+  }
+}
+
+const hasReviewFromUser = computed(() => {
+  return dataReviews.value.some(review => review.user_id === user.value?.id) && !!user.value;
+});
+
+const reviews = computed(() => {
+  return dataReviews.value.map((review) => ({
     ...review,
     created_at: new Date(review.created_at),
-  })) || []);
-
-const filteredReviews = computed(() => {
-  if (!searchQuery.value) return reviews;
-
-  return reviews.filter((review) => {
-    const commentMatch = review.comment
-      ?.toLowerCase()
-      .includes(searchQuery.value.toLowerCase());
-    const userMatch = review.user
-      ?.toLowerCase()
-      .includes(searchQuery.value.toLowerCase());
-    return userMatch || commentMatch;
-  });
+  }));
 });
-
-const visibleCount = reactive({ count: 5 });
-
-const visibleReviews = computed(() => {
-  return filteredReviews.value?.slice(0, visibleCount.count);
-});
-
-const loadMoreReviews = () => {
-  visibleCount.count = Math.min(visibleCount.count + 5, filteredReviews.value.length);
-};
 
 const directors = ref<CrewMember[]>();
 const writing = ref<CrewMember[]>();
@@ -105,11 +165,11 @@ const submitReview = async () => {
             spoilers: checked.value
           }
         
-          reviews.push(new_review)
+          dataReviews.value.unshift(new_review)
           rating.value = 1
           comment.value = ""
           checked.value = false
-          visible.value = false;
+          visible.value = false
       } else {
         if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
           toast.add({ severity: 'error', summary: 'Conflicto detectado', detail: 'Ya has dejado una reseña para esta película. No se permiten duplicados.', life: 3000})
@@ -156,9 +216,9 @@ const handleScroll = () => {
 };
 
 const deleteReview = (review_id: string) => {
-  const index = reviews.findIndex((review) => review.id === review_id);
+  const index = dataReviews.value.findIndex((review) => review.id === review_id);
   if (index !== -1) {
-    reviews.splice(index, 1);
+    dataReviews.value.splice(index, 1);
   }
 };
 
@@ -459,39 +519,48 @@ const visibleDrawerCast = ref(false);
           </div>
         </div>
         <div class="px-4 py-10 md:px-10">
-          <div class="flex items-center justify-between gap-8 mb-4">
-            <div class="flex items-center gap-8">
-              <h2 class="text-3xl font-bold">Reviews</h2>
-              <Button
-                v-if="user"
-                label="Añadir review"
-                variant="outlined"
-                @click="visible = true"
+          <div class="flex flex-col mb-4">
+              <div class="flex items-center gap-8">
+                <h2 class="text-3xl font-bold">Reviews</h2>
+              </div>
+            <div class="flex items-center justify-between gap-8 mt-4">
+              <SelectButton
+                class="shadow"
+                v-model="sortValue"
+                :options="optionsSort"
+                optionLabel="sort_by"
+                optionValue="value"
+                @change="searchReviews"
               />
-            </div>
 
-            <div class="search-container relative">
-              <span
-                class="absolute inset-y-0 left-4 flex items-center text-violet-900"
-              >
-                <i class="pi pi-search"></i>
-              </span>
-              <input
-                type="text"
-                v-model="searchQuery"
-                placeholder="Buscar review"
-                class="absolut pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
-              />
+              <div class="flex items-center space-x-6">
+                <Button label="Afegir ressenya" variant="text" @click="visible = true" raised rounded />
+                <div class="search-container relative">
+                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900">
+                    <i class="pi pi-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    v-model="searchQuery"
+                    placeholder="Buscar review"
+                    @keydown.enter="searchReviews"
+                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-          <div v-if="filteredReviews.length" class="space-y-4">
-            <ReviewCard
-              v-for="(review) in visibleReviews"
-              :review="review"
-              :key="review.id"
-              :film="dataMovie"
-              @delete-review="deleteReview"
-            ></ReviewCard>  
+          <div v-if="reviews.length" class="space-y-4">
+            <div v-for="(review, index) in reviews" :key="review.id">
+              <ReviewCard
+                :review="review"
+                :film="dataMovie"
+                @delete-review="deleteReview"
+              ></ReviewCard>
+              
+              <!-- Mostrar <hr> solo si no es la última reseña -->
+              <hr v-if="index === 0 && hasReviewFromUser" class="w-11/12 border-t-2 border-violet-500 mt-4 rounded mx-auto">
+            </div>
           </div>
           <p v-else-if="!reviews.length" class="text-gray-600 dark:text-gray-400">
             Encara no hi ha ressenyes.
@@ -499,9 +568,9 @@ const visibleDrawerCast = ref(false);
           <p v-else class="text-gray-600 dark:text-gray-400">
             No se encontraron resultados.
           </p>
-          <div v-if="visibleCount.count < filteredReviews.length" class="flex items-center justify-center gap-4 mt-4">
+          <div v-if="hasMore" class="flex items-center justify-center gap-4 mt-4">
             <hr class="w-1/4 border-t-2 border-violet-500">
-            <Button icon="pi pi-chevron-down" rounded severity="help" @click="loadMoreReviews" />
+            <Button icon="pi pi-chevron-down" rounded severity="help" @click="loadMoreReviews"/>
             <hr class="w-1/4 border-t-2 border-violet-500">
           </div>
         </div>
