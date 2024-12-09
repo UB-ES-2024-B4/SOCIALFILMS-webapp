@@ -8,9 +8,11 @@ CREATE TABLE public."User-Movies" (
     FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 ALTER TABLE public."User-Movies" ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY user_access_policy
 ON public."User-Movies"
 FOR ALL
+TO authenticated
 USING (user_id = auth.uid())
 WITH CHECK (user_id = auth.uid());
 
