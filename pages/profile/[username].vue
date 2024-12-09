@@ -66,6 +66,13 @@ try {
 	isLoadingReviews.value = false;
 }
 
+const deleteReview = (review_id: string) => {
+  const index = reviewsWithMovies.value.findIndex((review) => review.id === review_id);
+  if (index !== -1) {
+    reviewsWithMovies.value.splice(index, 1);
+  }
+};
+
 const { data, error } = (await supabase.rpc("get_trending_movies_of_week")) as {
   data: FilmsAPI;
   error: any;
