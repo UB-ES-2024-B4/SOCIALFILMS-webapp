@@ -600,9 +600,7 @@ const handleFollow = async (profile: Profile) => {
                   </div>
                 </div>
               </div>
-              <div class="flex gap-2">
-                <Button icon="pi pi-arrow-up-right" label="Ver película" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
-              </div>
+              <Button icon="pi pi-arrow-up-right" label="Ver película" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
             </div>
           </div>
         </Popover>

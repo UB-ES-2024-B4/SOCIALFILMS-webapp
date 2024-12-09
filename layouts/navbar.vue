@@ -2,11 +2,16 @@
 import "primeicons/primeicons.css";
 import UserProfileButton from "~/components/UserProfileButton.vue";
 import DialogProfileSettings from "~/components/DialogProfileSettings.vue";
+import NotificationCard from "~/components/NotificationCard.vue";
 
 const route = useRoute();
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const searchQuery = ref("");
+const notifications = ref();
+const seeNotifications = (event) => {
+  notifications.value.toggle(event);
+}
 
 const handleSubmitSearch = () => {
   if (searchQuery.value.trim()) {
@@ -113,8 +118,31 @@ onUnmounted(() => {
           </button>
         </form>
         <OverlayBadge v-if="user" value="2" severity="danger" size="small">
-          <Button icon="pi pi-bell" severity="secondary" rounded />
+          <Button icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
         </OverlayBadge>
+        <Popover ref="notifications" class="no-padding-popover">
+          <div class="flex flex-col w-[32rem] h-[calc(100vh-150px)] py-3">
+            <div class="flex items-center justify-between pl-6 pr-5">
+              <span class="text-xl font-semibold">Notificacions</span>
+              <Button label="Marca tot com a llegit" icon="pi pi" severity="info" variant="text">
+                <template #icon>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="size-6">
+                    <path d="M1.5 12.5L5.57574 16.5757C5.81005 16.8101 6.18995 16.8101 6.42426 16.5757L9 14" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M16 7L12 11" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M7 12L11.5757 16.5757C11.8101 16.8101 12.1899 16.8101 12.4243 16.5757L22 7" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </template>
+              </Button>
+            </div>
+            <div class="border-[1.3px] border-zinc-300/85 mt-1 shadow"></div>
+            <ScrollPanel style="width: 100%; height: calc(100% - 40px);">
+              <div class="flex flex-col gap-2 pt-2 px-2">
+                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
+                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
+              </div>
+            </ScrollPanel>
+          </div>
+        </Popover>
         <UserProfileButton v-if="user" class="mr-2.5"></UserProfileButton>
         <div v-else class="flex gap-2 mr-4">
           <Button
@@ -137,3 +165,9 @@ onUnmounted(() => {
     <slot />
   </div>
 </template>
+
+<style>
+.no-padding-popover .p-popover-content {
+  --p-popover-content-padding: 0;
+}
+</style>
