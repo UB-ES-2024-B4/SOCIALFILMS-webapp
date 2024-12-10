@@ -23,5 +23,5 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           build: npx nuxi build
-          start: npx nuxi init
+          start: npx nuxi start
           wait-on: "http://localhost:3000"
