@@ -22,6 +22,12 @@ jobs:
       - name: Run E2E tests
         uses: cypress-io/github-action@v6
         with:
+          env:
+            SUPABASE_URL: ${{ env.SUPABASE_URL }}
+            SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+            CYPRESS_URL: ${{ env.CYPRESS_URL }}
+            CYPRESS_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+            CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           build: npx nuxi build
           start: npx nuxi start
           wait-on: "http://localhost:3000"
