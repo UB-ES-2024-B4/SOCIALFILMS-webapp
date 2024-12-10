@@ -21,3 +21,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Run E2E tests
         uses: cypress-io/github-action@v6
+        with:
+          build: npx nuxi build
+          start: npx nuxi init
+          wait-on: "http://localhost:3000"
