@@ -74,12 +74,12 @@ defineProps({
 					alt="image"
 					/>
 				<div class="w-full flex flex-col justify-between">
-					<div class="w-full flex justify-between">
+					<div class="w-full flex items-start justify-between">
 						<div class="pt-1 flex flex-col">
 							<h3 class="text-lg font-semibold">Moana 2</h3>
 							<span class="w-48 font-medium text-slate-500 dark:text-slate-400 text-sm truncate">Animation • Adventure • Family • Comedy</span>
 						</div>
-						<div class="bg-slate-100 dark:bg-zinc-700 p-1 h-[31.5px]" style="border-radius: 30px">
+						<div class="bg-slate-100 dark:bg-zinc-700 p-1" style="border-radius: 30px">
 							<div class="bg-white dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2" style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
 								<span class="text-slate-900 dark:text-slate-200 font-medium text-sm">8.5</span>
 								<i class="pi pi-star-fill text-yellow-500"></i>

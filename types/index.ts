@@ -117,6 +117,18 @@ export interface Profile {
   is_following?: boolean
 }
 
+export interface Following {
+  following_id: string
+  following_username: string
+  followed_at: Date
+}
+
+export interface Followers {
+  follower_id: string
+  follower_username: string
+  followed_at: Date
+}
+
 export const countries = [
   { name: 'Afghanistan', code: 'AF' },
   { name: 'Albania', code: 'AL' },

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Film, Review, CreditsAPI, CastMember, CrewMember } from "~/types";
+import type { Film, Review, CreditsAPI, CastMember, CrewMember, Following } from "~/types";
 import { formatRuntime } from "~/utils/timeFunctions";
 import ReviewCard from "~/components/ReviewCard.vue";
 import CreditCard from "~/components/CreditCard.vue";
@@ -182,7 +182,6 @@ const submitReview = async () => {
     }
 }
 
-
 try {
   const { data, error: errorCredits } = (await supabase.rpc(
     "get_credits_movie",
@@ -222,17 +221,84 @@ const deleteReview = (review_id: string) => {
   }
 };
 
+const visibleDrawerDirector = ref(false);
+const visibleDrawerScript = ref(false);
+const visibleDrawerCast = ref(false);
+
+const currentURL = ref();
+const shareMoviePopover = ref();
+const followingProfiles = ref<Following[]>();
+const isLoadingShareMovie = ref(false);
+const seeShareMoviePopover = async (event: Event) => {
+  shareMoviePopover.value.toggle(event);
+  isLoadingShareMovie.value = true;
+  try {
+    const { data, error } = (await supabase.rpc(
+      "get_following",
+      { _username: user.value?.user_metadata.username }
+    )) as { data: Following[]; error: any };
+
+    if (error) throw error;
+
+    if (data.success) {
+      followingProfiles.value = data.data;
+    } else {
+      console.error("Error in RPC response:", data.message);
+    }
+
+  } catch (error) {
+    console.error("Error loading following profiles:", error);
+  } finally {
+    isLoadingShareMovie.value = false;
+  }
+}
+
+const usersToSendMovie = ref<string[]>([]);
+const addUserToSendMovie = (username: string) => {
+  const index = usersToSendMovie.value.indexOf(username);
+  if (index > -1) {
+    usersToSendMovie.value.splice(index, 1);
+  } else {
+    usersToSendMovie.value.push(username);
+  }
+};
+
+const isLoadingSendMovie = ref(false);
+const sendMovieToUsers = async (event: Event) => {
+  isLoadingSendMovie.value = true;
+  try {
+    const results = await Promise.all(
+      usersToSendMovie.value.map((username) =>
+        supabase.rpc("send_notification", { _receiver_username: username, _movie_id: route.params.id })
+      )
+    );
+
+    results.forEach((result, index) => {
+      if (result.error) {
+        console.error(
+          `Error sending the movie to user ${usersToSendMovie.value[index]}:`,
+          result.error
+        );
+      }
+    });
+
+  } catch (error) {
+    console.error("Unexpected error while sending movies:", error);
+  } finally {
+    isLoadingSendMovie.value = false;
+    shareMoviePopover.value.toggle(event);
+  }
+}
+
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  currentURL.value = window.location.href;
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 
-const visibleDrawerDirector = ref(false);
-const visibleDrawerScript = ref(false);
-const visibleDrawerCast = ref(false);
 </script>
 
 <template>
@@ -388,7 +454,57 @@ const visibleDrawerCast = ref(false);
             :style="{ transform: `translateY(${posterTranslateY}px)` }"
           />
           <div class="flex flex-col">
-            <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
+            <div class="flex items-start justify-between">
+              <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
+              <Button severity="contrast" variant="outlined" rounded icon="pi pi-share-alt" label="Compartir pel·lícula" :loading="isLoadingShareMovie" @click="seeShareMoviePopover" />
+              <Popover ref="shareMoviePopover">
+                <div class="flex flex-col gap-4 w-[25rem]">
+                  <div>
+                    <span class="font-medium block mb-2">Comparteix l'enllaç</span>
+                    <InputGroup>
+                      <InputText :value="currentURL" readonly class="w-[25rem]" 
+                      :pt="{
+                        root: { class: 'leading-none' },
+                      }"></InputText>
+                      <InputGroupAddon>
+                        <i class="pi pi-copy"></i>
+                      </InputGroupAddon>
+                    </InputGroup>
+                  </div>
+                  <div>
+                    <span class="font-medium block mb-2">Comparteix amb algú que segueixis</span>
+                    <ul v-if="followingProfiles?.length" class="list-none px-1 m-0 flex flex-wrap items-center justify-between gap-4">
+                      <li v-for="profile in followingProfiles" :key="profile.following_id" class="flex flex-col items-center justify-center gap-1">
+                        <div class="relative">
+                          <Avatar
+                            :label="profile.following_username ? profile.following_username[0] : 'T'"
+                            class="cursor-pointer"
+                            size="xlarge"
+                            shape="circle"
+                            :icon="'pi pi-user'"
+                            @click="addUserToSendMovie(profile.following_username)"
+                          />
+                          <!-- Badge -->
+                          <div
+                            v-if="usersToSendMovie?.includes(profile.following_username)"
+                            class="absolute bottom-0 -right-1 w-5 h-5 rounded-full outline outline-white bg-blue-500 flex items-center justify-center text-white"
+                          >
+                            <i class="mt-[1px] pi pi-check leading-none text-[0.65rem]"></i>
+                          </div>
+                        </div>
+                        <span
+                          class="font-medium cursor-pointer leading-tight"
+                          @click="addUserToSendMovie(profile.following_username)"
+                        >
+                          {{ profile.following_username }}
+                        </span>  
+                      </li>
+                    </ul>
+                  </div>
+					        <Button label="Comparteix" :loading="isLoadingSendMovie" fluid @click="sendMovieToUsers"></Button>
+                </div>
+              </Popover>
+            </div>
             <div class="flex flex-col flex-1 mt-4 md:flex-row md:mt-0 gap-14">
               <div class="flex-1 flex flex-col space-y-3">
                 <h2 class="text-lg text-gray-600 dark:text-gray-400">
