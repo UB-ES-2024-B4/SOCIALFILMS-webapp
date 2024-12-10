@@ -121,9 +121,9 @@ onUnmounted(() => {
           <Button icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
         </OverlayBadge>
         <Popover ref="notifications" class="no-padding-popover">
-          <div class="flex flex-col w-[32rem] h-[calc(100vh-150px)] py-3">
-            <div class="flex items-center justify-between pl-6 pr-5">
-              <span class="text-xl font-semibold">Notificacions</span>
+          <div class="flex flex-col w-[33rem] h-[calc(100vh-150px)] py-3">
+            <div class="flex items-center justify-between pl-6 pr-5 mb-1.5">
+              <span class="text-xl font-semibold text-black">Notificacions</span>
               <Button label="Marca tot com a llegit" icon="pi pi" severity="info" variant="text">
                 <template #icon>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="size-6">
@@ -134,12 +134,23 @@ onUnmounted(() => {
                 </template>
               </Button>
             </div>
-            <div class="border-[1.3px] border-zinc-300/85 mt-1 shadow"></div>
             <ScrollPanel style="width: 100%; height: calc(100% - 40px);">
-              <div class="flex flex-col gap-2 pt-2 px-2">
+              <div class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
+                Avui
+              </div>
+              <div class="flex flex-col gap-1.5 py-1 px-1">
                 <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
                 <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
               </div>
+
+              <div class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
+                Anteriors
+              </div>
+              <div class="flex flex-col gap-1.5 py-1 px-1">
+                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
+                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
+              </div>
+              
             </ScrollPanel>
           </div>
         </Popover>
