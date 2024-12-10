@@ -221,7 +221,7 @@ const handleFollow = async () => {
 						<!-- Follow and Share Buttons -->
 						<div class="flex justify-center items-center gap-4">
 							<Button 
-								:label="profile?.is_following ? 'Seguiendo' : 'Seguir'" 
+								:label="profile?.is_following ? 'Siguiendo' : 'Seguir'" 
 								:icon="profile?.is_following ? 'pi pi-check' : 'pi pi-user-plus'" 
 								:loading="isProcessingFollow"
 								@click="handleFollow" />
