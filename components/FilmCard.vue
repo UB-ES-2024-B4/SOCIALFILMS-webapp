@@ -48,7 +48,7 @@ const buttonClick = (event: MouseEvent) => {
       <div class="absolute top-4 right-3">
         <button
           @click="buttonClick($event)"
-          class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-lg"
+          class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-lg hover:cursor-pointer hover:bg-gray-200 hover:shadow-xl transition-all"
         >
           <i
             :class="
