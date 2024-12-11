@@ -30,4 +30,4 @@ jobs:
         with:
           build: npx nuxi build
           start: npx nuxi start
-          wait-on: "http://localhost:3000"
+          wait-on: "http://127.0.0.1:3000"
