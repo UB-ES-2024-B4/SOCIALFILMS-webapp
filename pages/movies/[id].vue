@@ -263,6 +263,29 @@ const addUserToSendMovie = (username: string) => {
   }
 };
 
+const iconShareMovieClipboard = ref('pi pi-copy');
+const shareMovieClipboard = () => {
+	const currentURL = window.location.href;
+	navigator.clipboard.writeText(currentURL)
+			.then(() => {          
+          iconShareMovieClipboard.value = 'pi pi-check';
+
+          setTimeout(() => {
+            iconShareMovieClipboard.value = 'pi pi-copy';
+          }, 2000);
+					console.log("Enlace copiado al portapapeles");
+			})
+			.catch((err) => {
+					toast.add({
+							severity: "error",
+							summary: "Error al copiar",
+							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							life: 3000,
+					});
+					console.error("Error al copiar el enlace: ", err);
+			});
+};
+
 const isLoadingSendMovie = ref(false);
 const sendMovieToUsers = async (event: Event) => {
   isLoadingSendMovie.value = true;
@@ -458,7 +481,7 @@ onBeforeUnmount(() => {
               <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
               <Button severity="contrast" variant="outlined" rounded icon="pi pi-share-alt" label="Compartir pel·lícula" :loading="isLoadingShareMovie" @click="seeShareMoviePopover" />
               <Popover ref="shareMoviePopover">
-                <div class="flex flex-col gap-4 w-[25rem]">
+                <div class="flex flex-col gap-4 w-[25rem] max-h-[calc(100vh-200px)]">
                   <div>
                     <span class="font-medium block mb-2">Comparteix l'enllaç</span>
                     <InputGroup>
@@ -467,13 +490,20 @@ onBeforeUnmount(() => {
                         root: { class: 'leading-none' },
                       }"></InputText>
                       <InputGroupAddon>
-                        <i class="pi pi-copy"></i>
+                        <Button 
+                          :icon="iconShareMovieClipboard" 
+                          severity="secondary" 
+                          variant="text"
+                          @click="shareMovieClipboard" 
+                          :pt="{
+                            root: { class: 'leading-[1.1rem]' },
+                          }" />
                       </InputGroupAddon>
                     </InputGroup>
                   </div>
-                  <div>
+                  <div class="overflow-y-auto">
                     <span class="font-medium block mb-2">Comparteix amb algú que segueixis</span>
-                    <ul v-if="followingProfiles?.length" class="list-none px-1 m-0 flex flex-wrap items-center justify-between gap-4">
+                    <ul v-if="true" class="list-none px-1 m-0 flex flex-wrap items-center justify-between gap-4">
                       <li v-for="profile in followingProfiles" :key="profile.following_id" class="flex flex-col items-center justify-center gap-1">
                         <div class="relative">
                           <Avatar
@@ -481,7 +511,6 @@ onBeforeUnmount(() => {
                             class="cursor-pointer"
                             size="xlarge"
                             shape="circle"
-                            :icon="'pi pi-user'"
                             @click="addUserToSendMovie(profile.following_username)"
                           />
                           <!-- Badge -->
@@ -500,8 +529,16 @@ onBeforeUnmount(() => {
                         </span>  
                       </li>
                     </ul>
+                    <span v-else class="text-gray-500 text-[0.95rem] italic">No tens seguidors mutus per compartir</span>
                   </div>
-					        <Button label="Comparteix" :loading="isLoadingSendMovie" fluid @click="sendMovieToUsers"></Button>
+                  <div v-if="usersToSendMovie.length" class="p-1">
+                    <Button 
+                      label="Comparteix" 
+                      :loading="isLoadingSendMovie" 
+                      fluid 
+                      @click="sendMovieToUsers">
+                    </Button>
+                  </div>
                 </div>
               </Popover>
             </div>

@@ -129,6 +129,17 @@ export interface Followers {
   followed_at: Date
 }
 
+export interface Notification {
+  follower_id: string
+  follower_username: string
+  followed_at: Date
+}
+
+export interface Notifications {
+  data: Notification[]
+  no_is_read: number
+}
+
 export const countries = [
   { name: 'Afghanistan', code: 'AF' },
   { name: 'Albania', code: 'AL' },

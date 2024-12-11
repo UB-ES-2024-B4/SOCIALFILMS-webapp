@@ -1,17 +1,47 @@
 <script setup lang="ts">
 import "primeicons/primeicons.css";
 import UserProfileButton from "~/components/UserProfileButton.vue";
-import DialogProfileSettings from "~/components/DialogProfileSettings.vue";
 import NotificationCard from "~/components/NotificationCard.vue";
+import type { Notification, Notifications } from "~/types"; 
 
 const route = useRoute();
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const searchQuery = ref("");
-const notifications = ref();
-const seeNotifications = (event) => {
-  notifications.value.toggle(event);
+const notificationsPopover = ref();
+const notifications = ref<Notifications>();
+
+const seeNotifications = async (event: Event) => {
+  notificationsPopover.value.toggle(event);
+  try {
+    const { data, error } = (await supabase.rpc(
+      "get_notifications"
+    )) as { data: Notifications; error: any };
+
+    if (error) throw error;
+
+    notifications.value = data;
+
+  } catch (error) {
+    console.error("Error loading notifications:", error);
+  }
 }
+
+const notificationsRealtime = supabase
+  .channel('notification-changes')
+  .on(
+    'postgres_changes',
+    {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notifications',
+      filter: `receiver_id=eq.${user.value?.id}`,
+    },
+    (payload) => {
+      notifications.value.push(payload.new)
+    }
+  )
+  .subscribe()
 
 const handleSubmitSearch = () => {
   if (searchQuery.value.trim()) {
@@ -120,7 +150,7 @@ onUnmounted(() => {
         <OverlayBadge v-if="user" value="2" severity="danger" size="small">
           <Button icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
         </OverlayBadge>
-        <Popover ref="notifications" class="no-padding-popover">
+        <Popover ref="notificationsPopover" class="no-padding-popover">
           <div class="flex flex-col w-[33rem] h-[calc(100vh-150px)] py-3">
             <div class="flex items-center justify-between pl-6 pr-5 mb-1.5">
               <span class="text-xl font-semibold text-black">Notificacions</span>
