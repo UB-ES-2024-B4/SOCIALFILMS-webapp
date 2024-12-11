@@ -41,5 +41,7 @@ jobs:
           CYPRESS_URL: ${{ env.CYPRESS_URL }}
           CYPRESS_SUPABASE_URL: ${{ env.SUPABASE_URL }}
           CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DEBUG: '@cypress/github-action'
         with:
-          wait-on: "http://localhost:3000"
+          command: curl -i http://localhost:3000
+          wait-on: 'http://localhost:3000'
