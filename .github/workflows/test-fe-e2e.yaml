@@ -27,7 +27,7 @@ jobs:
         run: npx nuxi build
 
       - name: Start server
-        run: npx nuxi start
+        run: nohup npx nuxi start &
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -41,3 +41,5 @@ jobs:
           CYPRESS_URL: ${{ env.CYPRESS_URL }}
           CYPRESS_SUPABASE_URL: ${{ env.SUPABASE_URL }}
           CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        with:
+          wait-on: "http://localhost:3000"
