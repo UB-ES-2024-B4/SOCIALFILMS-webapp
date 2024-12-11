@@ -24,10 +24,10 @@ jobs:
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          CYPRESS_URL: https://socialfilms.nuxt.dev
+          CYPRESS_URL: ${{ env.CYPRESS_URL }}
           CYPRESS_SUPABASE_URL: ${{ env.SUPABASE_URL }}
           CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         with:
           build: npx nuxi build
-          start: npx nuxi start
-          wait-on: "http://127.0.0.1:3000"
+          start: node .output/server/index.mjs
+          wait-on: 'http://localhost:3000'
