@@ -388,7 +388,25 @@ const visibleDrawerCast = ref(false);
             :style="{ transform: `translateY(${posterTranslateY}px)` }"
           />
           <div class="flex flex-col">
-            <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
+            <div class="flex items-start justify-between">
+              <h1 class="text-7xl font-extrabold mb-4 truncate">{{ dataMovie.title }}</h1>
+              <div class="flex items-center gap-2">
+                <button
+                  @click=""
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
+                >
+                  <i
+                    :class="[
+                      false
+                        ? 'pi pi-bookmark-fill text-amber-400'
+                        : 'pi pi-bookmark-fill text-gray-300',
+                        'text-xl']
+                    "
+                  ></i>
+                </button>
+                <Button class="shadow-md" severity="contrast" rounded icon="pi pi-share-alt" label="Compartir pel·lícula" />
+              </div>
+            </div>
             <div class="flex flex-col flex-1 mt-4 md:flex-row md:mt-0 gap-14">
               <div class="flex-1 flex flex-col space-y-3">
                 <h2 class="text-lg text-gray-600 dark:text-gray-400">
