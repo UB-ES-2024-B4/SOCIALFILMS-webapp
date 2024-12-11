@@ -19,15 +19,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run E2E tests
-        uses: cypress-io/github-action@v6
+        
+      - name: Build project
+        run: npx nuxi build
+
+      - name: Start server
+        run: npx nuxi start
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+      - name: Check server status
+        run: curl -i http://localhost:3000
+
+      - name: Run E2E tests
+        uses: cypress-io/github-action@v6
+        env:
           CYPRESS_URL: ${{ env.CYPRESS_URL }}
           CYPRESS_SUPABASE_URL: ${{ env.SUPABASE_URL }}
           CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        with:
-          build: npx nuxi build
-          start: node .output/server/index.mjs
-          wait-on: 'http://localhost:3000'
