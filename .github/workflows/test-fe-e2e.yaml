@@ -33,7 +33,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
       - name: Check server status
-        run: curl -i http://localhost:3000
+        run: curl -i ${{ env.CYPRESS_URL }}
 
       - name: Run E2E tests
         uses: cypress-io/github-action@v6
@@ -43,5 +43,4 @@ jobs:
           CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DEBUG: '@cypress/github-action'
         with:
-          command: curl -i http://localhost:3000
-          wait-on: 'http://localhost:3000'
+          wait-on: ${{ env.CYPRESS_URL }}
