@@ -19,28 +19,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: npm install
-        
-      - name: Build project
-        run: npx nuxi build
-
-      - name: Start server
-        run: nohup npx nuxi start &
-        env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-
-      - name: Check server status
-        run: curl -i ${{ env.CYPRESS_URL }}
-
       - name: Run E2E tests
         uses: cypress-io/github-action@v6
         env:
-          CYPRESS_URL: ${{ env.CYPRESS_URL }}
-          CYPRESS_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          CYPRESS_URL: ${{ vars.CYPRESS_URL }}
+          CYPRESS_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          DEBUG: '@cypress/github-action'
         with:
-          wait-on: ${{ env.CYPRESS_URL }}
+          build: npx nuxi build
+          start: npx nuxi start
+          wait-on: ${{ vars.CYPRESS_URL }}

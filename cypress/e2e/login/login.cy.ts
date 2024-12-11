@@ -2,7 +2,6 @@ describe('Login functionality', () => {
   const baseUrl = Cypress.env('URL');
 
   it('Navega a la pagina de login', () => {
-    cy.log(baseUrl);
     cy.visit(baseUrl);
     cy.contains('Inicia sessió').click(); 
     cy.url().should('include', '/login'); 
