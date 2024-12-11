@@ -21,3 +21,13 @@ jobs:
         uses: actions/checkout@v4
       - name: Run E2E tests
         uses: cypress-io/github-action@v6
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          CYPRESS_URL: ${{ vars.CYPRESS_URL }}
+          CYPRESS_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          CYPRESS_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        with:
+          build: npx nuxi build
+          start: npx nuxi start
+          wait-on: ${{ vars.CYPRESS_URL }}
