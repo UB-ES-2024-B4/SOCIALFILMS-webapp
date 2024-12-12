@@ -27,17 +27,42 @@ BEGIN
     USING ERRCODE = 'F0003';
   END IF;
 
-  -- Update the is_read field
-  UPDATE public.notifications
-  SET is_read = _is_read
-  WHERE sender_id = _sender_id
-  AND receiver_id = _receiver_id
-  AND movie_id = _movie_id;
+  -- Check if the notification is already set to the desired is_read status
+  IF EXISTS (
+    SELECT 1
+    FROM public.notifications
+    WHERE sender_id = _sender_id
+    AND receiver_id = _receiver_id
+    AND movie_id = _movie_id
+    AND is_read = _is_read
+  ) THEN
 
-  -- Check if any rows were updated
-  GET DIAGNOSTICS rows_updated = ROW_COUNT;
+    RETURN json_build_object(
+      'success', FALSE,
+      'message', 'is_read is already set to ' || _is_read
+    );
+  END IF;
+  
+  -- Update the is_read field if the notification exists
+  IF EXISTS (
+    SELECT 1
+    FROM public.notifications
+    WHERE sender_id = _sender_id
+    AND receiver_id = _receiver_id
+    AND movie_id = _movie_id
+  ) THEN
+    -- Update the is_read field
+    UPDATE public.notifications
+    SET is_read = _is_read
+    WHERE sender_id = _sender_id
+    AND receiver_id = _receiver_id
+    AND movie_id = _movie_id;
 
-  IF rows_updated = 0 THEN
+    RETURN json_build_object(
+      'success', TRUE,
+      'message', 'Notification is_read updated successfully'
+    );
+  ELSE
     RETURN json_build_object(
       'success', FALSE,
       'message', 'Notification not found'
@@ -79,7 +104,7 @@ BEGIN
     RAISE EXCEPTION 'User % does not exist', _sender_username
     USING ERRCODE = 'F0003';
   END IF;
-
+  
   -- Retrieve the is_read status
   SELECT is_read
   INTO is_read_status
