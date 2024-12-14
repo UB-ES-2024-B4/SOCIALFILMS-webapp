@@ -11,26 +11,26 @@ const searchQuery = ref("");
 const notificationsPopover = ref();
 const notifications = ref<Notifications>();
 
+try {
+  const { data, error } = (await supabase.rpc(
+    "get_notifications"
+  )) as { data: Notifications; error: any };
+
+  if (error) throw error;
+
+  notifications.value = data;
+
+} catch (error) {
+  if (error.code === 'F0001'){
+    console.error("User doesn't have notifications");
+  }
+  else {
+    console.error("Error loading notifications:", error);      
+  }
+}
+
 const seeNotifications = async (event: Event) => {
   notificationsPopover.value.toggle(event);
-  try {
-    const { data, error } = (await supabase.rpc(
-      "get_notifications"
-    )) as { data: Notifications; error: any };
-
-    if (error) throw error;
-
-    notifications.value = data;
-    console.log(notifications.value)
-
-  } catch (error) {
-    if (error.code === 'F0001'){
-      console.error("User doesn't have notifications");
-    }
-    else {
-      console.error("Error loading notifications:", error);      
-    }
-  }
 };
 
 const todayNotifications = computed(() => {
@@ -99,6 +99,20 @@ const setAllNotificationsAsRead = async () => {
     console.error("Error setting all notifications as read:", error);      
   }
 };
+
+const unreadCount = computed(() => {
+  if (notifications.value?.notifications) {
+    return notifications.value.notifications.filter((n) => !n.is_read).length;
+  }
+  return 0;
+});
+
+watch(
+  () => unreadCount.value,
+  (newCount) => {
+    if (notifications.value) notifications.value.unread_count = newCount;
+  }
+);
 
 const deleteNotification = async (notification: Notification) => {
   if (notifications.value) {
@@ -220,13 +234,14 @@ watch(
             <i class="pi pi-filter"></i>
           </button>
         </form>
-        <OverlayBadge v-if="user" value="2" severity="danger" size="small">
+        <OverlayBadge v-if="user && notifications?.unread_count !== 0" :value="notifications?.unread_count" severity="danger" size="small">
           <Button icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
         </OverlayBadge>
+        <Button v-else-if="user && notifications?.unread_count === 0" icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
         <Popover ref="notificationsPopover" class="no-padding-popover">
           <div class="flex flex-col w-[33rem] h-[calc(100vh-150px)] py-3">
             <div class="flex items-center justify-between pl-6 pr-5 mb-1.5">
-              <span class="text-xl font-semibold text-black">Notificacions</span>
+              <span class="text-xl font-semibold text-black dark:text-white">Notificacions</span>
               <Button label="Marca tot com a llegit" icon="pi pi" severity="info" variant="text" @click="setAllNotificationsAsRead">
                 <template #icon>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="size-6">
@@ -238,7 +253,7 @@ watch(
               </Button>
             </div>
             <ScrollPanel style="width: 100%; height: calc(100% - 40px);">
-              <div v-if="todayNotifications.length" class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
+              <div v-if="todayNotifications.length" class="h-10 bg-[#F8F9FD] dark:bg-[#1B1D23] border-y-[1.5px] border-y-[#EBEDF1] dark:border-y-[#2E3037] pl-6 flex items-center text-lg text-zinc-900 dark:text-zinc-200 sticky top-0 z-10">
                 Avui
               </div>
               <div class="flex flex-col gap-1 py-1 px-1">
@@ -250,7 +265,7 @@ watch(
                 ></NotificationCard>
               </div>
 
-              <div v-if="olderNotifications.length" class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
+              <div v-if="olderNotifications.length" class="h-10 bg-[#F8F9FD] dark:bg-[#1B1D23] border-y-[1.5px] border-y-[#EBEDF1] dark:border-y-[#2E3037] pl-6 flex items-center text-lg text-zinc-900 dark:text-zinc-200 sticky top-0 z-10">
                 Anteriors
               </div>
               <div class="flex flex-col gap-1.5 py-1 px-1">

@@ -520,9 +520,9 @@ onBeforeUnmount(() => {
                           <!-- Badge -->
                           <div
                             v-if="usersToSendMovie?.includes(profile.following_username)"
-                            class="absolute bottom-0 -right-1 w-5 h-5 rounded-full outline outline-white bg-blue-500 flex items-center justify-center text-white"
+                            class="absolute bottom-0 -right-1 w-5 h-5 rounded-full outline outline-white dark:outline-zinc-900 bg-blue-500 flex items-center justify-center text-white"
                           >
-                            <i class="mt-[1px] pi pi-check leading-none text-[0.65rem]"></i>
+                            <i class="mt-[1px] pi pi-check leading-none text-[0.65rem] dark:text-zinc-900"></i>
                           </div>
                         </div>
                         <span

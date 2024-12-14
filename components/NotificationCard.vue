@@ -61,7 +61,7 @@ const deleteNotification = async () => {
 <template>
   <div 
     :class="[ 'w-full flex items-start gap-3 py-3 px-4 rounded-lg', 
-    notification.is_read ? 'bg-transparent' : 'bg-sky-500/15' ]"
+    notification.is_read ? 'bg-transparent' : 'bg-sky-500/15 dark:bg-sky-400/15' ]"
     :style="{
       transition: 'background-color 0.5s ease',
     }">
@@ -112,7 +112,7 @@ const deleteNotification = async () => {
       </div>
 			
 			<!-- Movie info -->
-			<div class="w-full flex gap-4 border-[1.2px] rounded-lg mt-3 p-3 bg-[#fdfdfd]">
+			<div class="w-full flex gap-4 border-[1.2px] rounded-lg mt-3 p-3 bg-[#fdfdfd] dark:bg-[#1C1C1C] dark:border-[#2A2A2A]">
 				<img
 					class="w-24 rounded"
 					:src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
