@@ -44,7 +44,7 @@ describe('Publish and delete review functionality', () => {
 
     it('Does not allow to publish a review', () => {
         cy.visit(`${baseUrl}/movies/${movieId}`);
-        cy.wait(2000);
+        cy.wait(4000);
         cy.contains('Afegir ressenya').click();
         cy.wait(2000);
         cy.get('textarea').type('Muy buena pelicula');
@@ -55,6 +55,7 @@ describe('Publish and delete review functionality', () => {
   
     it('Publishes and deletes a review', () => {
         cy.visit(baseUrl);
+        cy.wait(2000);
         cy.contains('Inicia sessió').click();
         cy.get('input[id="on_label_email"]').type(email);
         cy.get('#on_label_password').type(password);
@@ -124,9 +125,8 @@ describe('Publish and delete review functionality', () => {
             .should('contain.text', 'Tu reseña se ha publicado con éxito.');
         cy.visit(`${baseUrl}/movies/${movieId}`);
         cy.wait(4000);
-        cy.get('h1.text-2xl.font-bold.cursor-pointer[data-v-inspector="components/ReviewCard.vue:546:11"]')
-        .contains('Marc')
-        .should('exist') 
+        cy.get('h1.text-2xl.font-bold.cursor-pointer:contains("Marc")')
+        .should('exist')
             .parent()
             .parent()
             .parent()
