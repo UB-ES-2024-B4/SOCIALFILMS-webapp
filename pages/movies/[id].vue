@@ -537,7 +537,7 @@ const visibleDrawerCast = ref(false);
               <div class="flex items-center space-x-6">
                 <Button label="Afegir ressenya" variant="text" @click="visible = true" raised rounded />
                 <div class="search-container relative">
-                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900">
+                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900 dark:text-violet-400">
                     <i class="pi pi-search"></i>
                   </span>
                   <input
@@ -545,7 +545,7 @@ const visibleDrawerCast = ref(false);
                     v-model="searchQuery"
                     placeholder="Buscar review"
                     @keydown.enter="searchReviews"
-                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
+                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 dark:placeholder-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
                   />
                 </div>
               </div>

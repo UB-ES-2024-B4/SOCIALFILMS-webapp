@@ -165,7 +165,11 @@ watch(
 </script>
 
 <template>
-  <div class="mt-28 w-full h-full">
+  <div
+    class="w-full h-full fixed inset-0 bg-cover bg-center"
+    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${filmsQueryOriginal.results[0]?.backdrop_path})` }"
+  ></div>
+  <div class="pt-[4.5rem] w-full h-full relative backdrop-blur-xl bg-zinc-300/20 dark:bg-black/60">
     <div class="flex my-5 ml-10 mr-4">
       <div class="flex-none">
         <div v-if="isFiltersVisible" class="w-72 mr-10 rounded-md shadow">
