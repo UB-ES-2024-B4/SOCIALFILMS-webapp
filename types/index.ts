@@ -130,14 +130,12 @@ export interface Followers {
 }
 
 export interface Notification {
-  follower_id: string
-  follower_username: string
-  followed_at: Date
-}
-
-export interface Notifications {
-  data: Notification[]
-  no_is_read: number
+  sender_id: string
+  receiver_id: string
+  movie_id: string
+  is_read: boolean
+  receiver_username: string
+  sender_username: string
 }
 
 export const countries = [

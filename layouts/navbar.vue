@@ -2,28 +2,34 @@
 import "primeicons/primeicons.css";
 import UserProfileButton from "~/components/UserProfileButton.vue";
 import NotificationCard from "~/components/NotificationCard.vue";
-import type { Notification, Notifications } from "~/types"; 
+import type { Notification } from "~/types"; 
 
 const route = useRoute();
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const searchQuery = ref("");
 const notificationsPopover = ref();
-const notifications = ref<Notifications>();
+const notifications = ref<Notification[]>([]);
 
 const seeNotifications = async (event: Event) => {
   notificationsPopover.value.toggle(event);
   try {
     const { data, error } = (await supabase.rpc(
       "get_notifications"
-    )) as { data: Notifications; error: any };
+    )) as { data: Notification[]; error: any };
 
     if (error) throw error;
 
     notifications.value = data;
+    console.log(notifications.value)
 
   } catch (error) {
-    console.error("Error loading notifications:", error);
+    if (error.code === 'F0001'){
+      console.error("User doesn't have notifications");
+    }
+    else {
+      console.error("Error loading notifications:", error);      
+    }
   }
 }
 
@@ -38,7 +44,7 @@ const notificationsRealtime = supabase
       filter: `receiver_id=eq.${user.value?.id}`,
     },
     (payload) => {
-      notifications.value.push(payload.new)
+      notifications.value?.push(payload.new)
     }
   )
   .subscribe()
