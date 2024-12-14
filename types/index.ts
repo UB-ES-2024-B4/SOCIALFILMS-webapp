@@ -136,7 +136,14 @@ export interface Notification {
   is_read: boolean
   receiver_username: string
   sender_username: string
+  created_at: string
 }
+
+export interface Notifications {
+  notifications: Notification[]
+  unread_count: number
+}
+
 
 export const countries = [
   { name: 'Afghanistan', code: 'AF' },

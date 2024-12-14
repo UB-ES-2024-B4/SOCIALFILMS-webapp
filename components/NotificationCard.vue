@@ -1,27 +1,62 @@
 <script setup lang="ts">
 import "primeicons/primeicons.css";
-import type { Film, Profile } from "~/types";
+import type { Film, Notification } from "~/types";
 import { timeAgo } from "~/utils/timeFunctions";
 
-defineProps({
-  sender: {
-    type: String,
+const props = defineProps({
+  notification: {
+    type: Object as PropType<Notification>,
     required: true,
-  },
-  receiver: {
-    type: String,
-    required: true,
-  },
-  film: {
-    type: Object as PropType<Film | undefined>,
-    required: false,
   },
 });
+
+const emit = defineEmits<{
+  (event: 'delete-notification', notification: Notification): void;
+}>();
+
+const supabase = useSupabaseClient();
+
+const { data: movie, error: errorMovie } = (await supabase.rpc(
+  "find_movie_by_id",
+  { movie_id: props.notification.movie_id }
+)) as { data: Film; error: any };
+
+const setNotificationAsRead = async () => {
+  try {
+    const { error } = (await supabase.rpc(
+      "set_is_read",
+      { _sender_username: props.notification.sender_username, _movie_id: props.notification.movie_id, _is_read: true }
+    ))
+
+    if (error) throw error;
+
+    props.notification.is_read = true;
+
+  } catch (error) {
+    console.error("Error setting notification as read:", error);      
+  }
+}
+
+const deleteNotification = async () => {
+  try {
+    const { error } = (await supabase.rpc(
+      "delete_notification",
+      { _sender_username: props.notification.sender_username, _movie_id: props.notification.movie_id }
+    ))
+
+    if (error) throw error;
+    
+    emit('delete-notification', props.notification);
+
+  } catch (error) {
+    console.error("Error setting notification as read:", error);      
+  }
+}
 
 </script>
 
 <template>
-  <div class="w-full flex items-start gap-3 py-3 px-4" :class="{ 'bg-sky-500/15 rounded-lg': true }">
+  <div class="w-full flex items-start gap-3 py-3 px-4" :class="{ 'bg-sky-500/15 rounded-lg': !notification.is_read }">
     <img
 			class="w-14 h-14 rounded-full object-cover border-[1.5px] border-gray-300"
 			src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
@@ -31,12 +66,12 @@ defineProps({
     <div class="inline-flex items-baseline sm:flex-col w-full pr-2">
 			<!-- Notification message -->
       <div class="flex items-start">
-        <div class="flex flex-col">
+        <div class="flex flex-col pr-1">
           <span class="leading-tight">
-            <strong>{{ sender }}</strong> t'ha compartit la pel·lícula <strong>Venom: The Last Dance</strong>
+            <strong>{{ notification.sender_username }}</strong> t'ha compartit la pel·lícula <strong>{{ movie.title }}</strong>
           </span>
           <span class="text-[0.95rem] text-gray-500 dark:text-gray-400">
-            fa 10 minuts
+            {{ timeAgo(notification.created_at) }}
           </span>
         </div>
         <div class="flex items-center gap-1.5">
@@ -45,7 +80,7 @@ defineProps({
             variant="outlined"
             aria-label="Mark as read"
             rounded
-            @click=""
+            @click="setNotificationAsRead"
           >
             <template #icon>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="size-6">
@@ -61,7 +96,7 @@ defineProps({
             icon="pi pi-times"
             aria-label="Delete notification"
             rounded
-            @click=""
+            @click="deleteNotification"
           />
         </div>
       </div>
@@ -70,23 +105,25 @@ defineProps({
 			<div class="w-full flex gap-4 border-[1.2px] rounded-lg mt-3 p-3 bg-[#fdfdfd]">
 				<img
 					class="w-24 rounded"
-					src="https://image.tmdb.org/t/p/original/yh64qw9mgXBvlaWDi7Q9tpUBAvH.jpg"
-					alt="image"
+					:src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
+          :alt="`${movie.title} poster`"
 					/>
 				<div class="w-full flex flex-col justify-between">
 					<div class="w-full flex items-start justify-between">
 						<div class="pt-1 flex flex-col">
-							<h3 class="text-lg font-semibold">Moana 2</h3>
-							<span class="w-48 font-medium text-slate-500 dark:text-slate-400 text-sm truncate">Animation • Adventure • Family • Comedy</span>
+							<h3 class="text-lg font-semibold">{{ movie.title }}</h3>
+							<span class="w-48 font-medium text-slate-500 dark:text-slate-400 text-sm truncate">
+                {{ movie.genres?.map((genre) => genre.name).join(" • ") }}
+              </span>
 						</div>
 						<div class="bg-slate-100 dark:bg-zinc-700 p-1" style="border-radius: 30px">
 							<div class="bg-white dark:bg-zinc-800 flex items-center gap-2 justify-center py-1 px-2" style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
-								<span class="text-slate-900 dark:text-slate-200 font-medium text-sm">8.5</span>
+								<span class="text-slate-900 dark:text-slate-200 font-medium text-sm">{{ movie.vote_average.toFixed(1) }}</span>
 								<i class="pi pi-star-fill text-yellow-500"></i>
 							</div>
 						</div>
 					</div>
-					<Button icon="pi pi-arrow-up-right" label="Veure pel·lícula" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
+					<Button icon="pi pi-arrow-up-right" label="Veure pel·lícula" fluid @click="navigateTo(`/movies/${movie?.id}`);"></Button>
 				</div>
 			</div>
     </div>

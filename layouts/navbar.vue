@@ -2,21 +2,21 @@
 import "primeicons/primeicons.css";
 import UserProfileButton from "~/components/UserProfileButton.vue";
 import NotificationCard from "~/components/NotificationCard.vue";
-import type { Notification } from "~/types"; 
+import type { Notification, Notifications } from "~/types"; 
 
 const route = useRoute();
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const searchQuery = ref("");
 const notificationsPopover = ref();
-const notifications = ref<Notification[]>([]);
+const notifications = ref<Notifications>();
 
 const seeNotifications = async (event: Event) => {
   notificationsPopover.value.toggle(event);
   try {
     const { data, error } = (await supabase.rpc(
       "get_notifications"
-    )) as { data: Notification[]; error: any };
+    )) as { data: Notifications; error: any };
 
     if (error) throw error;
 
@@ -31,7 +31,37 @@ const seeNotifications = async (event: Event) => {
       console.error("Error loading notifications:", error);      
     }
   }
-}
+};
+
+const todayNotifications = computed(() => {
+  if (notifications.value) {
+    const today = new Date();
+    return notifications.value.notifications.filter((notification) => {
+      const notificationDate = new Date(notification.created_at);
+      return (
+        notificationDate.getDate() === today.getDate() &&
+        notificationDate.getMonth() === today.getMonth() &&
+        notificationDate.getFullYear() === today.getFullYear()
+      );
+    });
+  }
+  return [];
+});
+
+const olderNotifications = computed(() => {
+  if (notifications.value) {
+    const today = new Date();
+    return notifications.value.notifications.filter((notification) => {
+      const notificationDate = new Date(notification.created_at);
+      return (
+        notificationDate.getDate() !== today.getDate() ||
+        notificationDate.getMonth() !== today.getMonth() ||
+        notificationDate.getFullYear() !== today.getFullYear()
+      );
+    });
+  }
+  return [];
+});
 
 const notificationsRealtime = supabase
   .channel('notification-changes')
@@ -48,6 +78,35 @@ const notificationsRealtime = supabase
     }
   )
   .subscribe()
+
+const setAllNotificationsAsRead = async () => {
+  try {
+    const { error } = (await supabase.rpc(
+      "set_all_is_read",
+      { _is_read: true }
+    ))
+
+    if (error) throw error;
+
+    if (notifications.value) {
+      notifications.value.notifications = notifications.value.notifications.map((notification) => ({
+        ...notification,
+        is_read: true,
+      }));
+    }
+
+  } catch (error) {
+    console.error("Error setting all notifications as read:", error);      
+  }
+};
+
+const deleteNotification = async (notification: Notification) => {
+  if (notifications.value) {
+    notifications.value.notifications = notifications.value.notifications.filter(
+      (n) => n.movie_id !== notification.movie_id || n.sender_id !== notification.sender_id
+    );
+  }
+};
 
 const handleSubmitSearch = () => {
   if (searchQuery.value.trim()) {
@@ -97,6 +156,14 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
+
+watch(
+  () => route.path,
+  () => {
+    notificationsPopover.value.toggle();
+  }
+);
+
 </script>
 
 <template>
@@ -160,7 +227,7 @@ onUnmounted(() => {
           <div class="flex flex-col w-[33rem] h-[calc(100vh-150px)] py-3">
             <div class="flex items-center justify-between pl-6 pr-5 mb-1.5">
               <span class="text-xl font-semibold text-black">Notificacions</span>
-              <Button label="Marca tot com a llegit" icon="pi pi" severity="info" variant="text">
+              <Button label="Marca tot com a llegit" icon="pi pi" severity="info" variant="text" @click="setAllNotificationsAsRead">
                 <template #icon>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="size-6">
                     <path d="M1.5 12.5L5.57574 16.5757C5.81005 16.8101 6.18995 16.8101 6.42426 16.5757L9 14" stroke-width="1.5" stroke-linecap="round"/>
@@ -171,22 +238,32 @@ onUnmounted(() => {
               </Button>
             </div>
             <ScrollPanel style="width: 100%; height: calc(100% - 40px);">
-              <div class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
+              <div v-if="todayNotifications.length" class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
                 Avui
               </div>
-              <div class="flex flex-col gap-1.5 py-1 px-1">
-                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
-                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
+              <div class="flex flex-col gap-1 py-1 px-1">
+                <NotificationCard
+                  v-for="notification in todayNotifications"
+                  :key="notification.movie_id"
+                  :notification="notification"
+                  @delete-notification="deleteNotification"
+                ></NotificationCard>
               </div>
 
-              <div class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
+              <div v-if="olderNotifications.length" class="h-10 bg-[#F8F9FD] border-y-[1.5px] border-y-[#EBEDF1] pl-6 flex items-center text-lg text-zinc-900 sticky top-0 z-10">
                 Anteriors
               </div>
               <div class="flex flex-col gap-1.5 py-1 px-1">
-                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
-                <NotificationCard sender="sergiomarinn" receiver="teitol"></NotificationCard>
+                <NotificationCard
+                  v-for="notification in olderNotifications"
+                  :key="notification.movie_id"
+                  :notification="notification"
+                  @delete-notification="deleteNotification"
+                ></NotificationCard>
               </div>
-              
+              <div v-if="todayNotifications.length && !olderNotifications.length" class="text-center italic py-4 text-lg text-gray-500">
+                No tens notificacions disponibles.
+              </div>
             </ScrollPanel>
           </div>
         </Popover>
