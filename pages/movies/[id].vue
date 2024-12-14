@@ -227,21 +227,21 @@ const visibleDrawerCast = ref(false);
 
 const currentURL = ref();
 const shareMoviePopover = ref();
-const followingProfiles = ref<Following[]>();
+const mutualFollowers = ref<Following[]>();
 const isLoadingShareMovie = ref(false);
 const seeShareMoviePopover = async (event: Event) => {
   shareMoviePopover.value.toggle(event);
   isLoadingShareMovie.value = true;
   try {
     const { data, error } = (await supabase.rpc(
-      "get_following",
+      "get_mutual_followers",
       { _username: user.value?.user_metadata.username }
     )) as { data: Following[]; error: any };
 
     if (error) throw error;
 
     if (data.success) {
-      followingProfiles.value = data.data;
+      mutualFollowers.value = data.data;
     } else {
       console.error("Error in RPC response:", data.message);
     }
@@ -501,10 +501,14 @@ onBeforeUnmount(() => {
                       </InputGroupAddon>
                     </InputGroup>
                   </div>
+                  <span class="font-medium block">Comparteix amb algú que segueixis</span>
                   <div class="overflow-y-auto">
-                    <span class="font-medium block mb-2">Comparteix amb algú que segueixis</span>
-                    <ul v-if="true" class="list-none px-1 m-0 flex flex-wrap items-center justify-between gap-4">
-                      <li v-for="profile in followingProfiles" :key="profile.following_id" class="flex flex-col items-center justify-center gap-1">
+                    <div v-if="mutualFollowers?.length" class="flex flex-wrap items-center gap-y-3">
+                      <div 
+                        v-for="profile in mutualFollowers" 
+                        :key="profile.following_id"
+                        class="flex flex-col items-center justify-center gap-1 w-[8.1rem]"
+                      >
                         <div class="relative">
                           <Avatar
                             :label="profile.following_username ? profile.following_username[0] : 'T'"
@@ -522,13 +526,13 @@ onBeforeUnmount(() => {
                           </div>
                         </div>
                         <span
-                          class="font-medium cursor-pointer leading-tight"
+                          class="font-medium text-center cursor-pointer leading-tight truncate w-full"
                           @click="addUserToSendMovie(profile.following_username)"
                         >
                           {{ profile.following_username }}
                         </span>  
-                      </li>
-                    </ul>
+                      </div>
+                    </div>
                     <span v-else class="text-gray-500 text-[0.95rem] italic">No tens seguidors mutus per compartir</span>
                   </div>
                   <div v-if="usersToSendMovie.length" class="p-1">

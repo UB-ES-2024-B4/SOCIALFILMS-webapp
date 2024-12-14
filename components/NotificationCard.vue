@@ -21,20 +21,23 @@ const { data: movie, error: errorMovie } = (await supabase.rpc(
   { movie_id: props.notification.movie_id }
 )) as { data: Film; error: any };
 
+const isLoadingRead = ref(false);
 const setNotificationAsRead = async () => {
+  isLoadingRead.value = true;
   try {
     const { error } = (await supabase.rpc(
       "set_is_read",
-      { _sender_username: props.notification.sender_username, _movie_id: props.notification.movie_id, _is_read: true }
+      { _sender_username: props.notification.sender_username, _movie_id: props.notification.movie_id, _is_read: !props.notification.is_read }
     ))
 
     if (error) throw error;
 
-    props.notification.is_read = true;
+    props.notification.is_read = !props.notification.is_read;
 
   } catch (error) {
     console.error("Error setting notification as read:", error);      
   }
+  isLoadingRead.value = false;
 }
 
 const deleteNotification = async () => {
@@ -56,7 +59,13 @@ const deleteNotification = async () => {
 </script>
 
 <template>
-  <div class="w-full flex items-start gap-3 py-3 px-4" :class="{ 'bg-sky-500/15 rounded-lg': !notification.is_read }">
+  <div 
+    :class="[ 'w-full flex items-start gap-3 py-3 px-4 rounded-lg', 
+    notification.is_read ? 'bg-transparent' : 'bg-sky-500/15' ]"
+    :style="{
+      transition: 'background-color 0.5s ease',
+    }">
+    
     <img
 			class="w-14 h-14 rounded-full object-cover border-[1.5px] border-gray-300"
 			src="https://a.storyblok.com/f/191576/1200x800/a3640fdc4c/profile_picture_maker_before.webp"
@@ -80,6 +89,7 @@ const deleteNotification = async () => {
             variant="outlined"
             aria-label="Mark as read"
             rounded
+            :disabled="isLoadingRead"
             @click="setNotificationAsRead"
           >
             <template #icon>
