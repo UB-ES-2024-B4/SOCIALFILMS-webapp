@@ -72,7 +72,7 @@ onUnmounted(() => {
 <template>
   <div
     class="w-full h-full fixed inset-0 bg-cover bg-center"
-    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${data.results[2].backdrop_path})` }"
+    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${data.results[0].backdrop_path})` }"
   ></div>
 
   <div class="pt-[5.8rem] w-full h-full flex-col justify-center backdrop-blur-lg bg-zinc-300/20 dark:bg-black/60">
