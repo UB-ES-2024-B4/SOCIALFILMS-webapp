@@ -123,6 +123,7 @@ describe('Publish and delete review functionality', () => {
         cy.get('.p-toast-detail') 
             .should('contain.text', 'Tu reseña se ha publicado con éxito.');
         cy.visit(`${baseUrl}/movies/${movieId}`);
+        cy.wait(4000);
         cy.get('h1.text-2xl.font-bold.cursor-pointer[data-v-inspector="components/ReviewCard.vue:546:11"]')
         .contains('Marc')
         .should('exist') 

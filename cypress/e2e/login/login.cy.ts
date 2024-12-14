@@ -3,13 +3,17 @@ describe('Login functionality', () => {
 
   it('Navega a la pagina de login', () => {
     cy.visit(baseUrl);
+    cy.wait(4000);
     cy.contains('Inicia sessió').click(); 
+    cy.wait(2000);
     cy.url().should('include', '/login'); 
   });
 
   it('Inicia sesión con credenciales validas', () => {
     cy.visit(baseUrl);
+    cy.wait(2000);
     cy.contains('Inicia sessió').click(); 
+    cy.wait(2000);
     cy.url().should('include', '/login');
 
     
@@ -25,7 +29,9 @@ describe('Login functionality', () => {
 
   it('Muestra error para credenciales invalidas', () => {
     cy.visit(baseUrl);
+    cy.wait(2000);
     cy.contains('Inicia sessió').click(); 
+    cy.wait(2000);
     cy.url().should('include', '/login');
 
     
