@@ -25,11 +25,11 @@ const liked = ref(false);
   <div
     class="relative w-[235px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
   >
-    <div class="relative aspect-[3/3]">
+    <div class="relative aspect-[2/3]">
       <img
         :src="'https://image.tmdb.org/t/p/original' + film.poster_path"
         :alt="`${film.title} poster`"
-        class="absolute inset-0 object-cover"
+        class="absolute inset-0 w-full h-full object-cover"
       />
       <div
         v-if="trending"
@@ -53,7 +53,7 @@ const liked = ref(false);
       </div>
     </div>
 
-    <div class="px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
+    <div class="absolute bottom-0 left-0 w-full px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
       <h2 class="font-bold text-xl truncate">{{ film.title }}</h2>
       <h3 class="text-sm text-gray-300 mt-[2px] truncate">
         {{ film?.genre_ids?.map((id) => genres[id]).join(" • ") }}

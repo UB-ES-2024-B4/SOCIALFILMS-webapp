@@ -370,13 +370,14 @@ const visibleDrawerCast = ref(false);
 
   <div class="w-full min-h-screen">
     <div
-      class="fixed w-full h-full bg-cover bg-center bg-fixed transition-opacity"
+      class="fixed w-full h-full bg-cover bg-center bg-fixed"
       :style="{
         backgroundImage: `url(${
           'https://image.tmdb.org/t/p/original' + dataMovie.backdrop_path
         })`,
       }"
     ></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/5 via-25% to-neutral-800/0"></div>
 
     <div class="relative z-10 pt-[28rem]">
       <div class="backdrop-blur-xl bg-white/70 dark:bg-black/50">

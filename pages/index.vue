@@ -71,16 +71,16 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="w-full h-full fixed inset-0 -z-10 bg-cover bg-center blur-xl brightness-75"
-    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${data.results[0].backdrop_path})` }"
+    class="w-full h-full fixed inset-0 bg-cover bg-center"
+    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${data.results[2].backdrop_path})` }"
   ></div>
 
-  <div class="mt-32 w-full h-full flex-col justify-center">
+  <div class="pt-[5.8rem] w-full h-full flex-col justify-center backdrop-blur-lg bg-zinc-300/20 dark:bg-black/60">
     <div class="w-full flex px-10 pb-5 gap-12">
       <!-- Left Column -->
       <div class="flex flex-col items-start gap-12 grow-0 w-1/3">
         <!-- Billboard -->
-        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-400/30 rounded-[2.5rem]">
+        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">Cartellera</h3>
           <div class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
@@ -96,7 +96,7 @@ onUnmounted(() => {
         </div>
 
         <!-- My list -->
-        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-400/30 rounded-[2.5rem]">
+        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">La meva llista</h3>
           <div class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
