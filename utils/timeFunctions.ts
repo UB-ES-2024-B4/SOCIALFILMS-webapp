@@ -4,26 +4,26 @@ export const timeAgo = (datetime: string | Date): string => {
     const seconds = Math.floor((now.getTime() - then.getTime()) / 1000);
 
     let interval = Math.floor(seconds / 31536000);
-    if (interval > 1) return `hace ${interval} años`;
-    if (interval === 1) return `hace 1 año`;
+    if (interval > 1) return `fa ${interval} anys`;
+    if (interval === 1) return `fa 1 any`;
 
     interval = Math.floor(seconds / 2592000);
-    if (interval > 1) return `hace ${interval} meses`;
-    if (interval === 1) return `hace 1 mes`;
+    if (interval > 1) return `fa ${interval} mesos`;
+    if (interval === 1) return `fa 1 mes`;
 
     interval = Math.floor(seconds / 86400);
-    if (interval > 1) return `hace ${interval} días`;
-    if (interval === 1) return `hace 1 día`;
+    if (interval > 1) return `fa ${interval} dies`;
+    if (interval === 1) return `fa 1 dia`;
 
     interval = Math.floor(seconds / 3600);
-    if (interval > 1) return `hace ${interval} horas`;
-    if (interval === 1) return `hace 1 hora`;
+    if (interval > 1) return `fa ${interval} hores`;
+    if (interval === 1) return `fa 1 hora`;
 
     interval = Math.floor(seconds / 60);
-    if (interval > 1) return `hace ${interval} minutos`;
-    if (interval === 1) return `hace 1 minuto`;
+    if (interval > 1) return `fa ${interval} minuts`;
+    if (interval === 1) return `fa 1 minut`;
 
-    return `hace un momento`;
+    return `fa un moment`;
 };
 
 export const formatRuntime = (minutes: number) => {
