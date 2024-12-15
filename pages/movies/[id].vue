@@ -222,6 +222,43 @@ const deleteReview = (review_id: string) => {
   }
 };
 
+const watchLater = ref(false);
+try {
+  const { data: userMovieRelations, error } = (await supabase.rpc("get_user_movie_relations", {
+    _movie_id: route.params.id
+  }))
+
+  if (error) throw error;
+  watchLater.value = userMovieRelations?.watch_later ?? false;
+
+} catch (e) {
+  console.error(e);
+}
+
+const isLoadingHandleUserMovieRelation = ref(false);
+const handleUserMovieRelation = async (relation_type: 'favorite' | 'watch_later') => {
+  isLoadingHandleUserMovieRelation.value = true;
+  try {
+    let rpcFunction = "add_user_movie"
+    if (relation_type === 'watch_later') {
+      rpcFunction = watchLater.value ? "delete_user_movie" : "add_user_movie";
+    }
+    const { error } = (await supabase.rpc(rpcFunction, {
+      _movie_id: route.params.id,
+      _relation_type: relation_type,
+    }))
+
+    if (error) throw error;
+    if (relation_type === 'watch_later') watchLater.value = !watchLater.value;
+
+  } catch (e) {
+    console.error(`Error handling relation '${relation_type}':`, e);
+  }
+  finally {
+    isLoadingHandleUserMovieRelation.value = false;
+  }
+}
+
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
 });
@@ -389,15 +426,16 @@ const visibleDrawerCast = ref(false);
           />
           <div class="flex flex-col">
             <div class="flex items-start justify-between">
-              <h1 class="text-7xl font-extrabold mb-4 truncate">{{ dataMovie.title }}</h1>
+              <h1 class="w-3/4 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
               <div class="flex items-center gap-2">
                 <button
-                  @click=""
+                  @click="handleUserMovieRelation('watch_later')"
+                  :disabled="isLoadingHandleUserMovieRelation"
                   class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
                 >
                   <i
                     :class="[
-                      false
+                      watchLater
                         ? 'pi pi-bookmark-fill text-amber-400'
                         : 'pi pi-bookmark-fill text-gray-300',
                         'text-xl']
