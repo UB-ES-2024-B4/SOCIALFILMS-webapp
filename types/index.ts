@@ -18,6 +18,12 @@ export interface Film {
   popularity: number
   spoken_languages?: SpokenLanguage[]
   production_countries?: ProductionCountry[]
+  relations?: filmRelations
+}
+
+interface filmRelations {
+  is_favorite: boolean
+  is_watch_later: boolean
 }
 
 interface Genre {

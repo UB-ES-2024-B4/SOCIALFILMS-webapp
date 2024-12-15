@@ -5,15 +5,23 @@ import HorizontalFilmCard from "~/components/HorizontalFilmCard.vue";
 import BigFilmCard from "~/components/BigFilmCard.vue";
 
 const supabase = useSupabaseClient();
+const user = useSupabaseUser();
 
 definePageMeta({
   layout: "navbar",
 });
 
-const { data, error } = (await supabase.rpc("get_trending_movies_of_week")) as {
+const { data: trendingMovies, error: errorTrendingMovies } = (await supabase.rpc("get_trending_movies_of_week")) as {
   data: FilmsAPI;
   error: any;
 };
+
+const { data: myListMovies, error: errorMyListMovies } = (await supabase.rpc(
+  "get_user_movies",
+  { 
+    _relation_type: 'watch_later'
+  }
+)) as { data: Film[]; error: any };
 
 const navigateToMovie = (id: number) => {
   navigateTo(`/movies/${id}`);
@@ -41,12 +49,12 @@ const updateSlidesPerView = () => {
 };
 
 const nextSlide = () => {
-  const maxIndex = Math.ceil(data.results.length / slidesPerView.value) - 1;
+  const maxIndex = Math.ceil(trendingMovies.results.length / slidesPerView.value) - 1;
   currentIndex.value = (currentIndex.value + 1) % (maxIndex + 1);
 };
 
 const prevSlide = () => {
-  const maxIndex = Math.ceil(data.results.length / slidesPerView.value) - 1;
+  const maxIndex = Math.ceil(trendingMovies.results.length / slidesPerView.value) - 1;
   currentIndex.value = (currentIndex.value - 1 + maxIndex + 1) % (maxIndex + 1);
 };
 
@@ -72,8 +80,10 @@ onUnmounted(() => {
 <template>
   <div
     class="w-full h-full fixed inset-0 bg-cover bg-center"
-    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${data.results[0].backdrop_path})` }"
+    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${trendingMovies.results[0].backdrop_path})` }"
   ></div>
+
+  <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/5 via-25% to-neutral-800/0"></div>
 
   <div class="pt-[5.8rem] w-full h-full flex-col justify-center backdrop-blur-lg bg-zinc-300/20 dark:bg-black/60">
     <div class="w-full flex px-10 pb-5 gap-12">
@@ -85,11 +95,12 @@ onUnmounted(() => {
           <div class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
-                v-for="film in data.results"
+                v-for="film in trendingMovies.results"
                 class="cursor-pointer"
                 :film="film"
-                :trending="false"
-                :trendingNumber="1"
+                :favorite="true"
+                :watch_later="false"
+                @click="navigateToMovie(film.id)"
               ></HorizontalFilmCard>
             </div>
           </div>
@@ -98,17 +109,24 @@ onUnmounted(() => {
         <!-- My list -->
         <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">La meva llista</h3>
-          <div class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
+          <div v-if="user && myListMovies" class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
-                v-for="film in data.results"
+                v-for="film in myListMovies"
                 class="cursor-pointer"
                 :film="film"
-                :trending="false"
-                :trendingNumber="1"
+                :favorite="false"
+                :watch_later="true"
+                @click="navigateToMovie(film.id)"
               ></HorizontalFilmCard>
             </div>
           </div>
+          <span v-else-if="!myListMovies && user" class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
+            Encara no tens pel·lícules a la teva llista.
+          </span>
+          <span v-else class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
+            Inicia sessió per poder afegir pel·lícules a la teva llista.
+          </span>
         </div>
       </div>
 
@@ -116,10 +134,10 @@ onUnmounted(() => {
       <div class="flex-1 flex flex-col gap-10 max-w-[68%]">
         <BigFilmCard
           class="cursor-pointer h-[500px]"
-          :film="data.results[0]"
+          :film="trendingMovies.results[0]"
           :trending="true"
           :trendingNumber="1"
-          @click="navigateToMovie(data.results[0].id)"
+          @click="navigateToMovie(trendingMovies.results[0].id)"
         ></BigFilmCard>
 
         <div class="flex flex-col gap-2">
@@ -153,7 +171,7 @@ onUnmounted(() => {
             >
               <!-- Cada slide -->
               <div
-                v-for="(chunk, chunkIndex) in chunkArray(data.results, slidesPerView)"
+                v-for="(chunk, chunkIndex) in chunkArray(trendingMovies.results, slidesPerView)"
                 :key="chunkIndex"
                 class="flex-shrink-0 w-full flex justify-start gap-16"
               >
@@ -165,6 +183,8 @@ onUnmounted(() => {
                   :film="film"
                   :trending="true"
                   :trendingNumber="chunkIndex * slidesPerView + index + 1"
+                  :favorite="true"
+                  :watch_later="false"
                   @click="navigateToMovie(film.id)"
                 ></FilmCard>
               </div>

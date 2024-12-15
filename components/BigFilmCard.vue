@@ -26,7 +26,7 @@ const saved = ref(false);
   <div
     class="relative w-full rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.015]"
   >
-    <div class="relative md:aspect-[4/5] xl:aspect-[8/5]">
+    <div class="relative md:aspect-[4/5] lg:aspect-[7/5] xl:aspect-[8/5]">
       <img
         :src="'https://image.tmdb.org/t/p/original' + film.backdrop_path"
         :alt="`${film.title} poster`"

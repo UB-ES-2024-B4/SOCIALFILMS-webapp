@@ -2,8 +2,9 @@
 import "primeicons/primeicons.css";
 import type { Film } from "~/types";
 import { genres } from "~/types/genres";
+import { useUserMovieRelation } from "~/composables/useUserMovieRelation";
 
-defineProps({
+const props = defineProps({
   film: {
     type: Object as PropType<Film>,
     required: true,
@@ -16,9 +17,51 @@ defineProps({
     type: Number,
     required: true,
   },
+  favorite: {
+    type: Boolean,
+    required: true,
+  },
+  watch_later: {
+    type: Boolean,
+    required: true,
+  }
 });
 
-const liked = ref(false);
+const supabase = useSupabaseClient();
+const is_favorite = ref(false);
+const is_watch_later = ref(false);
+const { isLoading, handleUserMovieRelation } = useUserMovieRelation(props.film.id, is_watch_later, is_favorite);
+
+if (props.film.relations) {
+  is_favorite.value = props.film.relations.is_favorite;
+  is_watch_later.value = props.film.relations.is_watch_later;
+}
+else {
+  try {
+    const { data: userMovieRelations, error } = (await supabase.rpc("get_user_movie_relations", {
+      _movie_id: props.film.id
+    }))
+
+    if (error) throw error;
+    is_favorite.value = userMovieRelations?.favorite ?? false;
+    is_watch_later.value = userMovieRelations?.watch_later ?? false;
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+watch(
+  () => props.film.relations,
+  (newRelations) => {
+    if (newRelations) {
+      is_favorite.value = newRelations.is_favorite;
+      is_watch_later.value = newRelations.is_watch_later;
+    }
+  },
+  { immediate: true }
+);
+
 </script>
 
 <template>
@@ -38,18 +81,36 @@ const liked = ref(false);
         {{ "#" + trendingNumber + " Trending" }}
       </div>
       <div class="absolute top-4 right-3">
-        <button
-          @click="liked = !liked"
-          class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-lg"
-        >
-          <i
-            :class="
-              liked
-                ? 'pi pi-heart-fill text-red-500'
-                : 'pi pi-heart-fill text-gray-300'
-            "
-          ></i>
-        </button>
+        <div class="flex flex-col items-center gap-1.5">
+          <button
+            v-if="favorite"
+            @click.stop="handleUserMovieRelation('favorite')"
+            :disabled="isLoading"
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg"
+          >
+            <i
+              :class="
+                is_favorite
+                  ? 'pi pi-heart-fill text-red-500'
+                  : 'pi pi-heart-fill text-gray-300'
+              "
+            ></i>
+          </button>
+          <button
+            v-if="watch_later"
+            @click.stop="handleUserMovieRelation('watch_later')"
+            :disabled="isLoading"
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg"
+          >
+            <i
+              :class="
+                is_watch_later
+                  ? 'pi pi-bookmark-fill text-amber-400'
+                  : 'pi pi-bookmark-fill text-gray-300'
+              "
+            ></i>
+          </button>
+        </div>
       </div>
     </div>
 
