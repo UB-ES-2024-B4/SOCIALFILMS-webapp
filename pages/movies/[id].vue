@@ -221,6 +221,43 @@ const deleteReview = (review_id: string) => {
   }
 };
 
+const watchLater = ref(false);
+try {
+  const { data: userMovieRelations, error } = (await supabase.rpc("get_user_movie_relations", {
+    _movie_id: route.params.id
+  }))
+
+  if (error) throw error;
+  watchLater.value = userMovieRelations?.watch_later ?? false;
+
+} catch (e) {
+  console.error(e);
+}
+
+const isLoadingHandleUserMovieRelation = ref(false);
+const handleUserMovieRelation = async (relation_type: 'favorite' | 'watch_later') => {
+  isLoadingHandleUserMovieRelation.value = true;
+  try {
+    let rpcFunction = "add_user_movie"
+    if (relation_type === 'watch_later') {
+      rpcFunction = watchLater.value ? "delete_user_movie" : "add_user_movie";
+    }
+    const { error } = (await supabase.rpc(rpcFunction, {
+      _movie_id: route.params.id,
+      _relation_type: relation_type,
+    }))
+
+    if (error) throw error;
+    if (relation_type === 'watch_later') watchLater.value = !watchLater.value;
+
+  } catch (e) {
+    console.error(`Error handling relation '${relation_type}':`, e);
+  }
+  finally {
+    isLoadingHandleUserMovieRelation.value = false;
+  }
+}
+
 const visibleDrawerDirector = ref(false);
 const visibleDrawerScript = ref(false);
 const visibleDrawerCast = ref(false);
@@ -478,73 +515,89 @@ onBeforeUnmount(() => {
           />
           <div class="flex flex-col">
             <div class="flex items-start justify-between">
-              <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
-              <Button severity="contrast" variant="outlined" rounded icon="pi pi-share-alt" label="Compartir pel·lícula" :loading="isLoadingShareMovie" @click="seeShareMoviePopover" />
-              <Popover ref="shareMoviePopover">
-                <div class="flex flex-col gap-4 w-[25rem] max-h-[calc(100vh-200px)]">
-                  <div>
-                    <span class="font-medium block mb-2">Comparteix l'enllaç</span>
-                    <InputGroup>
-                      <InputText :value="currentURL" readonly class="w-[25rem]" 
-                      :pt="{
-                        root: { class: 'leading-none' },
-                      }"></InputText>
-                      <InputGroupAddon>
-                        <Button 
-                          :icon="iconShareMovieClipboard" 
-                          severity="secondary" 
-                          variant="text"
-                          @click="shareMovieClipboard" 
-                          :pt="{
-                            root: { class: 'leading-[1.1rem]' },
-                          }" />
-                      </InputGroupAddon>
-                    </InputGroup>
-                  </div>
-                  <span class="font-medium block">Comparteix amb algú que segueixis</span>
-                  <div class="overflow-y-auto">
-                    <div v-if="mutualFollowers?.length" class="flex flex-wrap items-center gap-y-3">
-                      <div 
-                        v-for="profile in mutualFollowers" 
-                        :key="profile.following_id"
-                        class="flex flex-col items-center justify-center gap-1 w-[8.1rem]"
-                      >
-                        <div class="relative">
-                          <Avatar
-                            :label="profile.following_username ? profile.following_username[0] : 'T'"
-                            class="cursor-pointer"
-                            size="xlarge"
-                            shape="circle"
-                            @click="addUserToSendMovie(profile.following_username)"
-                          />
-                          <!-- Badge -->
-                          <div
-                            v-if="usersToSendMovie?.includes(profile.following_username)"
-                            class="absolute bottom-0 -right-1 w-5 h-5 rounded-full outline outline-white dark:outline-zinc-900 bg-blue-500 flex items-center justify-center text-white"
-                          >
-                            <i class="mt-[1px] pi pi-check leading-none text-[0.65rem] dark:text-zinc-900"></i>
-                          </div>
-                        </div>
-                        <span
-                          class="font-medium text-center cursor-pointer leading-tight truncate w-full"
-                          @click="addUserToSendMovie(profile.following_username)"
-                        >
-                          {{ profile.following_username }}
-                        </span>  
-                      </div>
+              <h1 class="w-3/4 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="handleUserMovieRelation('watch_later')"
+                  :disabled="isLoadingHandleUserMovieRelation"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
+                >
+                  <i
+                    :class="[
+                      watchLater
+                        ? 'pi pi-bookmark-fill text-amber-400'
+                        : 'pi pi-bookmark-fill text-gray-300',
+                        'text-xl']
+                    "
+                  ></i>
+                </button>
+                <Button class="shadow-md" severity="contrast" rounded icon="pi pi-share-alt" label="Compartir pel·lícula" :loading="isLoadingShareMovie" @click="seeShareMoviePopover" />
+                <Popover ref="shareMoviePopover">
+                  <div class="flex flex-col gap-4 w-[25rem] max-h-[calc(100vh-200px)]">
+                    <div>
+                      <span class="font-medium block mb-2">Comparteix l'enllaç</span>
+                      <InputGroup>
+                        <InputText :value="currentURL" readonly class="w-[25rem]" 
+                        :pt="{
+                          root: { class: 'leading-none' },
+                        }"></InputText>
+                        <InputGroupAddon>
+                          <Button 
+                            :icon="iconShareMovieClipboard" 
+                            severity="secondary" 
+                            variant="text"
+                            @click="shareMovieClipboard" 
+                            :pt="{
+                              root: { class: 'leading-[1.1rem]' },
+                            }" />
+                        </InputGroupAddon>
+                      </InputGroup>
                     </div>
-                    <span v-else class="text-gray-500 text-[0.95rem] italic">No tens seguidors mutus per compartir</span>
+                    <span class="font-medium block">Comparteix amb algú que segueixis</span>
+                    <div class="overflow-y-auto">
+                      <div v-if="mutualFollowers?.length" class="flex flex-wrap items-center gap-y-3">
+                        <div 
+                          v-for="profile in mutualFollowers" 
+                          :key="profile.following_id"
+                          class="flex flex-col items-center justify-center gap-1 w-[8.1rem]"
+                        >
+                          <div class="relative">
+                            <Avatar
+                              :label="profile.following_username ? profile.following_username[0] : 'T'"
+                              class="cursor-pointer"
+                              size="xlarge"
+                              shape="circle"
+                              @click="addUserToSendMovie(profile.following_username)"
+                            />
+                            <!-- Badge -->
+                            <div
+                              v-if="usersToSendMovie?.includes(profile.following_username)"
+                              class="absolute bottom-0 -right-1 w-5 h-5 rounded-full outline outline-white dark:outline-zinc-900 bg-blue-500 flex items-center justify-center text-white"
+                            >
+                              <i class="mt-[1px] pi pi-check leading-none text-[0.65rem] dark:text-zinc-900"></i>
+                            </div>
+                          </div>
+                          <span
+                            class="font-medium text-center cursor-pointer leading-tight truncate w-full"
+                            @click="addUserToSendMovie(profile.following_username)"
+                          >
+                            {{ profile.following_username }}
+                          </span>  
+                        </div>
+                      </div>
+                      <span v-else class="text-gray-500 text-[0.95rem] italic">No tens seguidors mutus per compartir</span>
+                    </div>
+                    <div v-if="usersToSendMovie.length" class="p-1">
+                      <Button 
+                        label="Comparteix" 
+                        :loading="isLoadingSendMovie" 
+                        fluid 
+                        @click="sendMovieToUsers">
+                      </Button>
+                    </div>
                   </div>
-                  <div v-if="usersToSendMovie.length" class="p-1">
-                    <Button 
-                      label="Comparteix" 
-                      :loading="isLoadingSendMovie" 
-                      fluid 
-                      @click="sendMovieToUsers">
-                    </Button>
-                  </div>
-                </div>
-              </Popover>
+                </Popover>
+              </div>
             </div>
             <div class="flex flex-col flex-1 mt-4 md:flex-row md:mt-0 gap-14">
               <div class="flex-1 flex flex-col space-y-3">
