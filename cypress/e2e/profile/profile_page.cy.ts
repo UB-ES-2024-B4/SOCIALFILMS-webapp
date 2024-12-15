@@ -38,7 +38,6 @@ describe('Profile Page Functionality', () => {
     cy.contains('seguidores').should('be.visible');
     cy.contains('siguiendo').should('be.visible');
 
-    cy.contains('Seguir').should('be.visible');
     cy.contains('Compartir perfil').should('be.visible');
   });
 
@@ -62,30 +61,23 @@ describe('Profile Page Functionality', () => {
     cy.get('h2').contains(/\d+ Reseñas/).should('be.visible');
   });
 
-  // it('Permite usar el botón de seguir', () => {
-  //   cy.contains('Seguir').click();
-  //   cy.contains('Siguiendo').should('be.visible');
-  // });
-
   it('Sigue y deja de seguir a un usuario', () => {
+    cy.contains('Siguiendo').click();
+    cy.wait(500);
+    cy.contains('Seguir').should('be.visible');
+    cy.wait(500);
     cy.contains('Seguir').click();
     cy.wait(500);
     cy.contains('Siguiendo').should('be.visible');
-    cy.wait(500);
-    cy.contains('Seguiendo').click();
-    cy.wait(500);
-    cy.contains('Seguir').should('be.visible');
   });
 
   it('Permite compartir el perfil', () => {
     cy.window().then((win) => {
       cy.stub(win.navigator.clipboard, 'writeText').resolves();
     });
-
-    // Hacer clic en el botón de compartir
+    cy.wait(2000);
     cy.contains('Compartir perfil').click();
-
-    // Validar que el toast de éxito aparece
-    cy.contains('El enlace se ha copiado al portapapeles.').should('be.visible');
+    cy.get('.p-toast-detail')
+    .should('contain.text', 'El enlace se ha copiado al portapapeles.');
   });
 });

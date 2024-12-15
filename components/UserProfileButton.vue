@@ -156,6 +156,13 @@ const loadReviewsAndMovies = async () => {
   }
 };
 
+const deleteReview = (review_id: string) => {
+  const index = reviewsWithMovies.value.findIndex((review) => review.id === review_id);
+  if (index !== -1) {
+    reviewsWithMovies.value.splice(index, 1);
+  }
+};
+
 const handleSubmitAccountUpdated = async () => {
   try {
     let usernameChanged = username.value !== user.value?.user_metadata.username;
@@ -527,6 +534,7 @@ const isNotFilledProfile = computed(() => {
                   :key="index"
                   :film="review.film"
                   :showFilm="true"
+                  @delete-review="deleteReview"
                 >
                 </ReviewCard>
               </div>

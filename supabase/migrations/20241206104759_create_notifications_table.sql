@@ -4,8 +4,7 @@ create table "public"."notifications" (
     "sender_id" uuid not null default gen_random_uuid(),
     "receiver_id" uuid not null default gen_random_uuid(),
     "movie_id" bigint not null,
-    "is_read" boolean not null,
-    "is_seen" boolean not null
+    "is_read" boolean not null
 );
 
 
