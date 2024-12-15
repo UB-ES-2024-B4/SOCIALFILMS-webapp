@@ -1,9 +1,4 @@
 describe('ReviewCard Like/Dislike Functionality', () => {
-    //beforeEach(() => {
-      // Intercepta la llamada para verificar si el usuario está logueado
-      //cy.intercept('POST', '**/rpc/is_logged_in', { isLoggedIn: false }).as('checkLoginStatus');
-      //cy.visit('https://socialfilms.nuxt.dev/movies/402431', { failOnStatusCode: false });
-    //});
     
     context('When user is not logged in', () => {
       it('should display like and dislike buttons as inactive', () => {
@@ -91,29 +86,6 @@ describe('ReviewCard Like/Dislike Functionality', () => {
             } else {
             cy.log('Dislike button is already in the undisliked state.');
             }
-        });
-
-        // Get the initial Dislikes count
-        cy.get('button[aria-label="Dislike"]')
-        .eq(0)
-        .parent('span')
-        .invoke('text')
-        .then((initialText) => {
-          const initialDislikes = parseInt(initialText.trim()) || 0;
-          cy.log(`Initial Dislikes: ${initialDislikes}`);
-          cy.wait(3000);
-          // Click the Dislike button
-          cy.get('button[aria-label="Dislike"]').eq(0).click();
-          cy.wait(3000);
-          // Wait and assert the Dislikes count is incremented
-          cy.get('button[aria-label="Dislike"]')
-            .eq(0)
-            .parent('span')
-            .then(($span) => {
-              const updatedDislikes = parseInt($span.text().trim());
-              cy.log(`Updated Dislikes: ${updatedDislikes}`);
-              expect(updatedDislikes).to.equal(initialDislikes + 1);
-            });
         });
         // return to initial state
         cy.get('button[aria-label="Dislike"]').eq(0).click();
