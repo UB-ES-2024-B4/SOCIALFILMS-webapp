@@ -9,14 +9,6 @@ const props = defineProps({
     type: Object as PropType<Film>,
     required: true,
   },
-  trending: {
-    type: Boolean,
-    required: true,
-  },
-  trendingNumber: {
-    type: Number,
-    required: true,
-  },
   favorite: {
     type: Boolean,
     required: true,
@@ -66,20 +58,14 @@ watch(
 
 <template>
   <div
-    class="relative w-[235px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+    class="relative w-[270px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.03]"
   >
-    <div class="relative aspect-[2/3]">
+    <div class="relative aspect-[3/2]">
       <img
-        :src="'https://image.tmdb.org/t/p/original' + film.poster_path"
+        :src="'https://image.tmdb.org/t/p/original' + film.backdrop_path"
         :alt="`${film.title} poster`"
         class="absolute inset-0 w-full h-full object-cover"
       />
-      <div
-        v-if="trending"
-        class="absolute top-4 left-0 rounded-r-2xl shadow-md pl-4 pr-3 py-1.5 backdrop-blur bg-black/20 border-y border-r border-white/20 text-xs text-white font-normal"
-      >
-        {{ "#" + trendingNumber + " Trending" }}
-      </div>
       <div class="absolute top-4 right-3">
         <div class="flex flex-col items-center gap-1.5">
           <button
@@ -114,26 +100,16 @@ watch(
       </div>
     </div>
 
-    <div class="absolute bottom-0 left-0 w-full px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
-      <h2 class="font-bold text-xl truncate">{{ film.title }}</h2>
-      <h3 class="text-sm text-gray-300 mt-[2px] truncate">
-        {{ film?.genre_ids?.map((id) => genres[id]).join(" • ") }}
-      </h3>
-      <div class="flex items-center space-x-1.5 mt-3">
-        <span
-          :class="
-            film.adult
-              ? 'tag bg-red-500/20 border border-red-500 text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400'
-              : 'tag bg-green-500/20 border border-green-500 text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'
-          "
-        >
-          {{ film.adult ? "R" : "PG-13" }}
-        </span>
-        <span class="tag bg-gray-200/20 text-gray-200">
-          <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
-          {{ film.release_date }}
-        </span>
-        <span class="tag bg-gray-200/20 text-gray-200">
+    <div class="absolute bottom-0 left-0 w-full px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">     
+      <div class="w-full flex items-start justify-between">
+        <div class="w-3/4">
+          <h2 class="font-bold text-lg truncate">{{ film.title }}</h2>
+          <h3 class="text-xs text-gray-300 mt-[2px] truncate leading-none">
+            {{ film?.genre_ids?.map((id) => genres[id]).join(" • ") }}
+            {{ film.genres?.map((genre) => genre.name).join(" • ") }}
+          </h3>
+        </div>
+        <span class="tag bg-gray-200/20 text-gray-200 mt-1">
           <i class="pi pi-star-fill text-yellow-400 mr-1.5 text-[0.8rem]"></i>
           {{ film.vote_average.toFixed(1) }}
         </span>
@@ -144,7 +120,7 @@ watch(
 
 <style scoped>
 .tag {
-  padding: 0.2rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   font-size: 0.8rem;
   font-weight: 400;
   border-radius: 9999px;

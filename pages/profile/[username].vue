@@ -210,7 +210,8 @@ const handleFollow = async () => {
 <template>
 	<div class="relative w-full h-full pb-5">
     <!-- Background -->
-    <div class="h-80 bg-gradient-to-r from-orange-200 via-pink-300 to-violet-400"></div>
+		<div class="h-80 bg-gradient-to-b from-pink-400/90 to-violet-400 dark:from-pink-700 dark:to-violet-800"></div>
+  	<!-- <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/40 via-neutral-800/5 via-25% to-neutral-800/0"></div> -->
     
     <!-- Profile -->
     <div class="absolute top-60 inset-x-20 transform">

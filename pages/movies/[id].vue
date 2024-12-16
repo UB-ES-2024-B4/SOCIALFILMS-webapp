@@ -14,32 +14,10 @@ const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast();
 
-let dataMovie: Film | null = null;
-let errorMovie: any = null;
-
-const { data: dataCa, error: errorCa } = (await supabase.rpc(
+const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
   "find_movie_by_id",
-  { 
-    movie_id: route.params.id,
-    lang: 'ca' 
-  }
-)) as { data: Film | null; error: any };
-
-if (dataCa?.overview) {
-  dataMovie = dataCa;
-  errorMovie = errorCa;
-} else {
-  const { data: dataEs, error: errorEs } = (await supabase.rpc(
-    "find_movie_by_id",
-    { 
-      movie_id: route.params.id,
-      lang: 'es' 
-    }
-  )) as { data: Film | null; error: any };
-
-  dataMovie = dataEs;
-  errorMovie = errorEs;
-}
+  { movie_id: route.params.id, lang: 'ca-ES' }
+)) as { data: Film; error: any };
 
 const limit = 10
 const offset = ref(0)
@@ -519,13 +497,14 @@ onBeforeUnmount(() => {
 
   <div class="w-full min-h-screen">
     <div
-      class="fixed w-full h-full bg-cover bg-center bg-fixed transition-opacity"
+      class="fixed w-full h-full bg-cover bg-center bg-fixed"
       :style="{
         backgroundImage: `url(${
           'https://image.tmdb.org/t/p/original' + dataMovie.backdrop_path
         })`,
       }"
     ></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/5 via-25% to-neutral-800/0"></div>
 
     <div class="relative z-10 pt-[28rem]">
       <div class="backdrop-blur-xl bg-white/70 dark:bg-black/50">
@@ -785,7 +764,7 @@ onBeforeUnmount(() => {
               <div class="flex items-center space-x-6">
                 <Button label="Afegir ressenya" variant="text" @click="visible = true" raised rounded />
                 <div class="search-container relative">
-                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900">
+                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900 dark:text-violet-400">
                     <i class="pi pi-search"></i>
                   </span>
                   <input
@@ -793,7 +772,7 @@ onBeforeUnmount(() => {
                     v-model="searchQuery"
                     placeholder="Buscar review"
                     @keydown.enter="searchReviews"
-                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
+                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 dark:placeholder-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
                   />
                 </div>
               </div>
