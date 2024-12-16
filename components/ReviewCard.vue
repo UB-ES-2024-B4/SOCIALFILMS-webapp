@@ -501,16 +501,16 @@ const handleFollow = async (profile: Profile) => {
     </template>
   </Dialog>
   
-  <Dialog v-model:visible="visibleDialogUsersReaction" modal :header="reationTypeModal === 'like' ? `M'agrades` : `No m'agrades`" :style="{ width: '22rem' }" :draggable="false">
+  <Dialog v-model:visible="visibleDialogUsersReaction" modal :header="reationTypeModal === 'like' ? `M'agrades` : `No m'agrades`" :style="{ width: '23rem' }" :draggable="false">
     <div class="space-y-4">
       <div v-for="userReaction in usersReaction" class="flex items-center justify-between">
         <div class="flex items-center gap-1">
           <Avatar
-            :label="review.user ? review.user[0] : 'T'"
+            :label="userReaction?.username ? userReaction?.username[0] : 'T'"
             class="mr-2.5 cursor-pointer"
             size="large"
             shape="circle"
-            @click="navigateTo(`/profile/${review.user}`)"
+            @click="navigateTo(`/profile/${userReaction?.username}`)"
           />
           <div class="flex flex-col">
             <span class="font-semibold cursor-pointer leading-tight" @click="navigateTo(`/profile/${review.user}`)">{{ userReaction?.username }}</span>
@@ -600,9 +600,7 @@ const handleFollow = async (profile: Profile) => {
                   </div>
                 </div>
               </div>
-              <div class="flex gap-2">
-                <Button icon="pi pi-arrow-up-right" label="Ver película" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
-              </div>
+              <Button icon="pi pi-arrow-up-right" label="Ver película" fluid @click="navigateTo(`/movies/${film?.id}`);"></Button>
             </div>
           </div>
         </Popover>
