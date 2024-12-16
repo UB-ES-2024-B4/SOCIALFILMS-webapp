@@ -64,7 +64,7 @@ const applyFilters = async () => {
       filtered.map(async (film) => {
         const { data: fullFilm, error } = (await supabase.rpc(
           "find_movie_by_id",
-          { movie_id: film.id }
+          { movie_id: film.id, lang: 'ca-ES' }
         )) as { data: Film; error: any };
         return {
           ...film,

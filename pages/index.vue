@@ -81,10 +81,11 @@ function chunkArray(array, chunkSize) {
 }
 
 const activeList = ref("trending");
-const isLoadingList = ref(false); 
+const isTransitioningList = ref(false);
 const setActiveList = async (list: string) => {
   if (activeList.value === list) return;
-  activeList.value = list;
+
+  isTransitioningList.value = true;
 
   if (list === 'trending') {
     currentMovies.value = trendingMovies.results;
@@ -99,11 +100,15 @@ const setActiveList = async (list: string) => {
   if (currentMovies.value.length === 0) {
     await fetchMoviesList(list);
   }
+
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  activeList.value = list;
+
+  currentIndex.value = 0;
+  isTransitioningList.value = false;
 };
 
 const fetchMoviesList = async (list: string) => {
-  isLoadingList.value = true;
-
   try {
     if (list === "top_rated") {
       const { data, error } = await supabase.rpc(
@@ -129,8 +134,6 @@ const fetchMoviesList = async (list: string) => {
     }   
   } catch (error) {
     console.error("Error fetching movies:", error.message);
-  } finally {
-    isLoadingList.value = false;
   }
 };
 
@@ -147,6 +150,8 @@ onMounted(() => {
   updateSlidesPerView();
   window.addEventListener("resize", updateSlidesPerView);
   currentMovies.value = trendingMovies.results;
+  fetchMoviesList('top_rated');
+  fetchMoviesList('popular');
 });
 
 onUnmounted(() => {
@@ -173,7 +178,7 @@ onUnmounted(() => {
           <div class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
-                v-for="film in trendingMovies.results"
+                v-for="film in nowPlayingMovies.results"
                 class="cursor-pointer"
                 :film="film"
                 :favorite="true"
@@ -308,7 +313,11 @@ onUnmounted(() => {
             </div>
           </div>
           <!-- Carousel Section -->
-          <div class="relative w-full overflow-hidden pt-2 pb-16">
+          <div 
+            class="relative w-full overflow-hidden pt-2 pb-16"
+            :class="{ 'opacity-0 pointer-events-none': isTransitioningList, 'opacity-100': !isTransitioningList }"
+            :style="{ transition: 'opacity 0.3s ease-in-out' }"
+            >
             <!-- Contenedor del Carrusel -->
             <div
               class="flex transition-transform duration-500"
