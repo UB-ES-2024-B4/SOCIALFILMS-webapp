@@ -30,7 +30,7 @@ END;
 $function$;
 
 
-drop function if exists "public"."get_user_movies"(movie_id INT);
+drop function if exists "public"."get_user_movies"();
 drop function if exists "public"."get_movie_users"(movie_id INT);
 drop function if exists "public"."add_user_movie"(movie_id INT);
 drop function if exists "public"."delete_user_movie"(movie_id INT);
