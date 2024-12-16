@@ -9,7 +9,7 @@
     result json;
   BEGIN
     request_url := format('https://api.themoviedb.org/3/movie/%s?api_key=%s', movie_id, api_key);
-    
+
     select content::json into result
     from http_get(request_url);
 
@@ -17,5 +17,4 @@
     
   END;$function$
   ;
-
 

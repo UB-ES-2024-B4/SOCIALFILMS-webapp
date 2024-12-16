@@ -3,6 +3,7 @@ import type { Review, FilmsAPI, Profile } from "~/types";
 import ReviewCard from "~/components/ReviewCard.vue";
 
 const supabase = useSupabaseClient();
+const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast()
 
@@ -48,7 +49,7 @@ try {
 	const moviesPromises = reviews.map(async (review) => {
 		const { data: movieData, error: movieError } = await supabase.rpc(
 			"find_movie_by_id",
-			{ movie_id: review.movie_id }
+			{ movie_id: review.movie_id, lang: 'ca-ES' }
 		);
 		if (movieError) throw movieError;
 
@@ -59,12 +60,12 @@ try {
 	});
 
 	reviewsWithMovies.value = await Promise.all(moviesPromises);
-	console.log(reviewsWithMovies)
 } catch (error) {
 	console.error("Error loading reviews or movies:", error);
 } finally {
 	isLoadingReviews.value = false;
 }
+
 
 const deleteReview = (review_id: string) => {
   const index = reviewsWithMovies.value.findIndex((review) => review.id === review_id);
@@ -93,6 +94,11 @@ const responsiveOptions = ref([
         breakpoint: '2000px',
         numVisible: 4,
         numScroll: 2
+    },
+	{
+        breakpoint: '1750px',
+        numVisible: 3,
+        numScroll: 1
     },
     {
         breakpoint: '1500px',
@@ -133,8 +139,11 @@ const shareProfile = () => {
 			});
 };
 
-const isProcessingFollow = ref(false);
+const { data: favoriteMovies, error: errorFavoriteMovies } = await supabase.rpc('get_user_movies', {
+  _relation_type: 'favorite'
+}) as { data: Film[]; error: any };
 
+const isProcessingFollow = ref(false);
 const handleFollow = async () => {
 	if (isProcessingFollow.value) return;
   isProcessingFollow.value = true;
@@ -201,7 +210,8 @@ const handleFollow = async () => {
 <template>
 	<div class="relative w-full h-full pb-5">
     <!-- Background -->
-    <div class="h-80 bg-gradient-to-r from-orange-200 via-pink-300 to-violet-400"></div>
+		<div class="h-80 bg-gradient-to-b from-pink-400/90 to-violet-400 dark:from-pink-700 dark:to-violet-800"></div>
+  	<!-- <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/40 via-neutral-800/5 via-25% to-neutral-800/0"></div> -->
     
     <!-- Profile -->
     <div class="absolute top-60 inset-x-20 transform">
@@ -264,10 +274,10 @@ const handleFollow = async () => {
 					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Películas favoritas</h2>
 						<Carousel
-							v-if="true"
+							v-if="favoriteMovies"
 							class="mt-2.5"
-							:value="data.results"
-							:numVisible="2"
+							:value="favoriteMovies"
+							:numVisible="3"
 							:numScroll="1"
 							:showIndicators="false"
 							:responsiveOptions="responsiveOptions"
@@ -278,12 +288,14 @@ const handleFollow = async () => {
 									:film="slotProps.data"
 									:trending="false"
 									:trendingNumber="slotProps.index + 1"
+									:favorite="true"
+                	:watch_later="false"
 									@click="navigateToMovie(slotProps.data.id)"
 								></FilmCard>
 							</template>
 						</Carousel>
 						<p v-else class="text-gray-500 text-lg italic">
-							Este usuario aún no tiene películas favoritas.
+							Aquest usuari encara no té pel·lícules preferides.
 						</p>
 					</div>
 				</div>
@@ -299,7 +311,7 @@ const handleFollow = async () => {
             ></ReviewCard>
           </div>
 					<p v-else class="text-gray-500 text-lg italic">
-						Este usuario aún no ha escrito ninguna reseña.
+						Aquest usuari encara no ha escrit cap ressenya.
 					</p>
 				</div>
 			</div>

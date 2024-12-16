@@ -16,13 +16,8 @@ const toast = useToast();
 
 const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
   "find_movie_by_id",
-  { movie_id: route.params.id }
+  { movie_id: route.params.id, lang: 'ca-ES' }
 )) as { data: Film; error: any };
-
-// const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
-//   "get_reviews",
-//   { _movie_id: route.params.id }
-// )) as { data: Review[]; error: any };
 
 const limit = 10
 const offset = ref(0)
@@ -222,6 +217,7 @@ const deleteReview = (review_id: string) => {
 };
 
 const watchLater = ref(false);
+const favorite = ref(false);
 try {
   const { data: userMovieRelations, error } = (await supabase.rpc("get_user_movie_relations", {
     _movie_id: route.params.id
@@ -229,6 +225,7 @@ try {
 
   if (error) throw error;
   watchLater.value = userMovieRelations?.watch_later ?? false;
+  favorite.value = userMovieRelations?.favorite ?? false;
 
 } catch (e) {
   console.error(e);
@@ -241,6 +238,9 @@ const handleUserMovieRelation = async (relation_type: 'favorite' | 'watch_later'
     let rpcFunction = "add_user_movie"
     if (relation_type === 'watch_later') {
       rpcFunction = watchLater.value ? "delete_user_movie" : "add_user_movie";
+    } 
+    if (relation_type === 'favorite') {
+      rpcFunction = favorite.value ? "delete_user_movie" : "add_user_movie";
     }
     const { error } = (await supabase.rpc(rpcFunction, {
       _movie_id: route.params.id,
@@ -249,7 +249,7 @@ const handleUserMovieRelation = async (relation_type: 'favorite' | 'watch_later'
 
     if (error) throw error;
     if (relation_type === 'watch_later') watchLater.value = !watchLater.value;
-
+    if (relation_type === 'favorite') favorite.value = !favorite.value;
   } catch (e) {
     console.error(`Error handling relation '${relation_type}':`, e);
   }
@@ -257,6 +257,7 @@ const handleUserMovieRelation = async (relation_type: 'favorite' | 'watch_later'
     isLoadingHandleUserMovieRelation.value = false;
   }
 }
+
 
 const visibleDrawerDirector = ref(false);
 const visibleDrawerScript = ref(false);
@@ -496,13 +497,14 @@ onBeforeUnmount(() => {
 
   <div class="w-full min-h-screen">
     <div
-      class="fixed w-full h-full bg-cover bg-center bg-fixed transition-opacity"
+      class="fixed w-full h-full bg-cover bg-center bg-fixed"
       :style="{
         backgroundImage: `url(${
           'https://image.tmdb.org/t/p/original' + dataMovie.backdrop_path
         })`,
       }"
     ></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/5 via-25% to-neutral-800/0"></div>
 
     <div class="relative z-10 pt-[28rem]">
       <div class="backdrop-blur-xl bg-white/70 dark:bg-black/50">
@@ -518,6 +520,7 @@ onBeforeUnmount(() => {
               <h1 class="w-3/4 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
               <div class="flex items-center gap-2">
                 <button
+                  v-if="user"
                   @click="handleUserMovieRelation('watch_later')"
                   :disabled="isLoadingHandleUserMovieRelation"
                   class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
@@ -527,6 +530,21 @@ onBeforeUnmount(() => {
                       watchLater
                         ? 'pi pi-bookmark-fill text-amber-400'
                         : 'pi pi-bookmark-fill text-gray-300',
+                        'text-xl']
+                    "
+                  ></i>
+                </button> 
+                <button
+                  v-if="user"
+                  @click="handleUserMovieRelation('favorite')"
+                  :disabled="isLoadingHandleUserMovieRelation"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
+                >
+                  <i
+                    :class="[
+                      favorite
+                        ? 'pi pi-heart-fill text-red-500'
+                        : 'pi pi-heart-fill text-gray-300',
                         'text-xl']
                     "
                   ></i>
@@ -746,7 +764,7 @@ onBeforeUnmount(() => {
               <div class="flex items-center space-x-6">
                 <Button label="Afegir ressenya" variant="text" @click="visible = true" raised rounded />
                 <div class="search-container relative">
-                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900">
+                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900 dark:text-violet-400">
                     <i class="pi pi-search"></i>
                   </span>
                   <input
@@ -754,7 +772,7 @@ onBeforeUnmount(() => {
                     v-model="searchQuery"
                     placeholder="Buscar review"
                     @keydown.enter="searchReviews"
-                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
+                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 dark:placeholder-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
                   />
                 </div>
               </div>

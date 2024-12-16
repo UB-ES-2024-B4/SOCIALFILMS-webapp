@@ -64,7 +64,7 @@ const applyFilters = async () => {
       filtered.map(async (film) => {
         const { data: fullFilm, error } = (await supabase.rpc(
           "find_movie_by_id",
-          { movie_id: film.id }
+          { movie_id: film.id, lang: 'ca-ES' }
         )) as { data: Film; error: any };
         return {
           ...film,
@@ -107,7 +107,7 @@ const applyFilters = async () => {
 try {
   const { data, error } = (await supabase.rpc("search_movie_by_name", {
     movie_name: encodeURIComponent(query),
-    lang: "es",
+    lang: "ca-ES",
   })) as { data: FilmsAPI; error: any };
   if (error) throw error;
 
@@ -165,7 +165,12 @@ watch(
 </script>
 
 <template>
-  <div class="mt-28 w-full h-full">
+  <div
+    class="w-full h-full fixed inset-0 bg-cover bg-center"
+    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${filmsQueryOriginal.results[0]?.backdrop_path})` }"
+  ></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/5 via-25% to-neutral-800/0"></div>
+  <div class="pt-[4.5rem] w-full h-full relative backdrop-blur-xl bg-zinc-300/20 dark:bg-black/60">
     <div class="flex my-5 ml-10 mr-4">
       <div class="flex-none">
         <div v-if="isFiltersVisible" class="w-72 mr-10 rounded-md shadow">
