@@ -20,10 +20,7 @@ defineProps({
 
 const liked = ref(false);
 
-const buttonClick = (event: MouseEvent) => {
-  // Prevenir la propagación del clic
-  event.stopPropagation();
-  console.log("Botón clickeado");
+const buttonClick = () => {
   liked.value = !liked.value
 };
 
@@ -47,7 +44,7 @@ const buttonClick = (event: MouseEvent) => {
       </div>
       <div class="absolute top-4 right-3">
         <button
-          @click="buttonClick($event)"
+          @click.stop="buttonClick()"
           class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-lg hover:cursor-pointer hover:bg-gray-200 hover:shadow-xl transition-all"
         >
           <i

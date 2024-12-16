@@ -14,15 +14,32 @@ const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast();
 
-const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
-  "find_movie_by_id",
-  { movie_id: route.params.id }
-)) as { data: Film; error: any };
+let dataMovie: Film | null = null;
+let errorMovie: any = null;
 
-// const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
-//   "get_reviews",
-//   { _movie_id: route.params.id }
-// )) as { data: Review[]; error: any };
+const { data: dataCa, error: errorCa } = (await supabase.rpc(
+  "find_movie_by_id",
+  { 
+    movie_id: route.params.id,
+    lang: 'ca' 
+  }
+)) as { data: Film | null; error: any };
+
+if (dataCa?.overview) {
+  dataMovie = dataCa;
+  errorMovie = errorCa;
+} else {
+  const { data: dataEs, error: errorEs } = (await supabase.rpc(
+    "find_movie_by_id",
+    { 
+      movie_id: route.params.id,
+      lang: 'es' 
+    }
+  )) as { data: Film | null; error: any };
+
+  dataMovie = dataEs;
+  errorMovie = errorEs;
+}
 
 const limit = 10
 const offset = ref(0)
@@ -222,6 +239,49 @@ const deleteReview = (review_id: string) => {
   }
 };
 
+const watchLater = ref(false);
+const favorite = ref(false);
+try {
+  const { data: userMovieRelations, error } = (await supabase.rpc("get_user_movie_relations", {
+    _movie_id: route.params.id
+  }))
+
+  if (error) throw error;
+  watchLater.value = userMovieRelations?.watch_later ?? false;
+  favorite.value = userMovieRelations?.favorite ?? false;
+
+} catch (e) {
+  console.error(e);
+}
+
+const isLoadingHandleUserMovieRelation = ref(false);
+const handleUserMovieRelation = async (relation_type: 'favorite' | 'watch_later') => {
+  isLoadingHandleUserMovieRelation.value = true;
+  try {
+    let rpcFunction = "add_user_movie"
+    if (relation_type === 'watch_later') {
+      rpcFunction = watchLater.value ? "delete_user_movie" : "add_user_movie";
+    }
+    if (relation_type === 'favorite') {
+      rpcFunction = favorite.value ? "delete_user_movie" : "add_user_movie";
+    }
+    const { error } = (await supabase.rpc(rpcFunction, {
+      _movie_id: route.params.id,
+      _relation_type: relation_type,
+    }))
+
+    if (error) throw error;
+    if (relation_type === 'watch_later') watchLater.value = !watchLater.value;
+    if (relation_type === 'favorite') favorite.value = !favorite.value;
+
+  } catch (e) {
+    console.error(`Error handling relation '${relation_type}':`, e);
+  }
+  finally {
+    isLoadingHandleUserMovieRelation.value = false;
+  }
+}
+
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
 });
@@ -388,7 +448,41 @@ const visibleDrawerCast = ref(false);
             :style="{ transform: `translateY(${posterTranslateY}px)` }"
           />
           <div class="flex flex-col">
-            <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
+            <div class="flex items-start justify-between">
+              <h1 class="w-3/4 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
+              <div class="flex items-center gap-2">
+                <button
+                  v-if="user"
+                  @click="handleUserMovieRelation('watch_later')"
+                  :disabled="isLoadingHandleUserMovieRelation"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
+                >
+                  <i
+                    :class="[
+                      watchLater
+                        ? 'pi pi-bookmark-fill text-amber-400'
+                        : 'pi pi-bookmark-fill text-gray-300',
+                        'text-xl']
+                    "
+                  ></i>
+                </button> 
+                <button
+                  v-if="user"
+                  @click="handleUserMovieRelation('favorite')"
+                  :disabled="isLoadingHandleUserMovieRelation"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
+                >
+                  <i
+                    :class="[
+                      favorite
+                        ? 'pi pi-heart-fill text-red-500'
+                        : 'pi pi-heart-fill text-gray-300',
+                        'text-xl']
+                    "
+                  ></i>
+                </button> 
+              </div>
+            </div>
             <div class="flex flex-col flex-1 mt-4 md:flex-row md:mt-0 gap-14">
               <div class="flex-1 flex flex-col space-y-3">
                 <h2 class="text-lg text-gray-600 dark:text-gray-400">

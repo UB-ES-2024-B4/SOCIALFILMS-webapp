@@ -3,6 +3,7 @@ import type { Review, FilmsAPI, Profile } from "~/types";
 import ReviewCard from "~/components/ReviewCard.vue";
 
 const supabase = useSupabaseClient();
+const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast()
 
@@ -59,17 +60,11 @@ try {
 	});
 
 	reviewsWithMovies.value = await Promise.all(moviesPromises);
-	console.log(reviewsWithMovies)
 } catch (error) {
 	console.error("Error loading reviews or movies:", error);
 } finally {
 	isLoadingReviews.value = false;
 }
-
-const { data, error } = (await supabase.rpc("get_trending_movies_of_week")) as {
-  data: FilmsAPI;
-  error: any;
-};
 
 const responsiveOptions = ref([
     {
@@ -86,6 +81,11 @@ const responsiveOptions = ref([
         breakpoint: '2000px',
         numVisible: 4,
         numScroll: 2
+    },
+	{
+        breakpoint: '1750px',
+        numVisible: 3,
+        numScroll: 1
     },
     {
         breakpoint: '1500px',
@@ -126,8 +126,11 @@ const shareProfile = () => {
 			});
 };
 
-const isProcessingFollow = ref(false);
+const { data: dataMovie, error: error } = await supabase.rpc('get_user_movies', {
+  _relation_type: 'favorite'
+}) as { data: FilmsAPI[]; error: any };
 
+const isProcessingFollow = ref(false);
 const handleFollow = async () => {
 	if (isProcessingFollow.value) return;
   isProcessingFollow.value = true;
@@ -257,10 +260,10 @@ const handleFollow = async () => {
 					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Películas favoritas</h2>
 						<Carousel
-							v-if="true"
+							v-if="dataMovie"
 							class="mt-2.5"
-							:value="data.results"
-							:numVisible="2"
+							:value="dataMovie"
+							:numVisible="3"
 							:numScroll="1"
 							:showIndicators="false"
 							:responsiveOptions="responsiveOptions"
@@ -276,7 +279,7 @@ const handleFollow = async () => {
 							</template>
 						</Carousel>
 						<p v-else class="text-gray-500 text-lg italic">
-							Este usuario aún no tiene películas favoritas.
+							Aquest usuari encara no té pel·lícules preferides.
 						</p>
 					</div>
 				</div>
@@ -292,7 +295,7 @@ const handleFollow = async () => {
             ></ReviewCard>
           </div>
 					<p v-else class="text-gray-500 text-lg italic">
-						Este usuario aún no ha escrito ninguna reseña.
+						Aquest usuari encara no ha escrit cap ressenya.
 					</p>
 				</div>
 			</div>
