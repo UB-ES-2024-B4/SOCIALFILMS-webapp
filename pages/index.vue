@@ -149,9 +149,9 @@ const buttonListClass = (list: string) => {
 onMounted(() => {
   updateSlidesPerView();
   window.addEventListener("resize", updateSlidesPerView);
-  currentMovies.value = trendingMovies.results;
   fetchMoviesList('top_rated');
   fetchMoviesList('popular');
+  currentMovies.value = trendingMovies.results;
 });
 
 onUnmounted(() => {
