@@ -49,7 +49,7 @@ try {
 	const moviesPromises = reviews.map(async (review) => {
 		const { data: movieData, error: movieError } = await supabase.rpc(
 			"find_movie_by_id",
-			{ movie_id: review.movie_id }
+			{ movie_id: review.movie_id, lang: 'ca-ES' }
 		);
 		if (movieError) throw movieError;
 
@@ -139,9 +139,9 @@ const shareProfile = () => {
 			});
 };
 
-const { data: dataMovie, error: error } = await supabase.rpc('get_user_movies', {
+const { data: favoriteMovies, error: errorFavoriteMovies } = await supabase.rpc('get_user_movies', {
   _relation_type: 'favorite'
-}) as { data: FilmsAPI[]; error: any };
+}) as { data: Film[]; error: any };
 
 const isProcessingFollow = ref(false);
 const handleFollow = async () => {
@@ -274,9 +274,9 @@ const handleFollow = async () => {
 					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Películas favoritas</h2>
 						<Carousel
-							v-if="dataMovie"
+							v-if="favoriteMovies"
 							class="mt-2.5"
-							:value="dataMovie"
+							:value="favoriteMovies"
 							:numVisible="3"
 							:numScroll="1"
 							:showIndicators="false"
@@ -288,6 +288,8 @@ const handleFollow = async () => {
 									:film="slotProps.data"
 									:trending="false"
 									:trendingNumber="slotProps.index + 1"
+									:favorite="true"
+                	:watch_later="false"
 									@click="navigateToMovie(slotProps.data.id)"
 								></FilmCard>
 							</template>

@@ -137,7 +137,7 @@ const loadReviewsAndMovies = async () => {
     const moviesPromises = reviews.map(async (review) => {
       const { data: movieData, error: movieError } = await supabase.rpc(
         "find_movie_by_id",
-        { movie_id: review.movie_id }
+        { movie_id: review.movie_id, lang: 'ca-ES' }
       );
       if (movieError) throw movieError;
 
