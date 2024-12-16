@@ -35,3 +35,12 @@
 //     }
 //   }
 // }
+Cypress.Commands.add('login', () => {  
+    cy.visit('https://socialfilms.nuxt.dev/login');
+    cy.wait(1000);
+    cy.get('#on_label_email').type('zhehan1@yopmail.com');
+    cy.get('#on_label_password').type('Zhehan123?');
+    cy.get('button[type="submit"]').click();
+    cy.wait(1000);
+    cy.url().should('not.include', '/login');
+});

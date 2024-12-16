@@ -69,8 +69,8 @@ BEGIN
   END IF;
 
   -- Insert the follow relationship
-  INSERT INTO public.notifications (created_at, sender_id, receiver_id, movie_id, is_read, is_seen, sender_username, receiver_username)
-  VALUES (NOW(), _sender_id, _receiver_id, _movie_id, false, false, _sender_username, _receiver_username);
+  INSERT INTO public.notifications (created_at, sender_id, receiver_id, movie_id, is_read, sender_username, receiver_username)
+  VALUES (NOW(), _sender_id, _receiver_id, _movie_id, false, _sender_username, _receiver_username);
 
   -- If successful, return a success message
   RETURN json_build_object(

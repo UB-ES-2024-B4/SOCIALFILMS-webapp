@@ -43,9 +43,9 @@ describe('Publish and delete review functionality', () => {
     });
 
     it('Does not allow to publish a review', () => {
-        cy.visit(`${baseUrl}movies/${movieId}`);
-        cy.wait(2000);
-        cy.contains('Añadir review').click();
+        cy.visit(`${baseUrl}/movies/${movieId}`);
+        cy.wait(4000);
+        cy.contains('Afegir ressenya').click();
         cy.wait(2000);
         cy.get('textarea').type('Muy buena pelicula');
         cy.contains('Publicar').click();
@@ -55,6 +55,7 @@ describe('Publish and delete review functionality', () => {
   
     it('Publishes and deletes a review', () => {
         cy.visit(baseUrl);
+        cy.wait(2000);
         cy.contains('Inicia sessió').click();
         cy.get('input[id="on_label_email"]').type(email);
         cy.get('#on_label_password').type(password);
@@ -63,9 +64,9 @@ describe('Publish and delete review functionality', () => {
         cy.url().should('include', '/');
   
         cy.wait(1000);
-        cy.visit(`${baseUrl}movies/${movieId}`);
-        cy.wait(2000);
-        cy.contains('Añadir review').click();
+        cy.visit(`${baseUrl}/movies/${movieId}`);
+        cy.wait(4000);
+        cy.contains('Afegir ressenya').click();
         cy.wait(2000);
         cy.get('textarea').type('Muy buena pelicula');
         cy.contains('Publicar').click();
@@ -113,18 +114,19 @@ describe('Publish and delete review functionality', () => {
         cy.get('button[type="submit"]').click();
         cy.url().should('include', '/');
 
-        cy.visit(`${baseUrl}movies/${movieId}`);
-        cy.wait(2000);
-        cy.contains('Añadir review').click();
+        cy.visit(`${baseUrl}/movies/${movieId}`);
+        cy.wait(4000);
+        cy.contains('Afegir ressenya').click();
         cy.wait(2000);
         cy.get('textarea').type('Muy buena pelicula');
         cy.get('input[type="checkbox"]').check();
         cy.contains('Publicar').click();
         cy.get('.p-toast-detail') 
             .should('contain.text', 'Tu reseña se ha publicado con éxito.');
-        cy.visit(`${baseUrl}movies/${movieId}`);
-        cy.contains('Marc') 
-            .should('exist') 
+        cy.visit(`${baseUrl}/movies/${movieId}`);
+        cy.wait(4000);
+        cy.get('h1.text-2xl.font-bold.cursor-pointer:contains("Marc")')
+        .should('exist')
             .parent()
             .parent()
             .parent()
