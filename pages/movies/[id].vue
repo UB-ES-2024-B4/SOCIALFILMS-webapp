@@ -517,36 +517,34 @@ onBeforeUnmount(() => {
           />
           <div class="flex flex-col">
             <div class="flex items-start justify-between">
-              <h1 class="w-3/4 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
+              <h1 class="w-3/5 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
               <div class="flex items-center gap-2">
                 <button
                   v-if="user"
                   @click="handleUserMovieRelation('watch_later')"
                   :disabled="isLoadingHandleUserMovieRelation"
-                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
                 >
                   <i
-                    :class="[
-                      watchLater
-                        ? 'pi pi-bookmark-fill text-amber-400'
-                        : 'pi pi-bookmark-fill text-gray-300',
-                        'text-xl']
-                    "
+                    :class="['text-[17.5px]',
+                      'pi pi-bookmark-fill transition-all duration-500',
+                      watchLater ? 'text-amber-400' : 'text-gray-300',
+                      'group-hover:text-amber-400'
+                    ]"
                   ></i>
                 </button> 
                 <button
                   v-if="user"
                   @click="handleUserMovieRelation('favorite')"
                   :disabled="isLoadingHandleUserMovieRelation"
-                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white shadow-md hover:bg-gray-100 transition-all"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
                 >
                   <i
-                    :class="[
-                      favorite
-                        ? 'pi pi-heart-fill text-red-500'
-                        : 'pi pi-heart-fill text-gray-300',
-                        'text-xl']
-                    "
+                    :class="['text-[17.5px]',
+                      'pi pi-heart-fill transition-all duration-500',
+                      favorite ? 'text-red-500' : 'text-gray-300',
+                      'group-hover:text-red-500'
+                    ]"
                   ></i>
                 </button>
                 <Button class="shadow-md" severity="contrast" rounded icon="pi pi-share-alt" label="Compartir pel·lícula" :loading="isLoadingShareMovie" @click="seeShareMoviePopover" />

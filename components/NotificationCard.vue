@@ -18,7 +18,7 @@ const supabase = useSupabaseClient();
 
 const { data: movie, error: errorMovie } = (await supabase.rpc(
   "find_movie_by_id",
-  { movie_id: props.notification.movie_id }
+  { movie_id: props.notification.movie_id, lang: 'ca-ES' }
 )) as { data: Film; error: any };
 
 const isLoadingRead = ref(false);
