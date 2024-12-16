@@ -107,7 +107,7 @@ const applyFilters = async () => {
 try {
   const { data, error } = (await supabase.rpc("search_movie_by_name", {
     movie_name: encodeURIComponent(query),
-    lang: "es",
+    lang: "ca-ES",
   })) as { data: FilmsAPI; error: any };
   if (error) throw error;
 

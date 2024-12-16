@@ -72,28 +72,28 @@ watch(
             v-if="favorite"
             @click.stop="handleUserMovieRelation('favorite')"
             :disabled="isLoading"
-            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg"
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
           >
             <i
-              :class="
-                is_favorite
-                  ? 'pi pi-heart-fill text-red-500'
-                  : 'pi pi-heart-fill text-gray-300'
-              "
+              :class="[
+                'pi pi-heart-fill transition-all duration-500',
+                is_favorite ? 'text-red-500' : 'text-gray-300',
+                'group-hover:text-red-500'
+              ]"
             ></i>
           </button>
           <button
             v-if="watch_later"
             @click.stop="handleUserMovieRelation('watch_later')"
             :disabled="isLoading"
-            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg"
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
           >
             <i
-              :class="
-                is_watch_later
-                  ? 'pi pi-bookmark-fill text-amber-400'
-                  : 'pi pi-bookmark-fill text-gray-300'
-              "
+              :class="[
+                'pi pi-bookmark-fill transition-all duration-500',
+                is_watch_later ? 'text-amber-400' : 'text-gray-300',
+                'group-hover:text-amber-400'
+              ]"
             ></i>
           </button>
         </div>
