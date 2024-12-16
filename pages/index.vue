@@ -11,12 +11,15 @@ definePageMeta({
   layout: "navbar",
 });
 
-const { data: trendingMovies, error: errorTrendingMovies } = (await supabase.rpc("get_trending_movies_of_week")) as {
-  data: FilmsAPI;
-  error: any;
-};
+const { data: trendingMovies, error: errorTrendingMovies } = (await supabase.rpc(
+  "get_trending_movies_of_week", 
+  { 
+    lang: 'ca-ES'
+  }
+)) as {  data: FilmsAPI; error: any };
+
+const topRatedMovies = ref<FilmsAPI>();
 const popularMovies = ref<FilmsAPI>();
-const favoriteMovies = ref<Film[]>([]);
 const currentMovies = ref<Film[]>([]);
 
 const { data: nowPlayingMovies, error: errorNowPlayingMovies } = (await supabase.rpc(
@@ -86,11 +89,11 @@ const setActiveList = async (list: string) => {
   if (list === 'trending') {
     currentMovies.value = trendingMovies.results;
   } 
-  else if (list === 'popular') {
-    currentMovies.value = popularMovies.results;
+  else if (list === 'top_rated') {
+    currentMovies.value = topRatedMovies.value?.results || [];
   }
-  else if (list === 'favorite') {
-    await fetchMoviesList(list);
+  else if (list === 'popular') {
+    currentMovies.value = popularMovies.value?.results || [];
   }
 
   if (currentMovies.value.length === 0) {
@@ -102,28 +105,27 @@ const fetchMoviesList = async (list: string) => {
   isLoadingList.value = true;
 
   try {
-    if (list === "popular") {
+    if (list === "top_rated") {
       const { data, error } = await supabase.rpc(
         "get_top_rated_movies",
         { 
-          lang: 'ca-ES',
-          region: 'ES'
+          lang: 'ca-ES'
+        }
+      ) as { data: FilmsAPI; error: any };
+      if (error) throw error;
+      topRatedMovies.value = data;
+      currentMovies.value = topRatedMovies.value.results;
+    }
+    else if (list === "popular") {
+      const { data, error } = await supabase.rpc(
+        "get_popular_movies",
+        { 
+          lang: 'ca-ES'
         }
       ) as { data: FilmsAPI; error: any };
       if (error) throw error;
       popularMovies.value = data;
       currentMovies.value = popularMovies.value.results;
-    }
-    else if (list === "favorite") {
-      const { data, error } = await supabase.rpc(
-        "get_user_movies",
-        { 
-          _relation_type: 'favorite'
-        }
-      ) as { data: Film[]; error: any };
-      if (error) throw error;
-      favoriteMovies.value = data;
-      currentMovies.value = favoriteMovies.value;
     }   
   } catch (error) {
     console.error("Error fetching movies:", error.message);
@@ -228,8 +230,8 @@ onUnmounted(() => {
               Trending
             </button>
             <button
-              @click="setActiveList('popular')"
-              :class="buttonListClass('popular')"
+              @click="setActiveList('top_rated')"
+              :class="buttonListClass('top_rated')"
             > 
               <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 512 512" stroke-width="15" stroke="currentColor" class="mr-3 size-10">
                 <g>
@@ -265,9 +267,27 @@ onUnmounted(() => {
               </svg>
               Top Valorades
             </button>
+            <button
+              @click="setActiveList('popular')"
+              :class="buttonListClass('popular')"
+            > 
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="mr-1.5 size-9">
+                <path d="M20.0005 7L14.1543 12.9375C14.0493 13.0441 13.9962 13.0976 13.9492 13.1396C13.1899 13.8193 12.0416 13.8193 11.2822 13.1396C11.2352 13.0976 11.1817 13.0442 11.0767 12.9375C10.9716 12.8308 10.9191 12.7774 10.8721 12.7354C10.1127 12.0557 8.96397 12.0557 8.20461 12.7354C8.15771 12.7773 8.10532 12.8305 8.00078 12.9367L4 17M20.0005 7L20 13M20.0005 7H14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Populars
+            </button>
           </div>
           <div class="flex items-end justify-between">
-            <h2 class="font-bold text-white text-3xl mb-1">Pel·lícules {{ activeList === 'trending' ? 'Trending' : 'Millor Valorades' }}</h2>
+            <h2 class="font-bold text-white text-3xl mb-1">
+              Pel·lícules
+              {{
+                activeList === 'trending'
+                  ? 'Trending'
+                  : activeList === 'popular'
+                  ? 'Populars'
+                  : 'Millor Valorades'
+              }}
+            </h2>
             <div class="flex items-center justify-center gap-2">
               <button
                 @click ="prevSlide"

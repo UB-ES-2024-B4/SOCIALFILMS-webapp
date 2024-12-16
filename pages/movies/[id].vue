@@ -16,7 +16,7 @@ const toast = useToast();
 
 const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
   "find_movie_by_id",
-  { movie_id: route.params.id }
+  { movie_id: route.params.id, lang: 'ca-ES' }
 )) as { data: Film; error: any };
 
 // const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
