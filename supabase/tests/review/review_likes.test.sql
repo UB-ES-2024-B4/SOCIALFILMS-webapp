@@ -2,11 +2,11 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
--- Planificar 8 pruebas
+-- Planificar 7 pruebas
 SELECT plan(7);
 
 -- Configurar el usuario simulado para auth.uid()
-SELECT set_config('request.jwt.claims', '{"sub": "5899f99d-a449-4bfa-8769-19c097aaf1f4"}', true);
+SELECT set_config('request.jwt.claims', '{"sub": "5899f99d-a449-4bfa-8769-19c097aaf1f5"}', true);
 
 -- Crear una reseña de prueba
 SELECT ok(
@@ -23,21 +23,21 @@ SELECT ok(
 -- Obtener el ID de la reseña recién creada y asignarlo a una variable de sesión
 SELECT id AS review_id FROM public."Reviews" WHERE comment = 'Test review for add_like_dislike' \gset
 
--- Caso 1: Añadir un like cuando no hay ninguna reacción
+-- Añadir un like cuando no hay ninguna reacción
 SELECT public.add_like(:'review_id');
 SELECT ok(
   (SELECT likes FROM public."Reviews" WHERE id = :'review_id') = 1,
   'Like added successfully when no reaction exists'
 );
 
--- Caso 2: No duplicar like si el usuario ya ha dado like
+-- No duplicar like si el usuario ya ha dado like
 SELECT public.add_like(:'review_id');
 SELECT ok(
   (SELECT likes FROM public."Reviews" WHERE id = :'review_id') = 1,
   'Like not duplicated when user already liked'
 );
 
--- Caso 3: Cambiar un like a dislike
+-- Cambiar un like a dislike
 SELECT public.add_dislike(:'review_id');
 SELECT ok(
   (SELECT dislikes FROM public."Reviews" WHERE id = :'review_id') = 1 AND
@@ -45,14 +45,14 @@ SELECT ok(
   'Like changed to dislike successfully'
 );
 
--- Caso 4: No duplicar dislike si el usuario ya ha dado dislike
+-- No duplicar dislike si el usuario ya ha dado dislike
 SELECT public.add_dislike(:'review_id');
 SELECT ok(
   (SELECT dislikes FROM public."Reviews" WHERE id = :'review_id') = 1,
   'Dislike not duplicated when user already disliked'
 );
 
--- Caso 5: Cambiar un dislike a like
+-- Cambiar un dislike a like
 SELECT public.add_like(:'review_id');
 SELECT ok(
   (SELECT likes FROM public."Reviews" WHERE id = :'review_id') = 1 AND
@@ -60,14 +60,7 @@ SELECT ok(
   'Dislike changed to like successfully'
 );
 
--- Limpiar datos de prueba
-DELETE FROM public."Review-Reactions" WHERE user_id = '5899f99d-a449-4bfa-8769-19c097aaf1f4';
-DELETE FROM public."Reviews" WHERE id = :'review_id';
-
 -- Restaurar configuración de auth.uid()
 SELECT set_config('request.jwt.claims', '', true);
-
--- Finalizar el plan de pruebas
-SELECT * FROM finish();
 
 ROLLBACK;
