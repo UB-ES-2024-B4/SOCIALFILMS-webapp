@@ -788,11 +788,11 @@ onBeforeUnmount(() => {
               <hr v-if="index === 0 && hasReviewFromUser" class="w-11/12 border-t-2 border-violet-500 mt-4 rounded mx-auto">
             </div>
           </div>
-          <p v-else-if="!reviews.length" class="text-gray-600 dark:text-gray-400">
+          <p v-else-if="!reviews.length" class="text-lg text-gray-600 dark:text-gray-400">
             Encara no hi ha ressenyes.
           </p>
-          <p v-else class="text-gray-600 dark:text-gray-400">
-            No se encontraron resultados.
+          <p v-else class="text-lg text-gray-600 dark:text-gray-400">
+            No s'han trobat resultats.
           </p>
           <div v-if="hasMore" class="flex items-center justify-center gap-4 mt-4">
             <hr class="w-1/4 border-t-2 border-violet-500">
