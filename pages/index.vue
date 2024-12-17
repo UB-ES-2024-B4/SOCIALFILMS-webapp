@@ -201,7 +201,9 @@ onMounted(() => {
   window.addEventListener("resize", updateSlidesPerView);
   fetchMoviesList('top_rated');
   fetchMoviesList('popular');
-  currentMovies.value = trendingMovies.results;
+  setTimeout(() => {
+    currentMovies.value = trendingMovies.results;
+  }, 2000);
 });
 
 onUnmounted(() => {
