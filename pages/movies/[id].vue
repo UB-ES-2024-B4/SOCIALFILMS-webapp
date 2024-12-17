@@ -515,8 +515,8 @@ onBeforeUnmount(() => {
             class="w-48 md:w-80 rounded-lg shadow-xl md:mr-10 transition-transform duration-500 dark:shadow-gray-300/15"
             :style="{ transform: `translateY(${posterTranslateY}px)` }"
           />
-          <div class="flex flex-col">
-            <div class="flex items-start justify-between">
+          <div class="w-full flex flex-col">
+            <div class="w-full flex items-start justify-between">
               <h1 class="w-3/5 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
               <div class="flex items-center gap-2">
                 <button
