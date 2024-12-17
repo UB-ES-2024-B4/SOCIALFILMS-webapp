@@ -7,7 +7,7 @@ definePageMeta({
 });
 
 const supabase = useSupabaseClient();
-const route = useRoute();
+const user = useSupabaseUser();
 
 const optionsSort = ref([
   { sort_by: "Más vistas", value: "popularity.desc" },
@@ -289,7 +289,7 @@ watch(
             :trending="false"
             :trendingNumber="index + 1"
             :favorite="false"
-            :watch_later="true"
+            :watch_later="user ? true : false"
             @click="navigateToMovie(film.id)"
           ></FilmCard>
         </div>

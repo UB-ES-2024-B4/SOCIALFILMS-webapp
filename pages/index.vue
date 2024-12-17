@@ -181,7 +181,7 @@ onUnmounted(() => {
                 v-for="film in nowPlayingMovies.results"
                 class="cursor-pointer"
                 :film="film"
-                :favorite="true"
+                :favorite="user ? true : false"
                 :watch_later="false"
                 @click="navigateToMovie(film.id)"
               ></HorizontalFilmCard>
@@ -336,7 +336,7 @@ onUnmounted(() => {
                   :film="film"
                   :trending="activeList === 'trending'"
                   :trendingNumber="chunkIndex * slidesPerView + index + 1"
-                  :favorite="true"
+                  :favorite="user ? true : false"
                   :watch_later="false"
                   @click="navigateToMovie(film.id)"
                 ></FilmCard>

@@ -7,6 +7,7 @@ definePageMeta({
 });
 
 const supabase = useSupabaseClient();
+const user = useSupabaseUser();
 const route = useRoute();
 const query =
   typeof route.params.query === "string"
@@ -343,7 +344,7 @@ watch(
             :trending="false"
             :trendingNumber="index + 1"
             :favorite="false"
-            :watch_later="true"
+            :watch_later="user ? true : false"
             @click="navigateToMovie(film.id)"
           ></FilmCard>
         </div>
