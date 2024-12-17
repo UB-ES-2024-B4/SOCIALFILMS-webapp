@@ -223,7 +223,7 @@ onUnmounted(() => {
           @click="navigateToMovie(trendingMovies.results[0].id)"
         ></BigFilmCard>
 
-        <div class="flex flex-col gap-2">
+        <div class="w-full flex flex-col gap-2">
           <div class="flex items-center gap-2.5">
             <button
               @click="setActiveList('trending')"
@@ -282,7 +282,7 @@ onUnmounted(() => {
               Populars
             </button>
           </div>
-          <div class="flex items-end justify-between">
+          <div class="w-full flex items-end justify-between">
             <h2 class="font-bold text-white text-3xl mb-1">
               Pel·lícules
               {{
@@ -326,14 +326,13 @@ onUnmounted(() => {
               <!-- Cada slide -->
               <div
                 v-for="(chunk, chunkIndex) in chunkArray(currentMovies, slidesPerView)"
-                :key="chunkIndex"
+                :key="chunk[0]"
                 class="flex-shrink-0 w-full flex justify-start gap-[3.4rem]"
               >
                 <!-- Cada FilmCard -->
                 <FilmCard
                   v-for="(film, index) in chunk"
                   class="cursor-pointer"
-                  :key="index"
                   :film="film"
                   :trending="activeList === 'trending'"
                   :trendingNumber="chunkIndex * slidesPerView + index + 1"
