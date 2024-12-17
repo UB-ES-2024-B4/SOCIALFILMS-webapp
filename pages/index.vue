@@ -90,10 +90,9 @@ const navigateToMovie = (id: number) => {
 };
 
 const responsiveOptions = ref([
-  { breakpoint: 2000, numVisible: 6 },
-  { breakpoint: 1750, numVisible: 5 },
-  { breakpoint: 1600, numVisible: 4 },
-  { breakpoint: 1300, numVisible: 3 },
+  { breakpoint: 2000, numVisible: 5 },
+  { breakpoint: 1750, numVisible: 4 },
+  { breakpoint: 1550, numVisible: 3 },
   { breakpoint: 1000, numVisible: 2 },
   { breakpoint: 700, numVisible: 1 },
 ]);
@@ -242,14 +241,14 @@ onUnmounted(() => {
       <!-- Left Column -->
       <div class="flex flex-col items-start gap-12 grow-0 w-1/3">
         <!-- Billboard -->
-        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
+        <div class="h-[500px] max-w-[348px] 2xl:max-w-[378px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">Cartellera</h3>
           <div class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
                 v-for="film in nowPlayingMovies.results"
                 :key="film.id"
-                class="cursor-pointer"
+                class="cursor-pointer w-[270px] 2xl:w-[300px]"
                 :film="film"
                 :favorite="user ? true : false"
                 :watch_later="false"
@@ -260,14 +259,14 @@ onUnmounted(() => {
         </div>
 
         <!-- My list -->
-        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
+        <div class="h-[500px] max-w-[348px] 2xl:max-w-[378px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">La meva llista</h3>
           <div v-if="user && favoriteMovies" class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
                 v-for="film in favoriteMovies"
                 :key="film.id"
-                class="cursor-pointer"
+                class="cursor-pointer w-[270px] 2xl:w-[300px]"
                 :film="film"
                 :favorite="false"
                 :watch_later="true"
@@ -286,7 +285,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Right Column -->
-      <div class="flex flex-col gap-12 w-[67%]">
+      <div class="flex flex-col gap-12 lg:w-[67%] xl:w-[70%] 2xl:w-[77%]">
         <BigFilmCard
           class="cursor-pointer h-[500px]"
           :film="trendingMovies.results[0]"
