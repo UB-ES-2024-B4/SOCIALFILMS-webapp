@@ -546,6 +546,5 @@ const isNotFilledProfile = computed(() => {
         </div>
       </template>
     </Dialog>
-    <Toast />
   </div>
 </template>

@@ -173,7 +173,7 @@ onUnmounted(() => {
       <!-- Left Column -->
       <div class="flex flex-col items-start gap-12 grow-0 w-1/3">
         <!-- Billboard -->
-        <div class="h-[500px] w-[350px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
+        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">Cartellera</h3>
           <div class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
@@ -190,7 +190,7 @@ onUnmounted(() => {
         </div>
 
         <!-- My list -->
-        <div class="h-[500px] w-[350px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
+        <div class="h-[500px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">La meva llista</h3>
           <div v-if="user && myListMovies" class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">

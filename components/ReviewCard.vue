@@ -340,7 +340,6 @@ const handleFollow = async (profile: Profile) => {
 </script>
 
 <template>
-  <Toast />
   <ConfirmDialog group="positioned" v-model:visible="confirmVisible" :draggable="false" />
   <Dialog v-model:visible="visible" modal :draggable="false">
     <template #header>

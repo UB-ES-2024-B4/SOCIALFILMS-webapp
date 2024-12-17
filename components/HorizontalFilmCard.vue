@@ -68,7 +68,7 @@ watch(
         :alt="`${film.title} poster`"
         class="absolute inset-0 w-full h-full object-cover"
       />
-      <div v-show="user" class="absolute top-4 right-3">
+      <div class="absolute top-4 right-3">
         <div class="flex flex-col items-center gap-1.5">
           <button
             v-if="favorite"

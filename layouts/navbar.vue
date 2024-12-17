@@ -193,6 +193,7 @@ watch(
 </script>
 
 <template>
+  <Toast />
   <div>
     <div
       class="fixed inset-x-6 max-w-full h-[4.5rem] flex items-center justify-between rounded-full z-50 transition-transform duration-500"
