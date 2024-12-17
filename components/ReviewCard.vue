@@ -62,12 +62,12 @@ const confirmPosition = async (position) => {
   }
   confirm.require({
       group: 'positioned',
-      message: '¿Estás seguro de que deseas eliminar esta reseña?',
-      header: 'Eliminar reseña',
+      message: 'Estàs segur que vols eliminar aquesta ressenya?',
+      header: 'Eliminar ressenya',
       icon: 'pi pi-info-circle',
       position: position,
       rejectProps: {
-          label: 'Cancelar',
+          label: 'Cancel·lar',
           severity: 'secondary',
           outlined: true
       },
@@ -78,9 +78,9 @@ const confirmPosition = async (position) => {
       accept: async () => {
         const { data: reviewData, error: reviewError } = await supabase.rpc('delete_review', {_review_id: props.review.id })
         if (reviewError) {
-            toast.add({ severity: 'error', summary: 'Error al eliminar', detail: 'No se ha podido eliminar la reseña', life: 3000 })
+          toast.add({ severity: 'error', summary: 'Error en eliminar', detail: 'No s\'ha pogut eliminar la ressenya', life: 3000 })
         } else {
-            toast.add({ severity: 'success', summary: 'Eliminación exitosa', detail: 'Tu reseña se ha eliminado correctamente.', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Eliminació exitosa', detail: 'La teva ressenya s\'ha eliminat correctament.', life: 3000 });
             emit('delete-review', props.review.id);
             visible.value = false;
         }
@@ -181,18 +181,18 @@ const handleReactionError = (errorCode: string) => {
   const errorMessages = {
     DELETE_REACTION_ERROR: {
       severity: 'error',
-      summary: 'Error al eliminar la reacción',
-      detail: 'No se ha podido eliminar la reacción a la reseña',
+      summary: 'Error en eliminar la reacció',
+      detail: 'No s\'ha pogut eliminar la reacció a la ressenya',
     },
     ADD_LIKE_ERROR: {
       severity: 'error',
-      summary: 'Error al añadir like',
-      detail: 'No se ha podido añadir like a la reseña',
+      summary: 'Error en afegir "m\'agrada"',
+      detail: 'No s\'ha pogut afegir "m\'agrada" a la ressenya',
     },
     ADD_DISLIKE_ERROR: {
       severity: 'error',
-      summary: 'Error al añadir dislike',
-      detail: 'No se ha podido añadir dislike a la reseña',
+      summary: 'Error en afegir "no m\'agrada"',
+      detail: 'No s\'ha pogut afegir "no m\'agrada" a la ressenya',
     },
   };
 
@@ -220,21 +220,21 @@ const submitReview = async () => {
   const user_id = user.value?.id;
 
   if (!user_id) {
-    toast.add({ severity: "error", summary: "Error", detail: "Debes estar logueado para dejar una reseña.", life: 3000})
+    toast.add({ severity: "error", summary: "Error", detail: "Has d'estar loguejat per deixar una ressenya.", life: 3000})
     visible.value = false;
     return;
   }
 
-    const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value })
-    if (reviewError) {
-        toast.add({ severity: 'error', summary: 'Error al actualizar', detail: 'Asegúrate de modificar la calificación o escribir un comentario válido antes de guardar.', life: 3000 })
-    } else {
-        toast.add({ severity: 'success', summary: 'Actualización exitosa', detail: 'Tu reseña se ha actualizado correctamente.', life: 3000 });
-        visible.value = false;
-        review.comment = comment.value ?? ''
-        review.rating = rating.value
-        spoiler.value = checked.value
-    }
+  const { data: reviewData, error: reviewError } = await supabase.rpc('update_review', {_review_id: props.review.id, _rating: rating.value, _comment: comment.value, _spoilers: checked.value })
+  if (reviewError) {
+    toast.add({ severity: 'error', summary: 'Error en actualitzar', detail: 'Assegura\'t de modificar la qualificació o escriure un comentari vàlid abans de desar.', life: 3000 })
+  } else {
+    toast.add({ severity: 'success', summary: 'Actualització exitosa', detail: 'La teva ressenya s\'ha actualitzat correctament.', life: 3000 });
+    visible.value = false;
+    review.comment = comment.value ?? ''
+    review.rating = rating.value
+    spoiler.value = checked.value
+  }
 }
 
 const actualReportReason = ref('0');
@@ -245,13 +245,21 @@ const reportOptions = [
   { label: 'Desinformación', value: '2' },
   { label: 'Otros', value: '3' },
 ];
+
+const reportOptionsCat = [
+  { label: 'Contingut ofensiu', value: '0'},
+  { label: 'Spam', value: '1'},
+  { label: 'Desinformació', value: '2' },
+  { label: 'Altres', value: '3' },
+];
+
 const isLoadingReport = ref(false);
 
 const submitReport = async () => {
   const user_id = user.value?.id;
 
   if (!user_id) {
-    toast.add({ severity: "error", summary: "Error", detail: "Debes estar logueado para reportar una reseña.", life: 3000})
+    toast.add({ severity: "error", summary: "Error", detail: "Has d'estar loguejat per reportar una ressenya.", life: 3000 })
     visible.value = false;
     return;
   }
@@ -260,10 +268,10 @@ const submitReport = async () => {
     console.log(reason)
     const { data: reportData, error: reportError } = await supabase.rpc('add_report', {_review_id: props.review.id, _reason: reason, _other_reason: value_otros.value })
     if (reportError) {
-        toast.add({ severity: 'error', summary: 'Error al reportar', detail: 'No sé ha podido enviar el reporte, intentalo más tarde', life: 3000 })
+        toast.add({ severity: 'error', summary: 'Error en reportar', detail: 'No s\'ha pogut enviar el report, intenta-ho més tard.', life: 3000 })
         visibleReport.value = false
     } else {
-        toast.add({ severity: 'success', summary: 'Reporte exitoso', detail: 'Tu reporte se ha enviado correctamente.', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Report enviat amb èxit', detail: 'El teu report s\'ha enviat correctament.', life: 3000 });
         visibleReport.value = false
     }
     isLoadingReport.value = false;
@@ -305,27 +313,27 @@ const handleFollow = async (profile: Profile) => {
 
 	} catch (error) {
 		console.error(error);
-		let summary = "Oops, algo salió mal";
-    let detail = "Hubo un problema al realizar seguir al usuario.";
+		let summary = "Oops, alguna cosa ha anat malament";
+    let detail = "Hi ha hagut un problema en seguir l'usuari.";
 
-		switch (error.code) {
-			case 'F0001':
-				summary = "Ya estás siguiendo a este usuario";
-				detail = "Parece que ya sigues al usuario.";
-				break;
-			case 'F0002':
-				summary = "Usuario no encontrado";
-				detail = "No se encontró el usuario que intentas seguir.";
-				break;
-			case 'F0003':
-				summary = "No puedes seguirte a ti mismo";
-				detail = "Esta acción no está permitida.";
-				break;
-			case 'F0004':
-				summary = "No estás siguiendo a este usuario";
-				detail = "Parece que no sigues al usuario.";
-				break;
-		}
+    switch (error.code) {
+      case 'F0001':
+          summary = "Ja estàs seguint aquest usuari";
+          detail = "Sembla que ja segueixes l'usuari.";
+          break;
+      case 'F0002':
+          summary = "Usuari no trobat";
+          detail = "No s'ha trobat l'usuari que intentes seguir.";
+          break;
+      case 'F0003':
+          summary = "No pots seguir-te a tu mateix";
+          detail = "Aquesta acció no està permesa.";
+          break;
+      case 'F0004':
+          summary = "No estàs seguint aquest usuari";
+          detail = "Sembla que no segueixes l'usuari.";
+          break;
+      }
 		toast.add({
 			severity: "error",
 			summary,
@@ -403,56 +411,56 @@ const handleFollow = async (profile: Profile) => {
     <template #header>
       <div class="flex flex-row items-start mt-3 ml-3">
         <div class="flex flex-col gap-2 items-start">
-          <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Reportar reseña</h1>
-          <p class="text-lg text-gray-600 dark:text-gray-300">No le diremos nada a <strong>{{ review.user ? review.user : "User not found" }}</strong></p>
+          <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Reportar ressenya</h1>
+          <p class="text-lg text-gray-600 dark:text-gray-300">No li direm res a <strong>{{ review.user ? review.user : "User not found" }}</strong></p>
         </div>
       </div>
     </template>
       <Tabs v-model:value="actualReportReason">
           <TabList>
-            <Tab v-for="reportReason in reportOptions" :key="reportReason.label" :value="reportReason.value"> {{ reportReason.label }}</Tab>
+            <Tab v-for="reportReason in reportOptionsCat" :key="reportReason.label" :value="reportReason.value"> {{ reportReason.label }}</Tab>
           </TabList>
           <TabPanels>
-              <TabPanel value="0">
-                <p class="text-gray-600 dark:text-gray-100">Está prohibido el contenido que promueva odio, violencia, discriminación o acoso hacia cualquier individuo o grupo por razones de étnia, género, orientación sexual, religión, nacionalidad, discapacidad, entre otros.</p><br/>
-                <p class="text-gray-600 dark:text-gray-100">Ejemplos de contenido ofensivo incluyen:</p>
+            <TabPanel value="0">
+              <p class="text-gray-600 dark:text-gray-100">Està prohibit el contingut que promogui odi, violència, discriminació o assetjament cap a qualsevol individu o grup per raons d'ètnia, gènere, orientació sexual, religió, nacionalitat, discapacitat, entre altres.</p><br/>
+              <p class="text-gray-600 dark:text-gray-100">Exemples de contingut ofensiu inclouen:</p>
 
-                <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
-                  <li>Lenguaje vulgar o amenazas.</li>
-                  <li>Insultos o comentarios despectivos.</li>
-                  <li>Contenido que incite a la violencia o discriminación.</li>
-                </ul>
-              </TabPanel>
-              <TabPanel value="1">
-                <p class="text-gray-600 dark:text-gray-100">Está prohibido enviar mensajes no solicitados, promociones excesivas o contenido irrelevante con el único fin de obtener beneficios personales o comerciales.</p><br/>
-                <p class="text-gray-600 dark:text-gray-100">Ejemplos de contenido ofensivo incluyen:</p>
+              <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
+                  <li>Llenguatge vulgar o amenaces.</li>
+                  <li>Insults o comentaris despectius.</li>
+                  <li>Contingut que inciti a la violència o discriminació.</li>
+              </ul>
+          </TabPanel>
+          <TabPanel value="1">
+              <p class="text-gray-600 dark:text-gray-100">Està prohibit enviar missatges no sol·licitats, promocions excessives o contingut irrellevant amb l'única finalitat d'obtenir beneficis personals o comercials.</p><br/>
+              <p class="text-gray-600 dark:text-gray-100">Exemples de contingut ofensiu inclouen:</p>
 
-                <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
-                  <li>Publicidad masiva no solicitada.</li>
-                  <li>Enlaces repetidos que no aportan valor.</li>
-                  <li>Mensajes con fines de phishing o fraude.</li>
-                </ul>
-              </TabPanel>
-              <TabPanel value="2">
-                <p class="text-gray-600 dark:text-gray-100">Está prohibido difundir información falsa o engañosa que pueda causar daño a la comunidad, como noticias inventadas, teorías conspirativas o datos erróneos.</p><br/>
-                <p class="text-gray-600 dark:text-gray-100">Ejemplos de contenido ofensivo incluyen:</p>
+              <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
+                  <li>Publicitat massiva no sol·licitada.</li>
+                  <li>Enllaços repetits que no aporten valor.</li>
+                  <li>Missatges amb finalitats de phishing o frau.</li>
+              </ul>
+          </TabPanel>
+          <TabPanel value="2">
+              <p class="text-gray-600 dark:text-gray-100">Està prohibit difondre informació falsa o enganyosa que pugui causar dany a la comunitat, com notícies inventades, teories conspiratives o dades errònies.</p><br/>
+              <p class="text-gray-600 dark:text-gray-100">Exemples de contingut ofensiu inclouen:</p>
 
-                <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
-                  <li>Difusión de noticias falsas o engañosas.</li>
-                  <li>Propagación de teorías conspirativas sin evidencia.</li>
-                  <li>Información que pueda poner en peligro la salud o seguridad de las personas.</li>
-                </ul>
-              </TabPanel>
-              <TabPanel value="3">
-                <p class="text-gray-600 dark:text-gray-100">Nuestra prioridad es ofrecer un entorno seguro y solidario. También fomentar interacciones auténticas manteniendo el contenido y las cuentas engañosas al margen de nuestra plataforma.</p><br/>
-                <p class="text-gray-600 dark:text-gray-100">Si tu denuncia no encaja en las categorías anteriores, por favor explícanos brevemente el motivo.</p><br/>
+              <ul class="list-disc pl-6 text-gray-600 dark:text-gray-100">
+                  <li>Difusió de notícies falses o enganyoses.</li>
+                  <li>Propagació de teories conspiratives sense evidència.</li>
+                  <li>Informació que pugui posar en perill la salut o seguretat de les persones.</li>
+              </ul>
+          </TabPanel>
+          <TabPanel value="3">
+              <p class="text-gray-600 dark:text-gray-100">La nostra prioritat és oferir un entorn segur i solidari. També fomentar interaccions autèntiques mantenint el contingut i els comptes enganyosos al marge de la nostra plataforma.</p><br/>
+              <p class="text-gray-600 dark:text-gray-100">Si la teva denúncia no encaixa en les categories anteriors, si us plau explica'ns breument el motiu.</p><br/>
 
-                <FloatLabel variant="in">
+              <FloatLabel variant="in">
                   <Textarea maxlength="250" id="over_label" v-model="value_otros" rows="3" cols="30" class="resize-none w-full" />
                   <label for="in_label" class="text-gray-600 text-sm">Denuncia</label>
               </FloatLabel>
-              </TabPanel>
-          </TabPanels>
+          </TabPanel>
+        </TabPanels>
       </Tabs>
     <template #footer>
       <div class="flex gap-2 items-end">

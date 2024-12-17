@@ -37,6 +37,7 @@ const { data: watchMovie, error: errorWatchMovies } = await supabase.rpc('get_us
 const watch_list = ref<Film[]>(watchMovie);
 
 const favoriteMovies = computed(() => {
+  if (errorWatchMovies) return false;
   return watch_list.value.map((movie, index) => ({
     ...movie,
     order: index,
@@ -67,7 +68,7 @@ function removeFilm(movie_id: string) {
 async function restoreFilm() {
   const { error } = await supabase.rpc('add_user_movie', {
     _movie_id: movie_remove_id.value,
-    _relation_type: 'watch_list',
+    _relation_type: 'watch_later',
   });
 
   if (removedMovie.value) {
@@ -247,6 +248,7 @@ onUnmounted(() => {
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
                 v-for="film in nowPlayingMovies.results"
+                :key="film.id"
                 class="cursor-pointer"
                 :film="film"
                 :favorite="user ? true : false"
@@ -264,6 +266,7 @@ onUnmounted(() => {
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
                 v-for="film in favoriteMovies"
+                :key="film.id"
                 class="cursor-pointer"
                 :film="film"
                 :favorite="false"
@@ -273,7 +276,7 @@ onUnmounted(() => {
               ></HorizontalFilmCard>
             </div>
           </div>
-          <span v-else-if="!myListMovies && user" class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
+          <span v-else-if="!favoriteMovies && user" class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
             Encara no tens pel·lícules a la teva llista.
           </span>
           <span v-else class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
@@ -419,6 +422,34 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+
+.scale-enter-active,
+.scale-leave-active {
+  transition: opacity 0.5s, transform 0.5s; /* Animación de opacidad y escala */
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.5); /* Hacerlo pequeño al desaparecer */
+}
+
+.scale-enter-to,
+.scale-leave-from {
+  opacity: 1;
+  transform: scale(1); /* Hacerlo grande al aparecer */
+}
+
+#snackbar {
+  border-radius: 36px;
+  width: wrap;
+  padding: 16px 24px;
+  position: fixed;
+  left: 50%; /* Centra el snackbar horizontalmente */
+  bottom: 30px; /* Posición 30px desde el fondo */
+  transform: translateX(-50%); /* Ajusta para que esté centrado */
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   transition: opacity 0.3s ease;
