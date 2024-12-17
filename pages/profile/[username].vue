@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { Review, FilmsAPI, Profile } from "~/types";
+import type { Review, FilmsAPI, Film, Profile } from "~/types";
 import ReviewCard from "~/components/ReviewCard.vue";
 
 const supabase = useSupabaseClient();
+const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast()
 
@@ -48,7 +49,7 @@ try {
 	const moviesPromises = reviews.map(async (review) => {
 		const { data: movieData, error: movieError } = await supabase.rpc(
 			"find_movie_by_id",
-			{ movie_id: review.movie_id }
+			{ movie_id: review.movie_id, lang: 'ca-ES' }
 		);
 		if (movieError) throw movieError;
 
@@ -59,12 +60,19 @@ try {
 	});
 
 	reviewsWithMovies.value = await Promise.all(moviesPromises);
-	console.log(reviewsWithMovies)
 } catch (error) {
 	console.error("Error loading reviews or movies:", error);
 } finally {
 	isLoadingReviews.value = false;
 }
+
+
+const deleteReview = (review_id: string) => {
+  const index = reviewsWithMovies.value.findIndex((review) => review.id === review_id);
+  if (index !== -1) {
+    reviewsWithMovies.value.splice(index, 1);
+  }
+};
 
 const { data, error } = (await supabase.rpc("get_trending_movies_of_week")) as {
   data: FilmsAPI;
@@ -86,6 +94,11 @@ const responsiveOptions = ref([
         breakpoint: '2000px',
         numVisible: 4,
         numScroll: 2
+    },
+	{
+        breakpoint: '1750px',
+        numVisible: 3,
+        numScroll: 1
     },
     {
         breakpoint: '1500px',
@@ -126,7 +139,66 @@ const shareProfile = () => {
 			});
 };
 
+const { data: favoriteMovie, error: errorFavoriteMovies } = await supabase.rpc('get_user_movies', {
+  _relation_type: 'favorite', _user_id: profile.value?.id
+}) as { data: Film[]; error: any };
+
+const favorite = ref<Film[]>(favoriteMovie);
+
+const favoriteMovies = computed(() => {
+  return favorite.value.map((movie, index) => ({
+    ...movie,
+    order: index,
+  }));
+});
+
+const snackbarVisible = ref(false);
+const removedMovie = ref<Film | null>(null);
+const timeoutId = ref<number | null>(null);
+const movie_remove_id = ref<string | null>(null);
+
+function removeFilm(movie_id: string) {
+  movie_remove_id.value = movie_id;
+  removedMovie.value = favoriteMovies.value.find(m => m.id === movie_id) || null;
+  
+  if (removedMovie.value) {
+    favorite.value = favorite.value.filter(m => m.id !== movie_id);
+    snackbarVisible.value = true;
+
+    timeoutId.value = setTimeout(() => {
+      snackbarVisible.value = false;
+      removedMovie.value = null;
+      movie_remove_id.value = null;
+    }, 4000);
+  }
+}
+
+async function restoreFilm() {
+  const { error } = await supabase.rpc('add_user_movie', {
+    _movie_id: movie_remove_id.value,
+    _relation_type: 'favorite',
+  });
+
+  if (removedMovie.value) {
+    favorite.value.splice(removedMovie.value?.order, 0, removedMovie.value);
+  }
+
+  snackbarVisible.value = false;
+  removedMovie.value = null;
+  movie_remove_id.value = null;
+
+  if (timeoutId.value) {
+    clearTimeout(timeoutId.value);
+    timeoutId.value = null;
+  }
+}
+
+
+const isProcessingFollow = ref(false);
 const handleFollow = async () => {
+	if (isProcessingFollow.value) return;
+  isProcessingFollow.value = true;
+
 	try {
 		if (profile.value?.is_following) {
 			const { error } = (await supabase.rpc(
@@ -179,15 +251,40 @@ const handleFollow = async () => {
 			detail,
 			life: 3000,
 		});
-	}
+	} finally {
+    isProcessingFollow.value = false;
+  }
 }
 
 </script>
 
 <template>
+	<transition name="scale">
+		<div 
+			v-if="snackbarVisible" 
+			id="snackbar" 
+			class="flex items-center justify-between backdrop-blur bg-neutral-600/70 dark:bg-neutral-800/90 rounded-lg z-50 shadow-lg"
+		>
+			<div class="flex items-center gap-20">
+				<span class="text-white text-md dark:text-gray-200">
+					<strong>{{ removedMovie?.title }}</strong> s'ha tret de Favorits.
+				</span>
+				<button
+					@click="restoreFilm"
+					class="flex items-center justify-center px-4 py-2 bg-transparent border border-gray-200 text-white dark:text-gray-200 rounded-full hover:bg-white hover:text-black dark:hover:bg-gray-200 dark:hover:text-black transition-all"
+				>
+					<i class="pi pi-replay mr-2"></i>
+					Desfer
+				</button>
+			</div>
+		</div>
+	</transition>
+
+
 	<div class="relative w-full h-full pb-5">
     <!-- Background -->
-    <div class="h-80 bg-gradient-to-r from-orange-200 via-pink-300 to-violet-400"></div>
+		<div class="h-80 bg-gradient-to-b from-pink-400/90 to-violet-400 dark:from-pink-700 dark:to-violet-800"></div>
+  	<!-- <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/40 via-neutral-800/5 via-25% to-neutral-800/0"></div> -->
     
     <!-- Profile -->
     <div class="absolute top-60 inset-x-20 transform">
@@ -216,6 +313,7 @@ const handleFollow = async () => {
 							<Button 
 								:label="profile?.is_following ? 'Siguiendo' : 'Seguir'" 
 								:icon="profile?.is_following ? 'pi pi-check' : 'pi pi-user-plus'" 
+								:loading="isProcessingFollow"
 								@click="handleFollow" />
 							<Button 
 								label="Compartir perfil"
@@ -249,10 +347,10 @@ const handleFollow = async () => {
 					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Películas favoritas</h2>
 						<Carousel
-							v-if="true"
+							v-if="favoriteMovie"
 							class="mt-2.5"
-							:value="data.results"
-							:numVisible="2"
+							:value="favoriteMovies"
+							:numVisible="3"
 							:numScroll="1"
 							:showIndicators="false"
 							:responsiveOptions="responsiveOptions"
@@ -260,15 +358,19 @@ const handleFollow = async () => {
 							<template #item="slotProps">
 								<FilmCard
 									class="mt-2.5 mb-20 mx-2 cursor-pointer"
+									:key="slotProps.data.id"
 									:film="slotProps.data"
 									:trending="false"
 									:trendingNumber="slotProps.index + 1"
+									:favorite="user.id === profile?.id"
+									:watch_later="false"
 									@click="navigateToMovie(slotProps.data.id)"
+									@remove-film="removeFilm"
 								></FilmCard>
 							</template>
 						</Carousel>
 						<p v-else class="text-gray-500 text-lg italic">
-							Este usuario aún no tiene películas favoritas.
+							Aquest usuari encara no té pel·lícules preferides.
 						</p>
 					</div>
 				</div>
@@ -284,10 +386,40 @@ const handleFollow = async () => {
             ></ReviewCard>
           </div>
 					<p v-else class="text-gray-500 text-lg italic">
-						Este usuario aún no ha escrito ninguna reseña.
+						Aquest usuari encara no ha escrit cap ressenya.
 					</p>
 				</div>
 			</div>
 		</div>
   </div>
 </template>
+
+<style>
+/* Transiciones para mostrar y ocultar el snackbar con animación de escala */
+.scale-enter-active,
+.scale-leave-active {
+  transition: opacity 0.5s, transform 0.5s; /* Animación de opacidad y escala */
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.5); /* Hacerlo pequeño al desaparecer */
+}
+
+.scale-enter-to,
+.scale-leave-from {
+  opacity: 1;
+  transform: scale(1); /* Hacerlo grande al aparecer */
+}
+
+#snackbar {
+  border-radius: 36px;
+  width: wrap;
+  padding: 16px 24px;
+  position: fixed;
+  left: 50%; /* Centra el snackbar horizontalmente */
+  bottom: 30px; /* Posición 30px desde el fondo */
+  transform: translateX(-50%); /* Ajusta para que esté centrado */
+}
+</style>

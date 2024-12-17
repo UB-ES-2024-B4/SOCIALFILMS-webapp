@@ -7,6 +7,7 @@ definePageMeta({
 });
 
 const supabase = useSupabaseClient();
+const user = useSupabaseUser();
 const route = useRoute();
 const query =
   typeof route.params.query === "string"
@@ -14,12 +15,12 @@ const query =
     : "";
 
 const optionsSort = ref([
-  { sort_by: "Más vistas", value: "popularity.desc" },
-  { sort_by: "Menos vistas", value: "popularity.asc" },
-  { sort_by: "Más valoradas", value: "vote_count.desc" },
-  { sort_by: "Menos valoradas", value: "vote_count.asc" },
-  { sort_by: "Mejor valoradas", value: "vote_average.desc" },
-  { sort_by: "Peor valoradas", value: "vote_average.asc" },
+  { sort_by: "Més vistes", value: "popularity.desc" },
+  { sort_by: "Menys vistes", value: "popularity.asc" },
+  { sort_by: "Més valorades", value: "vote_count.desc" },
+  { sort_by: "Menys valorades", value: "vote_count.asc" },
+  { sort_by: "Millor valorades", value: "vote_average.desc" },
+  { sort_by: "Pitjor valorades", value: "vote_average.asc" },
 ]);
 const sortValue = ref("popularity.desc");
 
@@ -41,13 +42,17 @@ const selectedLanguage = ref<string>((route.query.language as string) || "");
 
 const filmsQueryOriginal = ref<FilmsAPI>({ results: [] });
 const filmsQueryFiltered = ref<Film[]>([]);
+const currentBackground = ref("");
+const isBackgroundTransitioning = ref(false);
 
 const applyFilters = async () => {
   let filtered = [...filmsQueryOriginal.value?.results];
 
   if (selectedGenres.value.length > 0) {
     filtered = filtered.filter((film) =>
-      film.genre_ids?.some((genreId) => selectedGenres.value.includes(genreId))
+      selectedGenres.value.every((selectedGenre) =>
+        film.genre_ids?.includes(selectedGenre)
+      )
     );
   }
 
@@ -64,7 +69,7 @@ const applyFilters = async () => {
       filtered.map(async (film) => {
         const { data: fullFilm, error } = (await supabase.rpc(
           "find_movie_by_id",
-          { movie_id: film.id }
+          { movie_id: film.id, lang: 'ca-ES' }
         )) as { data: Film; error: any };
         return {
           ...film,
@@ -102,15 +107,30 @@ const applyFilters = async () => {
   });
 
   filmsQueryFiltered.value = filtered;
+  if (filmsQueryFiltered.value.length === 0) {
+    isBackgroundTransitioning.value = true;
+    setTimeout(() => {
+      currentBackground.value = '/';
+    }, 350);
+    
+    return;
+  }
+  const newBackdrop = filmsQueryFiltered.value[0]?.backdrop_path;
+  if (newBackdrop && newBackdrop !== currentBackground.value) {
+    isBackgroundTransitioning.value = true;
+    setTimeout(() => {
+      currentBackground.value = newBackdrop;
+    }, 350);
+  }
 };
 
 try {
   const { data, error } = (await supabase.rpc("search_movie_by_name", {
     movie_name: encodeURIComponent(query),
-    lang: "es",
+    lang: "ca-ES",
   })) as { data: FilmsAPI; error: any };
   if (error) throw error;
-
+  currentBackground.value = data.results[0].backdrop_path || '/';
   filmsQueryOriginal.value = data;
   filmsQueryFiltered.value = data.results;
   applyFilters();
@@ -165,8 +185,14 @@ watch(
 </script>
 
 <template>
-  <div class="mt-28 w-full h-full">
-    <div class="flex my-5 ml-10 mr-4">
+  <div
+    class="w-full h-full fixed inset-0 bg-cover bg-center transition-opacity duration-700"
+    :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${currentBackground})`, opacity: isBackgroundTransitioning ? 0 : 1 }"
+    @transitionend="isBackgroundTransitioning = false"
+  ></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/5 via-25% to-neutral-800/0"></div>
+  <div class="pt-[4.5rem] w-full h-full relative backdrop-blur-xl bg-zinc-300/20 dark:bg-black/60">
+    <div class="flex py-5 ml-10 mr-4">
       <div class="flex-none">
         <div v-if="isFiltersVisible" class="w-72 mr-10 rounded-md shadow">
           <Accordion :value="['0', '1', '2', '3']" multiple>
@@ -174,17 +200,20 @@ watch(
               <AccordionHeader>Gèneres</AccordionHeader>
               <AccordionContent>
                 <div class="flex flex-wrap justify-center gap-4">
-                  <FloatLabel variant="on">
-                    <IconField>
-                      <InputText
-                        class="w-60"
-                        size="small"
-                        v-model="queryGenre"
-                      />
-                      <InputIcon class="pi pi-search" />
-                    </IconField>
-                    <label for="on_label">Busca un gènere</label>
-                  </FloatLabel>
+                  <div class="flex items-center gap-2">
+                    <FloatLabel variant="on">
+                      <IconField>
+                        <InputText
+                          fluid
+                          size="small"
+                          v-model="queryGenre"
+                        />
+                        <InputIcon class="pi pi-search" />
+                      </IconField>
+                      <label for="on_label">Busca un gènere</label>
+                    </FloatLabel>
+                    <Button v-tooltip.bottom="'Neteja els gèneres'" icon="pi pi-filter-slash" severity="contrast" aria-label="Neteja els gèneres" size="small" @click="selectedGenres = []"/>
+                  </div>
                   <div
                     v-for="genre of filteredGenres"
                     :key="genre.code"
@@ -204,17 +233,20 @@ watch(
               <AccordionHeader>País</AccordionHeader>
               <AccordionContent>
                 <div class="flex flex-wrap justify-center gap-4">
-                  <FloatLabel variant="on">
-                    <IconField>
-                      <InputText
-                        class="w-60"
-                        size="small"
-                        v-model="queryCountry"
-                      />
-                      <InputIcon class="pi pi-search" />
-                    </IconField>
-                    <label for="on_label">Busca un país</label>
-                  </FloatLabel>
+                  <div class="flex items-center gap-2">
+                    <FloatLabel variant="on">
+                      <IconField>
+                        <InputText
+                          fluid
+                          size="small"
+                          v-model="queryCountry"
+                        />
+                        <InputIcon class="pi pi-search" />
+                      </IconField>
+                      <label for="on_label">Busca un país</label>
+                    </FloatLabel>
+                    <Button v-tooltip.bottom="'Neteja el país'" icon="pi pi-filter-slash" severity="contrast" aria-label="Neteja el país" size="small" @click="selectedCountry = ''"/>
+                  </div>
                   <div
                     v-for="country in filteredCountry"
                     :key="country.code"
@@ -235,17 +267,20 @@ watch(
               <AccordionHeader>Idioma</AccordionHeader>
               <AccordionContent>
                 <div class="flex flex-wrap justify-center gap-4">
-                  <FloatLabel variant="on">
-                    <IconField>
-                      <InputText
-                        class="w-60"
-                        size="small"
-                        v-model="queryLanguage"
-                      />
-                      <InputIcon class="pi pi-search" />
-                    </IconField>
-                    <label for="on_label">Busca un idioma</label>
-                  </FloatLabel>
+                  <div class="flex items-center gap-2">
+                    <FloatLabel variant="on">
+                      <IconField>
+                        <InputText
+                          fluid
+                          size="small"
+                          v-model="queryLanguage"
+                        />
+                        <InputIcon class="pi pi-search" />
+                      </IconField>
+                      <label for="on_label">Busca un idioma</label>
+                    </FloatLabel>
+                    <Button v-tooltip.bottom="`Neteja l'idioma`" icon="pi pi-filter-slash" severity="contrast" aria-label="Neteja l'idioma" size="small" @click="selectedLanguage = ''"/>
+                  </div>
                   <div
                     v-for="language in filteredLanguage"
                     :key="language.code"
@@ -270,7 +305,9 @@ watch(
                   inline
                   view="year"
                   dateFormat="yy"
+                  fluid
                 />
+                <Button fluid class="mt-2" label="Neteja l'any" icon="pi pi-filter-slash" severity="contrast" aria-label="Neteja l'idioma" size="small" @click="selectedYear = null"/>
               </AccordionContent>
             </AccordionPanel>
           </Accordion>
@@ -306,6 +343,8 @@ watch(
             :film="film"
             :trending="false"
             :trendingNumber="index + 1"
+            :favorite="false"
+            :watch_later="user ? true : false"
             @click="navigateToMovie(film.id)"
           ></FilmCard>
         </div>

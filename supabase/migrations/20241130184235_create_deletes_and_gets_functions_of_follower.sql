@@ -13,7 +13,7 @@ BEGIN
   IF rows_deleted IS NULL THEN
     RETURN json_build_object(
       'success', FALSE,
-      'message', 'No followers found to delete'
+      'message', 'No followers found to be deleted'
     );
   END IF;
 
@@ -37,7 +37,7 @@ BEGIN
   IF rows_deleted IS NULL THEN
     RETURN json_build_object(
       'success', FALSE,
-      'message', 'No followings found to delete'
+      'message', 'No followings found to be deleted'
     );
   END IF;
 

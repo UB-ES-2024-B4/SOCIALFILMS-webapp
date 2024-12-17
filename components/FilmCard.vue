@@ -2,8 +2,9 @@
 import "primeicons/primeicons.css";
 import type { Film } from "~/types";
 import { genres } from "~/types/genres";
+import { useUserMovieRelation } from "~/composables/useUserMovieRelation";
 
-defineProps({
+const props = defineProps({
   film: {
     type: Object as PropType<Film>,
     required: true,
@@ -16,20 +17,70 @@ defineProps({
     type: Number,
     required: true,
   },
+  favorite: {
+    type: Boolean,
+    required: true,
+  },
+  watch_later: {
+    type: Boolean,
+    required: true,
+  }
 });
 
-const liked = ref(false);
+const emit = defineEmits(['remove-film']);
+
+function toggleFavorite(event: MouseEvent) {
+  handleUserMovieRelation('favorite')
+  emit('remove-film', props.film?.id);
+  event.stopPropagation();
+}
+
+const supabase = useSupabaseClient();
+const is_favorite = ref(false);
+const is_watch_later = ref(false);
+const { isLoading, handleUserMovieRelation } = useUserMovieRelation(props.film.id, is_watch_later, is_favorite);
+
+if (props.film.relations) {
+  is_favorite.value = props.film.relations.is_favorite;
+  is_watch_later.value = props.film.relations.is_watch_later;
+}
+else {
+  try {
+    const { data: userMovieRelations, error } = (await supabase.rpc("get_user_movie_relations", {
+      _movie_id: props.film.id
+    }))
+
+    if (error) throw error;
+    is_favorite.value = userMovieRelations?.favorite ?? false;
+    is_watch_later.value = userMovieRelations?.watch_later ?? false;
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+watch(
+  () => props.film.relations,
+  (newRelations) => {
+    if (newRelations) {
+      is_favorite.value = newRelations.is_favorite;
+      is_watch_later.value = newRelations.is_watch_later;
+    }
+  },
+  { immediate: true }
+);
+
 </script>
 
 <template>
   <div
     class="relative w-[235px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
   >
-    <div class="relative aspect-[3/3]">
+    <div class="relative aspect-[2/3]">
       <img
         :src="'https://image.tmdb.org/t/p/original' + film.poster_path"
         :alt="`${film.title} poster`"
-        class="absolute inset-0 object-cover"
+        class="absolute inset-0 w-full h-full object-cover"
       />
       <div
         v-if="trending"
@@ -38,22 +89,40 @@ const liked = ref(false);
         {{ "#" + trendingNumber + " Trending" }}
       </div>
       <div class="absolute top-4 right-3">
-        <button
-          @click="liked = !liked"
-          class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-lg"
-        >
-          <i
-            :class="
-              liked
-                ? 'pi pi-heart-fill text-red-500'
-                : 'pi pi-heart-fill text-gray-300'
-            "
-          ></i>
-        </button>
+        <div class="flex flex-col items-center gap-1.5">
+          <button
+            v-if="favorite"
+            @click="toggleFavorite($event)"
+            :disabled="isLoading"
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
+          >
+            <i
+              :class="[
+                'pi pi-heart-fill transition-all duration-500',
+                is_favorite ? 'text-red-500' : 'text-gray-300',
+                'group-hover:text-red-500'
+              ]"
+            ></i>
+          </button>
+          <button
+            v-if="watch_later"
+            @click.stop="handleUserMovieRelation('watch_later')"
+            :disabled="isLoading"
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
+          >
+            <i
+              :class="[
+                'pi pi-bookmark-fill transition-all duration-500',
+                is_watch_later ? 'text-amber-400' : 'text-gray-300',
+                'group-hover:text-amber-400'
+              ]"
+            ></i>
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
+    <div class="absolute bottom-0 left-0 w-full px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">
       <h2 class="font-bold text-xl truncate">{{ film.title }}</h2>
       <h3 class="text-sm text-gray-300 mt-[2px] truncate">
         {{ film?.genre_ids?.map((id) => genres[id]).join(" • ") }}

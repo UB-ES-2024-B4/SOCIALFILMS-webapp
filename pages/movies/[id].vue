@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Film, Review, CreditsAPI, CastMember, CrewMember } from "~/types";
+import type { Film, Review, CreditsAPI, CastMember, CrewMember, Following } from "~/types";
 import { formatRuntime } from "~/utils/timeFunctions";
 import ReviewCard from "~/components/ReviewCard.vue";
 import CreditCard from "~/components/CreditCard.vue";
@@ -14,36 +14,114 @@ const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast();
 
-const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
-  "find_movie_by_id",
-  { movie_id: route.params.id }
-)) as { data: Film; error: any };
+let dataMovie: Film | null = null;
+let errorMovie: any = null;
 
-const { data: dataReviews, error: errorReviews } = (await supabase.rpc(
-  "get_reviews",
-  { _movie_id: route.params.id }
-)) as { data: Review[]; error: any };
+const languages = ['ca', 'es', 'en'];
+for (const langs of languages) {
+  const { data, error } = (await supabase.rpc("find_movie_by_id", {
+    movie_id: route.params.id,
+    lang: langs,
+  })) as { data: Film | null; error: any };
 
+  if (data?.overview) {
+    dataMovie = data;
+    errorMovie = error;
+    break;
+  }
+}
+
+
+const limit = 10
+const offset = ref(0)
+const dataReviews = ref<Review[]>([]);
+const hasMore = ref(false);
 const searchQuery = ref("")
 
-const reviews = reactive<Review[]>(
-  dataReviews?.map((review) => ({
+const { data: dataReviewsPaginated, error: errorReviewsPaginated } = (await supabase.rpc(
+  "get_reviews_paginated",
+  { 
+    _movie_id: route.params.id,
+    _limit: limit,
+    _offset: offset.value,
+    _sort_by: 'most_recent',
+    _filter: null
+  }
+));
+const { reviews: initialReviews, has_more } = dataReviewsPaginated as { reviews: Review[]; has_more: boolean };
+dataReviews.value = initialReviews || [];
+hasMore.value = has_more;
+
+const optionsSort = ref([
+  { sort_by: "Més recents", value: "most_recent" },
+  { sort_by: "Valoració més alta", value: "highest_rating" },
+  { sort_by: "Valoració més baixa", value: "lowest_rating" },
+  { sort_by: "Amb spoilers", value: "with_spoilers" },
+  { sort_by: "Sense spoilers", value: "without_spoilers" },
+]);
+const sortValue = ref("most_recent");
+
+const loadMoreReviews = async () => {
+  offset.value += limit;
+  try {
+    const { data, error } = await supabase.rpc('get_reviews_paginated', {
+        _movie_id: route.params.id,
+        _limit: limit,
+        _offset: offset.value,
+        _sort_by: sortValue.value,
+        _filter: searchQuery.value
+      });
+
+      if (error) throw error;
+
+      const { reviews: reviews_add, has_more } = data as { reviews: Review[]; has_more: boolean };
+      console.log(reviews_add, has_more)
+      dataReviews.value = [...dataReviews.value, ...reviews_add];
+      console.log(dataReviews.value)
+
+      hasMore.value = has_more || false;
+      console.log(reviews)
+
+  } catch (error) {
+    console.error('Error al obtener las reseñas:', error);
+  }
+};
+
+const searchReviews = async () => {
+  offset.value = 0;
+  try {
+    const { data, error } = await supabase.rpc('get_reviews_paginated', {
+        _movie_id: route.params.id,
+        _limit: limit,
+        _offset: offset.value,
+        _sort_by: sortValue.value,
+        _filter: searchQuery.value
+      });
+
+      if (error) throw error;
+
+      const { reviews: reviews_add, has_more } = data as { reviews: Review[]; has_more: boolean };
+      console.log(reviews_add, has_more)
+      dataReviews.value = [...reviews_add];
+      console.log(dataReviews.value)
+
+      hasMore.value = has_more || false;
+      console.log(reviews)
+
+  } catch (error) {
+    console.error('Error al obtener las reseñas:', error);
+  }
+}
+
+const hasReviewFromUser = computed(() => {
+  return dataReviews.value.some(review => review.user_id === user.value?.id) && !!user.value;
+});
+
+const reviews = computed(() => {
+  return dataReviews.value.map((review) => ({
     ...review,
     created_at: new Date(review.created_at),
-  })) || []);
-
-const filteredReviews = computed(() => {
-  if (!searchQuery.value) return reviews;
-
-  return reviews.filter((review) => {
-    const commentMatch = review.comment
-      ?.toLowerCase()
-      .includes(searchQuery.value.toLowerCase());
-    const userMatch = review.user
-      ?.toLowerCase()
-      .includes(searchQuery.value.toLowerCase());
-    return userMatch || commentMatch;
-  });
+  }));
 });
 
 const directors = ref<CrewMember[]>();
@@ -95,8 +173,11 @@ const submitReview = async () => {
             spoilers: checked.value
           }
         
-          reviews.push(new_review)
-          visible.value = false;
+          dataReviews.value.unshift(new_review)
+          rating.value = 1
+          comment.value = ""
+          checked.value = false
+          visible.value = false
       } else {
         if (reviewError.code === '23505') { // Código de error específico para conflicto de recurso en Supabase
           toast.add({ severity: 'error', summary: 'Conflicto detectado', detail: 'Ya has dejado una reseña para esta película. No se permiten duplicados.', life: 3000})
@@ -108,7 +189,6 @@ const submitReview = async () => {
       console.error(e)
     }
 }
-
 
 try {
   const { data, error: errorCredits } = (await supabase.rpc(
@@ -143,88 +223,191 @@ const handleScroll = () => {
 };
 
 const deleteReview = (review_id: string) => {
-  const index = reviews.findIndex((review) => review.id === review_id);
+  const index = dataReviews.value.findIndex((review) => review.id === review_id);
   if (index !== -1) {
-    reviews.splice(index, 1);
+    dataReviews.value.splice(index, 1);
   }
 };
 
+const watchLater = ref(false);
+const favorite = ref(false);
+try {
+  const { data: userMovieRelations, error } = (await supabase.rpc("get_user_movie_relations", {
+    _movie_id: route.params.id
+  }))
+
+  if (error) throw error;
+  watchLater.value = userMovieRelations?.watch_later ?? false;
+  favorite.value = userMovieRelations?.favorite ?? false;
+
+} catch (e) {
+  console.error(e);
+}
+
+const isLoadingHandleUserMovieRelation = ref(false);
+const handleUserMovieRelation = async (relation_type: 'favorite' | 'watch_later') => {
+  isLoadingHandleUserMovieRelation.value = true;
+  try {
+    let rpcFunction = "add_user_movie"
+    if (relation_type === 'watch_later') {
+      rpcFunction = watchLater.value ? "delete_user_movie" : "add_user_movie";
+    } 
+    if (relation_type === 'favorite') {
+      rpcFunction = favorite.value ? "delete_user_movie" : "add_user_movie";
+    }
+    const { error } = (await supabase.rpc(rpcFunction, {
+      _movie_id: route.params.id,
+      _relation_type: relation_type,
+    }))
+
+    if (error) throw error;
+    if (relation_type === 'watch_later') watchLater.value = !watchLater.value;
+    if (relation_type === 'favorite') favorite.value = !favorite.value;
+  } catch (e) {
+    console.error(`Error handling relation '${relation_type}':`, e);
+  }
+  finally {
+    isLoadingHandleUserMovieRelation.value = false;
+  }
+}
+
+
+const visibleDrawerDirector = ref(false);
+const visibleDrawerScript = ref(false);
+const visibleDrawerCast = ref(false);
+
+const currentURL = ref();
+const shareMoviePopover = ref();
+const mutualFollowers = ref<Following[]>();
+const isLoadingShareMovie = ref(false);
+const seeShareMoviePopover = async (event: Event) => {
+  shareMoviePopover.value.toggle(event);
+  isLoadingShareMovie.value = true;
+  try {
+    const { data, error } = (await supabase.rpc(
+      "get_mutual_followers",
+      { _username: user.value?.user_metadata.username }
+    )) as { data: Following[]; error: any };
+
+    if (error) throw error;
+
+    if (data.success) {
+      mutualFollowers.value = data.data;
+    } else {
+      console.error("Error in RPC response:", data.message);
+    }
+
+  } catch (error) {
+    console.error("Error loading following profiles:", error);
+  } finally {
+    isLoadingShareMovie.value = false;
+  }
+}
+
+const usersToSendMovie = ref<string[]>([]);
+const addUserToSendMovie = (username: string) => {
+  const index = usersToSendMovie.value.indexOf(username);
+  if (index > -1) {
+    usersToSendMovie.value.splice(index, 1);
+  } else {
+    usersToSendMovie.value.push(username);
+  }
+};
+
+const iconShareMovieClipboard = ref('pi pi-copy');
+const shareMovieClipboard = () => {
+	const currentURL = window.location.href;
+	navigator.clipboard.writeText(currentURL)
+			.then(() => {          
+          iconShareMovieClipboard.value = 'pi pi-check';
+
+          setTimeout(() => {
+            iconShareMovieClipboard.value = 'pi pi-copy';
+          }, 2000);
+					console.log("Enlace copiado al portapapeles");
+			})
+			.catch((err) => {
+					toast.add({
+							severity: "error",
+							summary: "Error al copiar",
+							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							life: 3000,
+					});
+					console.error("Error al copiar el enlace: ", err);
+			});
+};
+
+const isLoadingSendMovie = ref(false);
+const sendMovieToUsers = async (event: Event) => {
+  isLoadingSendMovie.value = true;
+  try {
+    const results = await Promise.all(
+      usersToSendMovie.value.map((username) =>
+        supabase.rpc("send_notification", { _receiver_username: username, _movie_id: route.params.id })
+      )
+    );
+
+    results.forEach((result, index) => {
+      if (result.error) {
+        console.error(
+          `Error sending the movie to user ${usersToSendMovie.value[index]}:`,
+          result.error
+        );
+      }
+    });
+
+  } catch (error) {
+    console.error("Unexpected error while sending movies:", error);
+  } finally {
+    isLoadingSendMovie.value = false;
+    shareMoviePopover.value.toggle(event);
+  }
+}
+
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  currentURL.value = window.location.href;
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 
-const visibleDrawerDirector = ref(false);
-const visibleDrawerScript = ref(false);
-const visibleDrawerCast = ref(false);
 </script>
 
 <template>
   <Toast/>
-  <Dialog v-model:visible="visible" modal header="Nueva reseña">
-    <div class="flex flex-col mt-4 space-y-4">
-      <div class="flex space-x-8">
-        <div class="flex flex-col">
-          <h2
-            class="font-bold whitespace-nowrap text-2xl text-gray-800 dark:text-gray-100 leading-tight"
-          >
-            {{ dataMovie.title }}
-          </h2>
+  <Dialog v-model:visible="visible" modal :draggable="false">
 
-          <div class="flex items-center space-x-1.5 mt-3">
-            <span
-              :class="
-                dataMovie.adult
-                  ? 'tag bg-red-500/20 border border-red-500 whitespace-nowrap text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400'
-                  : 'tag bg-green-500/20 border border-green-500 whitespace-nowrap text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'
-              "
-            >
-              {{ dataMovie.adult ? "R" : "PG-13" }}
-            </span>
-            <span
-              class="tag border border-gray-400 whitespace-nowrap text-gray-800 dark:text-gray-200"
-            >
-              <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
-              {{ dataMovie.release_date }}
-            </span>
-            <span
-              class="tag border border-gray-400 text-gray-800 dark:text-gray-200"
-            >
-              <i
-                class="pi pi-star-fill text-yellow-400 dark:text-yellow-400 mr-1.5 text-[0.8rem]"
-              ></i>
-              {{ dataMovie.vote_average.toFixed(1) }}
-            </span>
-          </div>
-
-          <h3 class="mt-auto">Califica del 1 al 10 ({{ rating }})</h3>
-          <div class="flex mb-4 items-center space-x-2">
-            <span
-              v-for="star in 10"
-              :key="star"
-              @mouseover="selectRating(star)"
-              class="cursor-pointer text-2xl transition-transform duration-200 transform"
-              :class="{ 'scale-125': star === rating }"
-            >
-              <i
-                :class="[
-                  'pi',
-                  star <= rating ? 'pi-star-fill text-yellow-400' : 'pi-star',
-                ]"
-              ></i>
-            </span>
-          </div>
-        </div>
-        <img
-          :src="'https://image.tmdb.org/t/p/original' + dataMovie.poster_path"
-          :alt="`${dataMovie.title} poster`"
-          class="w-2/3 h-72 object-cover rounded-lg"
-        />
+    <template #header>
+      <div class="text-lg ">
+        Afegir ressenya: <span class="font-bold">{{ dataMovie.title }}</span>
       </div>
-      <div class="relative mb-4">
+    </template>
+    <div class="flex flex-col mt-4 h-220px w-[500px] mx-auto space-y-4 text-center">
+    <!-- Calificación -->
+      <div class="flex flex-col items-center">
+        <h3 class="font-semibold text-lg">Qualifica de l'1 al 10</h3>
+        <div class="flex mb-4 items-center space-x-2">
+          <span
+            v-for="star in 10"
+            :key="star"
+            @mouseover="selectRating(star)"
+            class="cursor-pointer text-2xl transition-transform duration-200 transform"
+            :class="{ 'scale-125': star === rating }"
+          >
+            <i
+              :class="[
+                'pi',
+                star <= rating ? 'pi-star-fill text-yellow-400' : 'pi-star',
+              ]"
+            ></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Área de comentarios -->
+      <div class="relative">
         <Textarea
           autoResize
           v-model="comment"
@@ -232,25 +415,27 @@ const visibleDrawerCast = ref(false);
           cols="20"
           maxlength="255"
           placeholder="Escribe tu comentario..."
-          class="mb-4 w-full"
+          class="w-full"
         />
-        <span class="absolute right-2 bottom-[-0.1rem] text-gray-500 text-sm">
+        <span class="absolute right-2 bottom-[-1rem] text-gray-500 text-sm">
           {{ numCharacters }} / 255
         </span>
       </div>
+    </div>
 
-        <div class="flex justify-between items-center">
-          <Button label="Cancelar" severity="secondary" @click="visible=false" />
-          <div class="flex items-center gap-7">
-            <div class="relative flex items-center justify-center">
-              <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
-              <ToggleSwitch v-model="checked"/>
-            </div>
-            <Button label="Publicar" @click="submitReview" />
-          </div>
+    <!-- Botones -->
+    <div class="flex justify-between items-center mt-16">
+      <Button label="Cancel·lar" severity="secondary" @click="visible=false" />
+      <div class="flex items-center gap-7">
+        <div class="relative flex items-center justify-center">
+          <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
+          <ToggleSwitch v-model="checked"/>
         </div>
+        <Button label="Publicar" @click="submitReview" />
+      </div>
     </div>
   </Dialog>
+
 
   <Drawer
     v-model:visible="visibleDrawerDirector"
@@ -297,13 +482,14 @@ const visibleDrawerCast = ref(false);
 
   <div class="w-full min-h-screen">
     <div
-      class="fixed w-full h-full bg-cover bg-center bg-fixed transition-opacity"
+      class="fixed w-full h-full bg-cover bg-center bg-fixed"
       :style="{
         backgroundImage: `url(${
           'https://image.tmdb.org/t/p/original' + dataMovie.backdrop_path
         })`,
       }"
     ></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/5 via-25% to-neutral-800/0"></div>
 
     <div class="relative z-10 pt-[28rem]">
       <div class="backdrop-blur-xl bg-white/70 dark:bg-black/50">
@@ -314,8 +500,106 @@ const visibleDrawerCast = ref(false);
             class="w-48 md:w-80 rounded-lg shadow-xl md:mr-10 transition-transform duration-500 dark:shadow-gray-300/15"
             :style="{ transform: `translateY(${posterTranslateY}px)` }"
           />
-          <div class="flex flex-col">
-            <h1 class="text-7xl font-extrabold mb-4">{{ dataMovie.title }}</h1>
+          <div class="w-full flex flex-col">
+            <div class="w-full flex items-start justify-between">
+              <h1 class="w-3/5 text-7xl font-extrabold mb-4 break-words">{{ dataMovie.title }}</h1>
+              <div class="flex items-center gap-2">
+                <button
+                  v-if="user"
+                  @click="handleUserMovieRelation('watch_later')"
+                  :disabled="isLoadingHandleUserMovieRelation"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
+                >
+                  <i
+                    :class="['text-[17.5px]',
+                      'pi pi-bookmark-fill transition-all duration-500',
+                      watchLater ? 'text-amber-400' : 'text-gray-300',
+                      'group-hover:text-amber-400'
+                    ]"
+                  ></i>
+                </button> 
+                <button
+                  v-if="user"
+                  @click="handleUserMovieRelation('favorite')"
+                  :disabled="isLoadingHandleUserMovieRelation"
+                  class="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
+                >
+                  <i
+                    :class="['text-[17.5px]',
+                      'pi pi-heart-fill transition-all duration-500',
+                      favorite ? 'text-red-500' : 'text-gray-300',
+                      'group-hover:text-red-500'
+                    ]"
+                  ></i>
+                </button>
+                <Button class="shadow-md" severity="contrast" rounded icon="pi pi-share-alt" label="Compartir pel·lícula" :loading="isLoadingShareMovie" @click="seeShareMoviePopover" />
+                <Popover ref="shareMoviePopover">
+                  <div class="flex flex-col gap-4 w-[25rem] max-h-[calc(100vh-200px)]">
+                    <div>
+                      <span class="font-medium block mb-2">Comparteix l'enllaç</span>
+                      <InputGroup>
+                        <InputText :value="currentURL" readonly class="w-[25rem]" 
+                        :pt="{
+                          root: { class: 'leading-none' },
+                        }"></InputText>
+                        <InputGroupAddon>
+                          <Button 
+                            :icon="iconShareMovieClipboard" 
+                            severity="secondary" 
+                            variant="text"
+                            @click="shareMovieClipboard" 
+                            :pt="{
+                              root: { class: 'leading-[1.1rem]' },
+                            }" />
+                        </InputGroupAddon>
+                      </InputGroup>
+                    </div>
+                    <span class="font-medium block">Comparteix amb algú que segueixis</span>
+                    <div class="overflow-y-auto">
+                      <div v-if="mutualFollowers?.length" class="flex flex-wrap items-center gap-y-3">
+                        <div 
+                          v-for="profile in mutualFollowers" 
+                          :key="profile.following_id"
+                          class="flex flex-col items-center justify-center gap-1 w-[8.1rem]"
+                        >
+                          <div class="relative">
+                            <Avatar
+                              :label="profile.following_username ? profile.following_username[0] : 'T'"
+                              class="cursor-pointer"
+                              size="xlarge"
+                              shape="circle"
+                              @click="addUserToSendMovie(profile.following_username)"
+                            />
+                            <!-- Badge -->
+                            <div
+                              v-if="usersToSendMovie?.includes(profile.following_username)"
+                              class="absolute bottom-0 -right-1 w-5 h-5 rounded-full outline outline-white dark:outline-zinc-900 bg-blue-500 flex items-center justify-center text-white"
+                            >
+                              <i class="mt-[1px] pi pi-check leading-none text-[0.65rem] dark:text-zinc-900"></i>
+                            </div>
+                          </div>
+                          <span
+                            class="font-medium text-center cursor-pointer leading-tight truncate w-full"
+                            @click="addUserToSendMovie(profile.following_username)"
+                          >
+                            {{ profile.following_username }}
+                          </span>  
+                        </div>
+                      </div>
+                      <span v-else class="text-gray-500 text-[0.95rem] italic">No tens seguidors mutus per compartir</span>
+                    </div>
+                    <div v-if="usersToSendMovie.length" class="p-1">
+                      <Button 
+                        label="Comparteix" 
+                        :loading="isLoadingSendMovie" 
+                        fluid 
+                        @click="sendMovieToUsers">
+                      </Button>
+                    </div>
+                  </div>
+                </Popover>
+              </div>
+            </div>
             <div class="flex flex-col flex-1 mt-4 md:flex-row md:mt-0 gap-14">
               <div class="flex-1 flex flex-col space-y-3">
                 <h2 class="text-lg text-gray-600 dark:text-gray-400">
@@ -446,46 +730,60 @@ const visibleDrawerCast = ref(false);
           </div>
         </div>
         <div class="px-4 py-10 md:px-10">
-          <div class="flex items-center justify-between gap-8 mb-4">
-            <div class="flex items-center gap-8">
-              <h2 class="text-3xl font-bold">Reviews</h2>
-              <Button
-                v-if="user"
-                label="Añadir review"
-                variant="outlined"
-                @click="visible = true"
+          <div class="flex flex-col mb-4">
+              <div class="flex items-center gap-8">
+                <h2 class="text-3xl font-bold">Reviews</h2>
+              </div>
+            <div class="flex items-center justify-between gap-8 mt-4">
+              <SelectButton
+                class="shadow"
+                v-model="sortValue"
+                :options="optionsSort"
+                optionLabel="sort_by"
+                optionValue="value"
+                @change="searchReviews"
               />
-            </div>
 
-            <div class="search-container relative">
-              <span
-                class="absolute inset-y-0 left-4 flex items-center text-violet-900"
-              >
-                <i class="pi pi-search"></i>
-              </span>
-              <input
-                type="text"
-                v-model="searchQuery"
-                placeholder="Buscar review"
-                class="absolut pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
-              />
+              <div class="flex items-center space-x-6">
+                <Button label="Afegir ressenya" :disabled="hasReviewFromUser" variant="text" @click="visible = true" raised rounded />
+                <div class="search-container relative">
+                  <span class="absolute inset-y-0 left-4 flex items-center text-violet-900 dark:text-violet-400">
+                    <i class="pi pi-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    v-model="searchQuery"
+                    placeholder="Buscar review"
+                    @keydown.enter="searchReviews"
+                    class="pl-12 pr-2 py-2 rounded-full bg-violet-500/40 placeholder-violet-900 dark:placeholder-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-500/80 transition-shadow duration-300"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-          <div v-if="filteredReviews.length" class="space-y-4">
-            <ReviewCard
-              v-for="review in filteredReviews"
-              :review="review"
-              :key="review.id"
-              :film="dataMovie"
-              @delete-review="deleteReview"
-            ></ReviewCard>
+          <div v-if="reviews.length" class="space-y-4">
+            <div v-for="(review, index) in reviews" :key="review.id">
+              <ReviewCard
+                :review="review"
+                :film="dataMovie"
+                @delete-review="deleteReview"
+              ></ReviewCard>
+              
+              <!-- Mostrar <hr> solo si no es la última reseña -->
+              <hr v-if="index === 0 && hasReviewFromUser" class="w-11/12 border-t-2 border-violet-500 mt-4 rounded mx-auto">
+            </div>
           </div>
-          <p v-else-if="!reviews.length" class="text-gray-600 dark:text-gray-400">
+          <p v-else-if="!reviews.length" class="text-lg text-gray-600 dark:text-gray-400">
             Encara no hi ha ressenyes.
           </p>
-          <p v-else class="text-gray-600 dark:text-gray-400">
-            No se encontraron resultados.
+          <p v-else class="text-lg text-gray-600 dark:text-gray-400">
+            No s'han trobat resultats.
           </p>
+          <div v-if="hasMore" class="flex items-center justify-center gap-4 mt-4">
+            <hr class="w-1/4 border-t-2 border-violet-500">
+            <Button icon="pi pi-chevron-down" rounded severity="help" @click="loadMoreReviews"/>
+            <hr class="w-1/4 border-t-2 border-violet-500">
+          </div>
         </div>
       </div>
     </div>
