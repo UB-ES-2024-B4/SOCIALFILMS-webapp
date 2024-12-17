@@ -19,6 +19,14 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['remove-watchfilm']);
+
+function toggleWatch(event: MouseEvent) {
+  handleUserMovieRelation('watch_later')
+  emit('remove-watchfilm', props.film?.id);
+  event.stopPropagation();
+}
+
 const supabase = useSupabaseClient();
 const is_favorite = ref(false);
 const is_watch_later = ref(false);
@@ -58,7 +66,7 @@ watch(
 
 <template>
   <div
-    class="relative w-[270px] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.03]"
+    class="relative rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.03]"
   >
     <div class="relative aspect-[3/2]">
       <img
@@ -84,7 +92,7 @@ watch(
           </button>
           <button
             v-if="watch_later"
-            @click.stop="handleUserMovieRelation('watch_later')"
+            @click="toggleWatch($event)"
             :disabled="isLoading"
             class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
           >
@@ -103,14 +111,14 @@ watch(
     <div class="absolute bottom-0 left-0 w-full px-3.5 pt-1.5 pb-5 bg-neutral-400/10 text-white backdrop-blur">     
       <div class="w-full flex items-start justify-between">
         <div class="w-3/4">
-          <h2 class="font-bold text-lg truncate">{{ film.title }}</h2>
-          <h3 class="text-xs text-gray-300 mt-[2px] truncate leading-none">
+          <h2 class="font-bold text-lg 2xl:text-xl truncate">{{ film.title }}</h2>
+          <h3 class="text-xs 2xl:text-sm text-gray-300 mt-[2px] truncate leading-none">
             {{ film?.genre_ids?.map((id) => genres[id]).join(" • ") }}
             {{ film.genres?.map((genre) => genre.name).join(" • ") }}
           </h3>
         </div>
         <span class="tag bg-gray-200/20 text-gray-200 mt-1">
-          <i class="pi pi-star-fill text-yellow-400 mr-1.5 text-[0.8rem]"></i>
+          <i class="pi pi-star-fill text-yellow-400 mr-1.5 text-[0.8rem] 2xl:text-[1em]"></i>
           {{ film.vote_average.toFixed(1) }}
         </span>
       </div>
@@ -127,5 +135,10 @@ watch(
   display: inline-flex;
   align-items: center;
   backdrop-filter: blur(8px);
+}
+@media (min-width: 1536px) {
+  .tag {
+    font-size: 0.9rem;
+  }
 }
 </style>
