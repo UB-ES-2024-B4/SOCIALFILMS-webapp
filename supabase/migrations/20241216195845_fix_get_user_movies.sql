@@ -12,7 +12,7 @@ BEGIN
 
     SELECT json_agg(
         jsonb_set(
-            find_movie_by_id(movie_id)::jsonb,
+            find_movie_by_id(movie_id, 'ca-ES')::jsonb,
             '{relations}',
             jsonb_build_object(
                 'is_favorite', relation_type = 'favorite',
