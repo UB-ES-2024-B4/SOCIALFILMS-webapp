@@ -7,6 +7,7 @@ import type { Notification, Notifications } from "~/types";
 const route = useRoute();
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
+const toast = useToast();
 const searchQuery = ref("");
 const notificationsPopover = ref();
 const notifications = ref<Notifications>();
@@ -29,23 +30,27 @@ try {
   }
 }
 
-const isNotificationsPopover = ref(false); 
 const seeNotifications = async (event: Event) => {
   notificationsPopover.value.toggle(event);
-  isNotificationsPopover.value = true;
 };
 
 const todayNotifications = computed(() => {
   if (notifications.value) {
     const today = new Date();
-    return notifications.value.notifications.filter((notification) => {
-      const notificationDate = new Date(notification.created_at);
-      return (
-        notificationDate.getDate() === today.getDate() &&
-        notificationDate.getMonth() === today.getMonth() &&
-        notificationDate.getFullYear() === today.getFullYear()
-      );
-    });
+    return notifications.value.notifications
+      .filter((notification) => {
+        const notificationDate = new Date(notification.created_at);
+        return (
+          notificationDate.getDate() === today.getDate() &&
+          notificationDate.getMonth() === today.getMonth() &&
+          notificationDate.getFullYear() === today.getFullYear()
+        );
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateB.getTime() - dateA.getTime();
+      });
   }
   return [];
 });
@@ -53,14 +58,20 @@ const todayNotifications = computed(() => {
 const olderNotifications = computed(() => {
   if (notifications.value) {
     const today = new Date();
-    return notifications.value.notifications.filter((notification) => {
-      const notificationDate = new Date(notification.created_at);
-      return (
-        notificationDate.getDate() !== today.getDate() ||
-        notificationDate.getMonth() !== today.getMonth() ||
-        notificationDate.getFullYear() !== today.getFullYear()
-      );
-    });
+    return notifications.value.notifications
+      .filter((notification) => {
+        const notificationDate = new Date(notification.created_at);
+        return (
+          notificationDate.getDate() !== today.getDate() ||
+          notificationDate.getMonth() !== today.getMonth() ||
+          notificationDate.getFullYear() !== today.getFullYear()
+        );
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateB.getTime() - dateA.getTime();
+      });
   }
   return [];
 });
@@ -76,7 +87,20 @@ const notificationsRealtime = supabase
       filter: `receiver_id=eq.${user.value?.id}`,
     },
     (payload) => {
-      notifications.value?.push(payload.new)
+      const newNotification = payload.new as Notification;
+
+      if (!notifications.value) {
+        notifications.value = { notifications: [], unread_count: 0 };
+      }
+
+      notifications.value.notifications.push(newNotification);
+
+      toast.add({
+        severity: 'info',
+        summary: `Nova notificació de ${newNotification.sender_username}`,
+        detail: `${newNotification.sender_username} t'ha compartit una pel·lícula`,
+        life: 5000,
+      });
     }
   )
   .subscribe()
@@ -188,10 +212,7 @@ watch(
   () => {
     hasBackground.value = false;
     isNavbarVisible.value = true;
-    if (isNotificationsPopover.value) {
-      notificationsPopover.value.toggle();
-      isNotificationsPopover.value = false;
-    }
+    notificationsPopover.value.hide()
   }
 );
 
@@ -260,10 +281,10 @@ watch(
             <i class="pi pi-filter"></i>
           </button>
         </form>
-        <OverlayBadge v-if="user && notifications?.unread_count !== 0" :value="notifications?.unread_count" severity="danger" size="small">
+        <OverlayBadge v-if="user && notifications?.unread_count !== 0 && notifications" :value="notifications?.unread_count" severity="danger" size="small">
           <Button icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
         </OverlayBadge>
-        <Button v-else-if="user && notifications?.unread_count === 0" icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
+        <Button v-else-if="user && (notifications?.unread_count === 0 || !notifications?.notifications)" icon="pi pi-bell" severity="secondary" rounded @click="seeNotifications" />
         <Popover ref="notificationsPopover" class="no-padding-popover">
           <div class="flex flex-col w-[33rem] h-[calc(100vh-150px)] py-3">
             <div class="flex items-center justify-between pl-6 pr-5 mb-1.5">
@@ -302,7 +323,7 @@ watch(
                   @delete-notification="deleteNotification"
                 ></NotificationCard>
               </div>
-              <div v-if="todayNotifications.length && !olderNotifications.length" class="text-center italic py-4 text-lg text-gray-500">
+              <div v-if="!todayNotifications.length && !olderNotifications.length" class="text-center italic py-4 text-lg text-gray-500">
                 No tens notificacions disponibles.
               </div>
             </ScrollPanel>
