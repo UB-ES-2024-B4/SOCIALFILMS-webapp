@@ -27,8 +27,6 @@ const props = defineProps({
   }
 });
 
-const user = useSupabaseUser();
-
 const emit = defineEmits(['remove-film']);
 
 function toggleFavorite(event: MouseEvent) {

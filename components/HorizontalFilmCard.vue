@@ -19,8 +19,6 @@ const props = defineProps({
   }
 });
 
-const user = useSupabaseUser();
-
 const supabase = useSupabaseClient();
 const is_favorite = ref(false);
 const is_watch_later = ref(false);
