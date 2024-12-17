@@ -18,7 +18,7 @@ const supabase = useSupabaseClient();
 
 const { data: movie, error: errorMovie } = (await supabase.rpc(
   "find_movie_by_id",
-  { movie_id: props.notification.movie_id }
+  { movie_id: props.notification.movie_id, lang: 'ca-ES' }
 )) as { data: Film; error: any };
 
 const isLoadingRead = ref(false);
@@ -74,7 +74,7 @@ const deleteNotification = async () => {
 
     <div class="inline-flex items-baseline sm:flex-col w-full pr-2">
 			<!-- Notification message -->
-      <div class="flex items-start">
+      <div class="w-full flex items-start justify-between">
         <div class="flex flex-col pr-1">
           <span class="leading-tight">
             <strong>{{ notification.sender_username }}</strong> t'ha compartit la pel·lícula <strong>{{ movie.title }}</strong>

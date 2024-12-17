@@ -8,10 +8,6 @@ definePageMeta({
 
 const supabase = useSupabaseClient();
 const route = useRoute();
-const query =
-  typeof route.params.query === "string"
-    ? decodeURIComponent(route.params.query).replace(/-/g, " ")
-    : "";
 
 const optionsSort = ref([
   { sort_by: "Más vistas", value: "popularity.desc" },
@@ -28,85 +24,23 @@ const queryCountry = ref("");
 const queryGenre = ref("");
 const queryLanguage = ref("");
 
-const selectedGenres = ref<number[]>(
-  (route.query.genre ? (route.query.genre as string).split(",") : [])
-    .filter(Boolean)
-    .map(Number)
-);
-const selectedYear = ref<Date | null>(
-  route.query.year ? new Date(route.query.year as string) : null
-);
-const selectedCountry = ref<string>((route.query.country as string) || "");
-const selectedLanguage = ref<string>((route.query.language as string) || "");
+const selectedGenres = ref<number[]>([]);
+const selectedYear = ref<Date | null>(null);
+const selectedCountry = ref<string>("");
+const selectedLanguage = ref<string>("");
 
-const filmsQueryOriginal = ref<FilmsAPI>({ results: [] });
-const filmsQueryFiltered = ref<Film[]>([]);
+const filmsQuery = ref<Film[]>([]);
 const currentBackground = ref("");
 const isBackgroundTransitioning = ref(false);
 
 const applyFilters = async () => {
-  let filtered = [...filmsQueryOriginal.value?.results];
-
-  if (selectedGenres.value.length > 0) {
-    filtered = filtered.filter((film) =>
-      selectedGenres.value.every((selectedGenre) =>
-        film.genre_ids?.includes(selectedGenre)
-      )
-    );
-  }
-
-  if (selectedYear.value) {
-    filtered = filtered.filter(
-      (film) =>
-        new Date(film.release_date).getFullYear() ===
-        new Date(selectedYear.value).getFullYear()
-    );
-  }
-
-  if (selectedCountry.value || selectedLanguage.value) {
-    const detailedFilms = await Promise.all(
-      filtered.map(async (film) => {
-        const { data: fullFilm, error } = (await supabase.rpc(
-          "find_movie_by_id",
-          { movie_id: film.id, lang: 'ca-ES' }
-        )) as { data: Film; error: any };
-        return {
-          ...film,
-          spoken_languages: fullFilm.spoken_languages,
-          production_countries: fullFilm.production_countries,
-        };
-      })
-    );
-    filtered = detailedFilms;
-
-    if (selectedCountry.value) {
-      filtered = filtered.filter((film) =>
-        film.production_countries?.some(
-          (country) => country.iso_3166_1 === selectedCountry.value
-        )
-      );
-    }
-    console.log(filtered);
-    if (selectedLanguage.value) {
-      filtered = filtered.filter((film) =>
-        film.spoken_languages?.some(
-          (language) => language.iso_639_1 === selectedLanguage.value
-        )
-      );
-    }
-  }
-
-  filtered = filtered.sort((a, b) => {
-    const [field, order] = sortValue.value.split(".");
-    const modifier = order === "desc" ? -1 : 1;
-    return (
-      ((a[field as keyof Film] ?? 0) < (b[field as keyof Film] ?? 0) ? -1 : 1) *
-      modifier
-    );
-  });
-
-  filmsQueryFiltered.value = filtered;
-  if (filmsQueryFiltered.value.length === 0) {
+  if (
+    selectedGenres.value.length === 0 &&
+    !selectedCountry.value &&
+    !selectedLanguage.value &&
+    !selectedYear.value
+  ) {
+    filmsQuery.value = [];
     isBackgroundTransitioning.value = true;
     setTimeout(() => {
       currentBackground.value = '/';
@@ -114,28 +48,40 @@ const applyFilters = async () => {
     
     return;
   }
-  const newBackdrop = filmsQueryFiltered.value[0]?.backdrop_path;
-  if (newBackdrop && newBackdrop !== currentBackground.value) {
-    isBackgroundTransitioning.value = true;
-    setTimeout(() => {
-      currentBackground.value = newBackdrop;
-    }, 350);
+  try {
+    const params = {
+      with_genres: selectedGenres.value.length
+        ? encodeURIComponent(selectedGenres.value.join(","))
+        : null,
+      with_origin_country: selectedCountry.value || null,
+      sort_by: sortValue.value,
+      with_original_language: selectedLanguage.value || null,
+      year: selectedYear.value
+        ? selectedYear.value.getFullYear()
+        : null,
+      lang: "ca-ES",
+    };
+
+    const { data, error } = (await supabase.rpc("discover_movies", params)) as {
+      data: FilmsAPI;
+      error: any;
+    };
+
+    if (error) throw error;
+
+    filmsQuery.value = data.results;
+    const newBackdrop = filmsQuery.value[0]?.backdrop_path;
+    if (newBackdrop && newBackdrop !== currentBackground.value) {
+      isBackgroundTransitioning.value = true;
+
+      setTimeout(() => {
+        currentBackground.value = newBackdrop;
+      }, 350);
+    }
+  } catch (e) {
+    console.error("Error fetching movies:", e);
   }
 };
-
-try {
-  const { data, error } = (await supabase.rpc("search_movie_by_name", {
-    movie_name: encodeURIComponent(query),
-    lang: "ca-ES",
-  })) as { data: FilmsAPI; error: any };
-  if (error) throw error;
-  currentBackground.value = data.results[0].backdrop_path || '/';
-  filmsQueryOriginal.value = data;
-  filmsQueryFiltered.value = data.results;
-  applyFilters();
-} catch (e) {
-  console.error(e);
-}
 
 const navigateToMovie = (id: number) => {
   navigateTo(`/movies/${id}`);
@@ -170,7 +116,6 @@ const filteredLanguage = computed(() => {
 
 watch(
   [
-    filmsQueryOriginal,
     selectedGenres,
     selectedYear,
     selectedCountry,
@@ -178,8 +123,9 @@ watch(
     sortValue,
   ],
   async () => {
-    applyFilters();
-  }
+    await applyFilters();
+  },
+  { deep: true }
 );
 </script>
 
@@ -333,11 +279,11 @@ watch(
         </div>
 
         <div
-          v-if="filmsQueryFiltered.length > 0"
+          v-if="filmsQuery.length > 0"
           class="flex flex-wrap my-10 mx-2 gap-10 items-center"
         >
           <FilmCard
-            v-for="(film, index) in filmsQueryFiltered"
+            v-for="(film, index) in filmsQuery"
             class="cursor-pointer"
             :film="film"
             :trending="false"
@@ -348,14 +294,25 @@ watch(
           ></FilmCard>
         </div>
         <div
+          v-else-if="selectedGenres.length === 0 && !selectedCountry && !selectedLanguage && !selectedYear"
+          class="w-full mt-16 items-center justify-center text-center"
+        >
+          <p class="text-2xl font-semibold text-gray-600 dark:text-gray-300">
+            Explora pel·lícules noves ajustant els filtres
+          </p>
+          <p class="mt-2 text-xl text-gray-400 dark:text-gray-500">
+            Comença ajustant els filtres
+          </p>
+        </div>
+        <div
           v-else
           class="w-full mt-16 items-center justify-center text-center"
         >
           <p class="text-2xl font-semibold text-gray-600 dark:text-gray-300">
-            No se encontraron resultados para tu búsqueda.
+            No s'han trobat resultats per aquest filtratge
           </p>
           <p class="mt-2 text-xl text-gray-400 dark:text-gray-500">
-            Prueba con otras palabras clave o ajusta tus filtros.
+            Prova a ajustar els filtres
           </p>
         </div>
       </div>
