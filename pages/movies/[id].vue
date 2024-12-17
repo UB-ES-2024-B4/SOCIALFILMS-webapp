@@ -14,10 +14,23 @@ const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast();
 
-const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
-  "find_movie_by_id",
-  { movie_id: route.params.id, lang: 'ca-ES' }
-)) as { data: Film; error: any };
+let dataMovie: Film | null = null;
+let errorMovie: any = null;
+
+const languages = ['ca', 'es', 'en'];
+for (const langs of languages) {
+  const { data, error } = (await supabase.rpc("find_movie_by_id", {
+    movie_id: route.params.id,
+    lang: langs,
+  })) as { data: Film | null; error: any };
+
+  if (data?.overview) {
+    dataMovie = data;
+    errorMovie = error;
+    break;
+  }
+}
+
 
 const limit = 10
 const offset = ref(0)

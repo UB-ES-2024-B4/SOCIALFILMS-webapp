@@ -139,9 +139,67 @@ const shareProfile = () => {
 			});
 };
 
-const { data: favoriteMovies, error: errorFavoriteMovies } = await supabase.rpc('get_user_movies', {
+const { data: favoriteMovie, error: errorFavoriteMovies } = await supabase.rpc('get_user_movies', {
   _relation_type: 'favorite'
 }) as { data: Film[]; error: any };
+
+// Refs y propiedades computadas
+const favorite = ref<Film[]>(favoriteMovie);
+
+const favoriteMovies = computed(() => {
+  return favorite.value.map((movie, index) => ({
+    ...movie,
+    order: index,
+  }));
+});
+
+const snackbarVisible = ref(false);
+const removedMovie = ref<Film | null>(null);
+const timeoutId = ref<number | null>(null);
+const movie_remove_id = ref<string | null>(null);
+
+const snackbarMessage = computed(() =>
+  removedMovie.value ? `${removedMovie.value.title} s'ha tret de favorits` : ''
+);
+
+function removeFilm(movie_id: string) {
+
+  movie_remove_id.value = movie_id;
+  removedMovie.value = favoriteMovies.value.find(m => m.id === movie_id) || null;
+  
+  if (removedMovie.value) {
+    favorite.value = favorite.value.filter(m => m.id !== movie_id);
+    snackbarVisible.value = true;
+
+    timeoutId.value = setTimeout(() => {
+      snackbarVisible.value = false;
+      removedMovie.value = null;
+      movie_remove_id.value = null;
+    }, 4000);
+  }
+}
+
+async function restoreFilm() {
+
+  const { error } = await supabase.rpc('add_user_movie', {
+    _movie_id: movie_remove_id.value,
+    _relation_type: 'favorite',
+  });
+
+  if (removedMovie.value) {
+    favorite.value.splice(removedMovie.value?.order, 0, removedMovie.value);
+  }
+
+  snackbarVisible.value = false;
+  removedMovie.value = null;
+  movie_remove_id.value = null;
+
+  if (timeoutId.value) {
+    clearTimeout(timeoutId.value);
+    timeoutId.value = null;
+  }
+}
+
 
 const isProcessingFollow = ref(false);
 const handleFollow = async () => {
@@ -208,6 +266,23 @@ const handleFollow = async () => {
 </script>
 
 <template>
+	<transition name="scale">
+      <div v-if="snackbarVisible" id="snackbar" class="flex items-center justify-between backdrop-blur bg-neutral-600/70  rounded-lg z-50">
+        <div class="flex items-center gap-4">
+			<span class="text-white text-md font-medium">
+          {{ snackbarMessage }}
+        </span>
+        <button
+			@click="restoreFilm"
+			class="flex items-center justify-center px-4 py-2 bg-transparent border border-white text-white rounded-full hover:bg-white hover:text-black transition-all"
+		>
+			<i class="pi pi-replay mr-2"></i>
+			Desfer
+		</button>
+		</div>
+      </div>
+    </transition>
+
 	<div class="relative w-full h-full pb-5">
     <!-- Background -->
 		<div class="h-80 bg-gradient-to-b from-pink-400/90 to-violet-400 dark:from-pink-700 dark:to-violet-800"></div>
@@ -285,12 +360,14 @@ const handleFollow = async () => {
 							<template #item="slotProps">
 								<FilmCard
 									class="mt-2.5 mb-20 mx-2 cursor-pointer"
+									:key="slotProps.data.id"
 									:film="slotProps.data"
 									:trending="false"
 									:trendingNumber="slotProps.index + 1"
 									:favorite="true"
-                	:watch_later="false"
+                					:watch_later="false"
 									@click="navigateToMovie(slotProps.data.id)"
+									@remove-film="removeFilm"
 								></FilmCard>
 							</template>
 						</Carousel>
@@ -318,3 +395,33 @@ const handleFollow = async () => {
 		</div>
   </div>
 </template>
+
+<style>
+/* Transiciones para mostrar y ocultar el snackbar con animación de escala */
+.scale-enter-active,
+.scale-leave-active {
+  transition: opacity 0.5s, transform 0.5s; /* Animación de opacidad y escala */
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.5); /* Hacerlo pequeño al desaparecer */
+}
+
+.scale-enter-to,
+.scale-leave-from {
+  opacity: 1;
+  transform: scale(1); /* Hacerlo grande al aparecer */
+}
+
+#snackbar {
+  border-radius: 36px;
+  width: wrap;
+  padding: 16px 24px;
+  position: fixed;
+  left: 50%; /* Centra el snackbar horizontalmente */
+  bottom: 30px; /* Posición 30px desde el fondo */
+  transform: translateX(-50%); /* Ajusta para que esté centrado */
+}
+</style>
