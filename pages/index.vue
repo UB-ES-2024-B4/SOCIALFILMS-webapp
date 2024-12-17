@@ -30,12 +30,60 @@ const { data: nowPlayingMovies, error: errorNowPlayingMovies } = (await supabase
   }
 )) as { data: FilmsAPI; error: any };
 
-const { data: myListMovies, error: errorMyListMovies } = (await supabase.rpc(
-  "get_user_movies",
-  { 
-    _relation_type: 'watch_later'
+const { data: watchMovie, error: errorWatchMovies } = await supabase.rpc('get_user_movies', {
+  _relation_type: 'watch_later'
+}) as { data: Film[]; error: any };
+
+const watch_list = ref<Film[]>(watchMovie);
+
+const favoriteMovies = computed(() => {
+  if (errorWatchMovies) return false;
+  return watch_list.value.map((movie, index) => ({
+    ...movie,
+    order: index,
+  }));
+});
+
+const snackbarVisible = ref(false);
+const removedMovie = ref<Film | null>(null);
+const timeoutId = ref<number | null>(null);
+const movie_remove_id = ref<string | null>(null);
+
+function removeFilm(movie_id: string) {
+  movie_remove_id.value = movie_id;
+  removedMovie.value = favoriteMovies.value.find(m => m.id === movie_id) || null;
+  
+  if (removedMovie.value) {
+    watch_list.value = watch_list.value.filter(m => m.id !== movie_id);
+    snackbarVisible.value = true;
+
+    timeoutId.value = setTimeout(() => {
+      snackbarVisible.value = false;
+      removedMovie.value = null;
+      movie_remove_id.value = null;
+    }, 4000);
   }
-)) as { data: Film[]; error: any };
+}
+
+async function restoreFilm() {
+  const { error } = await supabase.rpc('add_user_movie', {
+    _movie_id: movie_remove_id.value,
+    _relation_type: 'watch_later',
+  });
+
+  if (removedMovie.value) {
+    watch_list.value.splice(removedMovie.value?.order, 0, removedMovie.value);
+  }
+
+  snackbarVisible.value = false;
+  removedMovie.value = null;
+  movie_remove_id.value = null;
+
+  if (timeoutId.value) {
+    clearTimeout(timeoutId.value);
+    timeoutId.value = null;
+  }
+}
 
 const navigateToMovie = (id: number) => {
   navigateTo(`/movies/${id}`);
@@ -160,6 +208,27 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <transition name="scale">
+		<div 
+			v-if="snackbarVisible" 
+			id="snackbar" 
+			class="flex items-center justify-between backdrop-blur bg-neutral-600/70 dark:bg-neutral-800/90 rounded-lg z-50 shadow-lg"
+		>
+			<div class="flex items-center gap-20">
+				<span class="text-white text-md dark:text-gray-200">
+					<strong>{{ removedMovie?.title }}</strong> s'ha tret de La meva llista.
+				</span>
+				<button
+					@click="restoreFilm"
+					class="flex items-center justify-center px-4 py-2 bg-transparent border border-gray-200 text-white dark:text-gray-200 rounded-full hover:bg-white hover:text-black dark:hover:bg-gray-200 dark:hover:text-black transition-all"
+				>
+					<i class="pi pi-replay mr-2"></i>
+					Desfer
+				</button>
+			</div>
+		</div>
+	</transition>
+
   <div
     class="w-full h-full fixed inset-0 bg-cover bg-center"
     :style="{ backgroundImage: `url(https://image.tmdb.org/t/p/original${trendingMovies.results[0].backdrop_path})` }"
@@ -178,6 +247,7 @@ onUnmounted(() => {
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
                 v-for="film in nowPlayingMovies.results"
+                :key="film.id"
                 class="cursor-pointer w-[270px] 2xl:w-[300px]"
                 :film="film"
                 :favorite="user ? true : false"
@@ -191,19 +261,21 @@ onUnmounted(() => {
         <!-- My list -->
         <div class="h-[500px] max-w-[348px] 2xl:max-w-[378px] flex flex-col items-start pt-6 bg-zinc-200/20 rounded-[2.5rem] shadow-lg">
           <h3 class="font-bold text-white text-[1.6rem] ml-12 mb-2">La meva llista</h3>
-          <div v-if="user && myListMovies" class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
+          <div v-if="user && favoriteMovies" class="w-full h-full px-10 pt-1.5 pb-16 overflow-y-auto">
             <div class="flex flex-col items-center gap-4">
               <HorizontalFilmCard
-                v-for="film in myListMovies"
+                v-for="film in favoriteMovies"
+                :key="film.id"
                 class="cursor-pointer w-[270px] 2xl:w-[300px]"
                 :film="film"
                 :favorite="false"
                 :watch_later="true"
+                @remove-watchfilm="removeFilm"
                 @click="navigateToMovie(film.id)"
               ></HorizontalFilmCard>
             </div>
           </div>
-          <span v-else-if="!myListMovies && user" class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
+          <span v-else-if="!favoriteMovies && user" class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
             Encara no tens pel·lícules a la teva llista.
           </span>
           <span v-else class="text-center text-gray-300 text-lg italic px-10 pt-1.5 pb-16">
@@ -349,6 +421,34 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+
+.scale-enter-active,
+.scale-leave-active {
+  transition: opacity 0.5s, transform 0.5s; /* Animación de opacidad y escala */
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.5); /* Hacerlo pequeño al desaparecer */
+}
+
+.scale-enter-to,
+.scale-leave-from {
+  opacity: 1;
+  transform: scale(1); /* Hacerlo grande al aparecer */
+}
+
+#snackbar {
+  border-radius: 36px;
+  width: wrap;
+  padding: 16px 24px;
+  position: fixed;
+  left: 50%; /* Centra el snackbar horizontalmente */
+  bottom: 30px; /* Posición 30px desde el fondo */
+  transform: translateX(-50%); /* Ajusta para que esté centrado */
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   transition: opacity 0.3s ease;

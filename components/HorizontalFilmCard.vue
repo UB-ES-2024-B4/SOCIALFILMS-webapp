@@ -19,6 +19,14 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['remove-watchfilm']);
+
+function toggleWatch(event: MouseEvent) {
+  handleUserMovieRelation('watch_later')
+  emit('remove-watchfilm', props.film?.id);
+  event.stopPropagation();
+}
+
 const supabase = useSupabaseClient();
 const is_favorite = ref(false);
 const is_watch_later = ref(false);
@@ -84,7 +92,7 @@ watch(
           </button>
           <button
             v-if="watch_later"
-            @click.stop="handleUserMovieRelation('watch_later')"
+            @click="toggleWatch($event)"
             :disabled="isLoading"
             class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
           >
