@@ -217,9 +217,9 @@ watch(
           @click="navigateTo(item.path)"
           :class="[
             'flex items-center gap-2 font-medium py-3 px-6 rounded-full mr-2',
-            (isActive(item.path).value
+            isActive(item.path).value
                ? 'bg-neutral-400/40 text-white font-semibold'
-               : 'text-gray-100 hover:bg-neutral-400/40'),
+               : 'text-gray-100 hover:bg-neutral-400/40',
           ]"
         > 
           <svg v-if="item.label ==='Movies'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[1.3rem] h-[1.3rem]">
