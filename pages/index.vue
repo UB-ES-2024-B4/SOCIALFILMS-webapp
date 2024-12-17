@@ -37,7 +37,9 @@ const { data: watchMovie, error: errorWatchMovies } = await supabase.rpc('get_us
 const watch_list = ref<Film[]>(watchMovie);
 
 const favoriteMovies = computed(() => {
-  if (errorWatchMovies) return false;
+  if (!watch_list.value || watch_list.value.length === 0) {
+    return false;
+  }
   return watch_list.value.map((movie, index) => ({
     ...movie,
     order: index,
@@ -61,7 +63,7 @@ function removeFilm(movie_id: string) {
       snackbarVisible.value = false;
       removedMovie.value = null;
       movie_remove_id.value = null;
-    }, 4000);
+    }, 5000);
   }
 }
 
@@ -92,7 +94,8 @@ const navigateToMovie = (id: number) => {
 const responsiveOptions = ref([
   { breakpoint: 2000, numVisible: 5 },
   { breakpoint: 1750, numVisible: 4 },
-  { breakpoint: 1550, numVisible: 3 },
+  { breakpoint: 1550, numVisible: 4 },
+  { breakpoint: 1450, numVisible: 3 },
   { breakpoint: 1000, numVisible: 2 },
   { breakpoint: 700, numVisible: 1 },
 ]);
@@ -285,7 +288,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Right Column -->
-      <div class="flex flex-col gap-12 lg:w-[67%] xl:w-[70%] 2xl:w-[77%]">
+      <div class="flex flex-col gap-12 lg:w-[67%] xl:w-[70%] 2xl:w-[71%]">
         <BigFilmCard
           class="cursor-pointer h-[500px]"
           :film="trendingMovies.results[0]"
