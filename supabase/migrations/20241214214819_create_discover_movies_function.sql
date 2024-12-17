@@ -1,6 +1,6 @@
 set check_function_bodies = off;
 
-CREATE OR REPLACE FUNCTION public.discover_movies(with_genres integer, with_origin_country text, sort_by text, with_original_language text, year integer, lang text)
+CREATE OR REPLACE FUNCTION public.discover_movies(with_genres text, with_origin_country text, sort_by text, with_original_language text, year integer, lang text)
  RETURNS json
  LANGUAGE plpgsql
 AS $function$declare
