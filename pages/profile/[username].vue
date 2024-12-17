@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Review, FilmsAPI, Profile } from "~/types";
+import type { Review, FilmsAPI, Film, Profile } from "~/types";
 import ReviewCard from "~/components/ReviewCard.vue";
 
 const supabase = useSupabaseClient();
@@ -143,7 +143,6 @@ const { data: favoriteMovie, error: errorFavoriteMovies } = await supabase.rpc('
   _relation_type: 'favorite'
 }) as { data: Film[]; error: any };
 
-// Refs y propiedades computadas
 const favorite = ref<Film[]>(favoriteMovie);
 
 const favoriteMovies = computed(() => {
@@ -158,12 +157,7 @@ const removedMovie = ref<Film | null>(null);
 const timeoutId = ref<number | null>(null);
 const movie_remove_id = ref<string | null>(null);
 
-const snackbarMessage = computed(() =>
-  removedMovie.value ? `${removedMovie.value.title} s'ha tret de favorits` : ''
-);
-
 function removeFilm(movie_id: string) {
-
   movie_remove_id.value = movie_id;
   removedMovie.value = favoriteMovies.value.find(m => m.id === movie_id) || null;
   
@@ -270,19 +264,19 @@ const handleFollow = async () => {
 		<div 
 			v-if="snackbarVisible" 
 			id="snackbar" 
-			class="flex items-center justify-between backdrop-blur bg-neutral-600/70 dark:bg-neutral-800/90 rounded-lg z-50 p-4 shadow-lg"
+			class="flex items-center justify-between backdrop-blur bg-neutral-600/70 dark:bg-neutral-800/90 rounded-lg z-50 shadow-lg"
 		>
-			<div class="flex items-center gap-4">
-			<span class="text-white text-md font-medium dark:text-gray-200">
-				{{ snackbarMessage }}
-			</span>
-			<button
-				@click="restoreFilm"
-				class="flex items-center justify-center px-4 py-2 bg-transparent border border-white text-white dark:border-gray-200 dark:text-gray-200 rounded-full hover:bg-white hover:text-black dark:hover:bg-gray-200 dark:hover:text-black transition-all"
-			>
-				<i class="pi pi-replay mr-2"></i>
-				Desfer
-			</button>
+			<div class="flex items-center gap-20">
+				<span class="text-white text-md dark:text-gray-200">
+					<strong>{{ removedMovie?.title }}</strong> s'ha tret de Favorits.
+				</span>
+				<button
+					@click="restoreFilm"
+					class="flex items-center justify-center px-4 py-2 bg-transparent border border-gray-200 text-white dark:text-gray-200 rounded-full hover:bg-white hover:text-black dark:hover:bg-gray-200 dark:hover:text-black transition-all"
+				>
+					<i class="pi pi-replay mr-2"></i>
+					Desfer
+				</button>
 			</div>
 		</div>
 	</transition>
@@ -354,7 +348,7 @@ const handleFollow = async () => {
 					<div class="flex flex-col gap-2.5">
 						<h2 class="font-bold text-2xl">Películas favoritas</h2>
 						<Carousel
-							v-if="favoriteMovies"
+							v-if="favoriteMovie"
 							class="mt-2.5"
 							:value="favoriteMovies"
 							:numVisible="3"
