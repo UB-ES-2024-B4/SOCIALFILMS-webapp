@@ -268,6 +268,7 @@ watch(
 </script>
 
 <template>
+  <Toast />
   <div>
     <div
       class="fixed inset-x-6 max-w-full h-[4.5rem] flex items-center justify-between rounded-full z-50 transition-transform duration-500"
@@ -292,8 +293,8 @@ watch(
           :class="[
             'flex items-center gap-2 font-medium py-3 px-6 rounded-full mr-2',
             isActive(item.path).value
-              ? 'bg-neutral-400/40 text-white font-semibold'
-              : 'text-gray-100 hover:bg-neutral-400/40',
+               ? 'bg-neutral-400/40 text-white font-semibold'
+               : 'text-gray-100 hover:bg-neutral-400/40',
           ]"
         > 
           <svg v-if="item.label ==='Pel·lícules'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[1.3rem] h-[1.3rem]">

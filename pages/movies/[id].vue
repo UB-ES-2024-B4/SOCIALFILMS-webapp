@@ -14,10 +14,23 @@ const user = useSupabaseUser();
 const route = useRoute();
 const toast = useToast();
 
-const { data: dataMovie, error: errorMovie } = (await supabase.rpc(
-  "find_movie_by_id",
-  { movie_id: route.params.id, lang: 'ca-ES' }
-)) as { data: Film; error: any };
+let dataMovie: Film | null = null;
+let errorMovie: any = null;
+
+const languages = ['ca', 'es', 'en'];
+for (const langs of languages) {
+  const { data, error } = (await supabase.rpc("find_movie_by_id", {
+    movie_id: route.params.id,
+    lang: langs,
+  })) as { data: Film | null; error: any };
+
+  if (data?.overview) {
+    dataMovie = data;
+    errorMovie = error;
+    break;
+  }
+}
+
 
 const limit = 10
 const offset = ref(0)
@@ -364,67 +377,37 @@ onBeforeUnmount(() => {
 
 <template>
   <Toast/>
-  <Dialog v-model:visible="visible" modal header="Nueva reseña">
-    <div class="flex flex-col mt-4 space-y-4">
-      <div class="flex space-x-8">
-        <div class="flex flex-col">
-          <h2
-            class="font-bold whitespace-nowrap text-2xl text-gray-800 dark:text-gray-100 leading-tight"
-          >
-            {{ dataMovie.title }}
-          </h2>
+  <Dialog v-model:visible="visible" modal :draggable="false">
 
-          <div class="flex items-center space-x-1.5 mt-3">
-            <span
-              :class="
-                dataMovie.adult
-                  ? 'tag bg-red-500/20 border border-red-500 whitespace-nowrap text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400'
-                  : 'tag bg-green-500/20 border border-green-500 whitespace-nowrap text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'
-              "
-            >
-              {{ dataMovie.adult ? "R" : "PG-13" }}
-            </span>
-            <span
-              class="tag border border-gray-400 whitespace-nowrap text-gray-800 dark:text-gray-200"
-            >
-              <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
-              {{ dataMovie.release_date }}
-            </span>
-            <span
-              class="tag border border-gray-400 text-gray-800 dark:text-gray-200"
-            >
-              <i
-                class="pi pi-star-fill text-yellow-400 dark:text-yellow-400 mr-1.5 text-[0.8rem]"
-              ></i>
-              {{ dataMovie.vote_average.toFixed(1) }}
-            </span>
-          </div>
-
-          <h3 class="mt-auto">Califica del 1 al 10 ({{ rating }})</h3>
-          <div class="flex mb-4 items-center space-x-2">
-            <span
-              v-for="star in 10"
-              :key="star"
-              @mouseover="selectRating(star)"
-              class="cursor-pointer text-2xl transition-transform duration-200 transform"
-              :class="{ 'scale-125': star === rating }"
-            >
-              <i
-                :class="[
-                  'pi',
-                  star <= rating ? 'pi-star-fill text-yellow-400' : 'pi-star',
-                ]"
-              ></i>
-            </span>
-          </div>
-        </div>
-        <img
-          :src="'https://image.tmdb.org/t/p/original' + dataMovie.poster_path"
-          :alt="`${dataMovie.title} poster`"
-          class="w-2/3 h-72 object-cover rounded-lg"
-        />
+    <template #header>
+      <div class="text-lg ">
+        Afegir ressenya: <span class="font-bold">{{ dataMovie.title }}</span>
       </div>
-      <div class="relative mb-4">
+    </template>
+    <div class="flex flex-col mt-4 h-220px w-[500px] mx-auto space-y-4 text-center">
+    <!-- Calificación -->
+      <div class="flex flex-col items-center">
+        <h3 class="font-semibold text-lg">Qualifica de l'1 al 10</h3>
+        <div class="flex mb-4 items-center space-x-2">
+          <span
+            v-for="star in 10"
+            :key="star"
+            @mouseover="selectRating(star)"
+            class="cursor-pointer text-2xl transition-transform duration-200 transform"
+            :class="{ 'scale-125': star === rating }"
+          >
+            <i
+              :class="[
+                'pi',
+                star <= rating ? 'pi-star-fill text-yellow-400' : 'pi-star',
+              ]"
+            ></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Área de comentarios -->
+      <div class="relative">
         <Textarea
           autoResize
           v-model="comment"
@@ -432,25 +415,27 @@ onBeforeUnmount(() => {
           cols="20"
           maxlength="255"
           placeholder="Escribe tu comentario..."
-          class="mb-4 w-full"
+          class="w-full"
         />
-        <span class="absolute right-2 bottom-[-0.1rem] text-gray-500 text-sm">
+        <span class="absolute right-2 bottom-[-1rem] text-gray-500 text-sm">
           {{ numCharacters }} / 255
         </span>
       </div>
+    </div>
 
-        <div class="flex justify-between items-center">
-          <Button label="Cancelar" severity="secondary" @click="visible=false" />
-          <div class="flex items-center gap-7">
-            <div class="relative flex items-center justify-center">
-              <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
-              <ToggleSwitch v-model="checked"/>
-            </div>
-            <Button label="Publicar" @click="submitReview" />
-          </div>
+    <!-- Botones -->
+    <div class="flex justify-between items-center mt-16">
+      <Button label="Cancel·lar" severity="secondary" @click="visible=false" />
+      <div class="flex items-center gap-7">
+        <div class="relative flex items-center justify-center">
+          <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
+          <ToggleSwitch v-model="checked"/>
         </div>
+        <Button label="Publicar" @click="submitReview" />
+      </div>
     </div>
   </Dialog>
+
 
   <Drawer
     v-model:visible="visibleDrawerDirector"
@@ -760,7 +745,7 @@ onBeforeUnmount(() => {
               />
 
               <div class="flex items-center space-x-6">
-                <Button label="Afegir ressenya" variant="text" @click="visible = true" raised rounded />
+                <Button label="Afegir ressenya" :disabled="hasReviewFromUser" variant="text" @click="visible = true" raised rounded />
                 <div class="search-container relative">
                   <span class="absolute inset-y-0 left-4 flex items-center text-violet-900 dark:text-violet-400">
                     <i class="pi pi-search"></i>

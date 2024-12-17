@@ -27,6 +27,14 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['remove-film']);
+
+function toggleFavorite(event: MouseEvent) {
+  handleUserMovieRelation('favorite')
+  emit('remove-film', props.film?.id);
+  event.stopPropagation();
+}
+
 const supabase = useSupabaseClient();
 const is_favorite = ref(false);
 const is_watch_later = ref(false);
@@ -84,7 +92,7 @@ watch(
         <div class="flex flex-col items-center gap-1.5">
           <button
             v-if="favorite"
-            @click.stop="handleUserMovieRelation('favorite')"
+            @click="toggleFavorite($event)"
             :disabled="isLoading"
             class="flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-100 shadow-lg transition-all duration-500 group"
           >
