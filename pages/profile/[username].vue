@@ -140,7 +140,7 @@ const shareProfile = () => {
 };
 
 const { data: favoriteMovie, error: errorFavoriteMovies } = await supabase.rpc('get_user_movies', {
-  _relation_type: 'favorite'
+  _relation_type: 'favorite', _user_id: profile.value?.id
 }) as { data: Film[]; error: any };
 
 const favorite = ref<Film[]>(favoriteMovie);
@@ -174,7 +174,6 @@ function removeFilm(movie_id: string) {
 }
 
 async function restoreFilm() {
-
   const { error } = await supabase.rpc('add_user_movie', {
     _movie_id: movie_remove_id.value,
     _relation_type: 'favorite',
@@ -363,8 +362,8 @@ const handleFollow = async () => {
 									:film="slotProps.data"
 									:trending="false"
 									:trendingNumber="slotProps.index + 1"
-									:favorite="true"
-                					:watch_later="false"
+									:favorite="user.id === profile?.id"
+									:watch_later="false"
 									@click="navigateToMovie(slotProps.data.id)"
 									@remove-film="removeFilm"
 								></FilmCard>

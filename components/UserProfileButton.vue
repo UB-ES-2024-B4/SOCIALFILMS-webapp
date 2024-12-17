@@ -176,8 +176,8 @@ const handleSubmitAccountUpdated = async () => {
       if (error) {
         toast.add({
           severity: "error",
-          summary: "Error al actualizar cuenta",
-          detail: `No se pudo actualizar tu cuenta: ${error.message}`,
+          summary: "Error en actualitzar el compte",
+          detail: `No s'ha pogut actualitzar el teu compte: ${error.message}`,
           life: 5000,
         });
         throw new Error(`Error updating user: ${error.message}`);
@@ -186,16 +186,16 @@ const handleSubmitAccountUpdated = async () => {
       if (email.value !== user.value?.email) {
         toast.add({
           severity: "warn",
-          summary: "Cambio de email pendiente",
-          detail: "Hemos enviado un enlace de confirmación a tu nuevo email. Por favor, revisa tu bandeja de entrada y sigue las instrucciones para completar el cambio.",
+          summary: "Canvi de correu pendent",
+          detail: "Hem enviat un enllaç de confirmació al teu nou correu. Si us plau, revisa la safata d'entrada i segueix les instruccions per completar el canvi.",
           life: 20000,
         });
       }
       if (usernameChanged){
         toast.add({
           severity: "success",
-          summary: "Nombre de usuario actualizado",
-          detail: "Se ha actualizado tu nombre de usuario con éxito",
+          summary: "Nom d'usuari actualitzat",
+          detail: "S'ha actualitzat el teu nom d'usuari amb èxit",
           life: 3000,
         });
       }
@@ -209,23 +209,23 @@ const handleSubmitAccountUpdated = async () => {
         });
 
       if (errorUpdatePassword) {
-        let summary = "Error al cambiar contraseña";
-        let detail = "Hubo un problema al actualizar tu contraseña.";
+        let summary = "Error en canviar la contrasenya";
+        let detail = "Hi ha hagut un problema en actualitzar la teva contrasenya.";
 
         switch (errorUpdatePassword.code) {
           case 'P0001':
-            summary = "Contraseña actual incorrecta";
-            detail = "Has introducido una contraseña actual incorrecta.";
+            summary = "Contrasenya actual incorrecta";
+            detail = "Has introduït una contrasenya actual incorrecta.";
             invalidCurrentPassword.value = true;
             break;
           case 'P0002':
-            summary = "Error al actualizar contraseña";
-            detail = "No se ha podido actualizar a la contraseña nueva, prueba más tarde.";
+            summary = "Error en actualitzar la contrasenya";
+            detail = "No s'ha pogut actualitzar la nova contrasenya, prova més tard.";
             invalidNewPassword.value = true;
             break;
           case 'P0003':
-            summary = "Contraseña débil";
-            detail = "La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula, un número y un símbolo.";
+            summary = "Contrasenya feble";
+            detail = "La contrasenya ha de tenir almenys 6 caràcters, una majúscula, una minúscula, un número i un símbol.";
             invalidNewPassword.value = true;
             break;
         }
@@ -239,8 +239,8 @@ const handleSubmitAccountUpdated = async () => {
       }
       toast.add({
         severity: "success",
-        summary: "Contraseña actualizada",
-        detail: "Se ha actualizado tu contraseña con éxito",
+        summary: "Contrasenya actualitzada",
+        detail: "S'ha actualitzat la teva contrasenya amb èxit",
         life: 3000,
       });
     }
@@ -272,8 +272,8 @@ const handleSubmitProfileUpdated = async () => {
       if (error) {
         toast.add({
           severity: "error",
-          summary: "Error al actualizar perfil",
-          detail: `No se pudo actualizar tu perfil: ${error.message}`,
+          summary: "Error en actualitzar el perfil",
+          detail: `No s'ha pogut actualitzar el teu perfil: ${error.message}`,
           life: 5000,
         });
         throw new Error(`Error updating profile: ${error.message}`);
@@ -281,8 +281,8 @@ const handleSubmitProfileUpdated = async () => {
 
       toast.add({
         severity: "success",
-        summary: "Perfil actualizado",
-        detail: "Se ha actualizado tu perfil con éxito",
+        summary: "Perfil actualitzat",
+        detail: "S'ha actualitzat el teu perfil amb èxit",
         life: 3000,
       });
       profile.value = { ...profileUpdated.value };
@@ -298,20 +298,20 @@ const shareProfile = () => {
 			.then(() => {
 					toast.add({
 							severity: "success",
-							summary: "Enlace copiado",
-							detail: "El enlace se ha copiado al portapapeles.",
+							summary: "Enllaç copiat",
+							detail: "L'enllaç s'ha copiat al porta-retalls.",
 							life: 3000,
 					});
-					console.log("Enlace copiado al portapapeles");
+					console.log("Enllaç copiat al porta-retalls");
 			})
 			.catch((err) => {
 					toast.add({
 							severity: "error",
-							summary: "Error al copiar",
-							detail: "No se pudo copiar el enlace. Intenta nuevamente.",
+							summary: "Error en copiar",
+							detail: "No s'ha pogut copiar l'enllaç. Torna a provar.",
 							life: 3000,
 					});
-					console.error("Error al copiar el enlace: ", err);
+					console.error("Error en copiar l'enllaç: ", err);
 			});
 };
 
