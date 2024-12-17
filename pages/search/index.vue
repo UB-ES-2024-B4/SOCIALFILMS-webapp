@@ -45,6 +45,7 @@ const handleSubmitSearch = () => {
 </script>
 
 <template>
+  <div class="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-neutral-800/0 via-25% to-neutral-800/0"></div>
   <div class="w-full h-full">
     <form
       class="flex flex-col px-20 pt-52"

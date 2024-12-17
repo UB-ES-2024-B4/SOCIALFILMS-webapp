@@ -2,7 +2,7 @@
 import "primeicons/primeicons.css";
 import UserProfileButton from "~/components/UserProfileButton.vue";
 import NotificationCard from "~/components/NotificationCard.vue";
-import type { Notification, Notifications } from "~/types"; 
+import type { Notification, Notifications, Profile } from "~/types"; 
 
 const route = useRoute();
 const supabase = useSupabaseClient();
@@ -148,13 +148,6 @@ const deleteNotification = async (notification: Notification) => {
   }
 };
 
-const handleSubmitSearch = () => {
-  if (searchQuery.value.trim()) {
-    const formattedQuery = searchQuery.value.trim().replace(/\s+/g, "-");
-    navigateTo(`/search/${encodeURIComponent(formattedQuery)}`);
-  }
-};
-
 const menuItems = ref([
   {
     label: "Inici",
@@ -180,6 +173,62 @@ const isActive = (path: string) =>
     }
     return route.path.startsWith(path);
 });
+
+const handleSubmitSearch = () => {
+  if (searchQuery.value.trim() && typeOfSearch.value !== "Perfils") {
+    const formattedQuery = searchQuery.value.trim().replace(/\s+/g, "-");
+    navigateTo(`/search/${encodeURIComponent(formattedQuery)}`);
+  }
+};
+
+const searchInput = ref<HTMLElement | null>(null);
+const typeOfSearch = ref("Pel·lícules");
+const menuSearch = ref();
+const menuProfiles = ref();
+const profiles = ref<Profile[]>([]);
+const itemsSearch = ref([
+  { label: 'Pel·lícules', command: () => { typeOfSearch.value = "Pel·lícules" } },
+  { label: 'Perfils', command: () => { typeOfSearch.value = "Perfils" } }
+]);
+const toggleMenuSearch = (event: Event) => {
+  menuSearch.value.toggle(event);
+};
+
+const isLoadingProfiles = ref(false);
+const fetchProfiles = async (event: Event) => {
+  if (typeOfSearch.value !== "Perfils" || !searchQuery.value.trim()) {
+    profiles.value = [];
+    return;
+  }
+  isLoadingProfiles.value = true;
+  const { data, error } = await supabase.rpc("search_profiles", {
+    _search_term: searchQuery.value,
+  }) as { data: Profile[]; error: any }; ;
+
+  if (error) {
+    console.error("Error fetching profiles:", error.message);
+    profiles.value = [];
+  } else {
+    console.log(data)
+    profiles.value = data || [];
+  }
+
+  if (profiles.value.length > 0) {
+    menuProfiles.value.show({ currentTarget: searchInput.value });
+  } else {
+    menuProfiles.value.hide();
+  }
+  isLoadingProfiles.value = false;
+};
+
+const filteredMenuItems = computed(() =>
+  profiles.value.map((profile) => ({
+    username: profile.username,
+    real_name: profile.real_name || "Nom no disponible",
+    last_name: profile.last_name || "",
+    command: () => navigateTo(`/profile/${profile.username}`),
+  }))
+);
 
 const SCROLL_THRESHOLD = 50;
 const HIDE_THRESHOLD = 300;
@@ -230,7 +279,7 @@ watch(
         transition: 'background-color 1s ease, inset 0.5s ease, transform 0.5s ease',
       }"
     >
-      <div class="flex items-center">
+      <div class="w-full flex items-center">
         <img
           src="/logo.png"
           alt="SocialFilms Logo"
@@ -255,23 +304,52 @@ watch(
         </button>
       </div>
 
-      <div class="flex items-center gap-4">
-        <form @submit.prevent="handleSubmitSearch" class="relative max-w-xs">
+      <div class="w-full flex items-center justify-end gap-4">
+        <form @submit.prevent="handleSubmitSearch" class="relative lg:w-80 sm:w-72">
           <span
             class="absolute inset-y-0 left-4 flex items-center text-gray-200"
           >
-            <i class="pi pi-search"></i>
+            <i :class="isLoadingProfiles ? 'pi pi-spin pi-spinner' : 'pi pi-search'"></i>
           </span>
           <input
+            ref="searchInput"
             v-model="searchQuery"
             type="text"
-            placeholder="Cerca pel·lícules"
-            class="w-full pl-12 pr-4 py-2 rounded-full bg-neutral-400/40 text-white placeholder-gray-200 focus:outline-none focus:ring-1 focus:ring-neutral-400/80 transition-shadow duration-300"
+            placeholder="Cerca"
+            :class="[ typeOfSearch === 'Perfils' ? 'pr-[7.5rem]' : 'pr-[9rem]',
+              'w-full pl-12 py-2 rounded-full bg-neutral-400/40 text-white placeholder-gray-200 focus:outline-none focus:ring-1 focus:ring-neutral-400/80 transition-shadow duration-300'
+            ]"
+            @input="fetchProfiles"
           />
+          <Menu ref="menuProfiles" id="overlay_profiles" :model="filteredMenuItems" :popup="true" class="w-60 max-h-96 overflow-y-auto">
+            <template #item="{ item, props }">
+              <button v-ripple class="relative overflow-hidden w-full border-0 bg-transparent flex items-center p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
+                <Avatar
+                  :label="item.username ? item.username[0] : 'T'"
+                  class="mr-2.5 cursor-pointer"
+                  size="large"
+                  shape="circle"
+                />
+                <span class="inline-flex flex-col items-start">
+                  <span class="font-semibold leading-tight">{{ item.username }}</span>
+                  <span class="text-gray-500/80 dark:text-gray-400/80 leading-tight">{{ item.real_name + ' ' + item.last_name }}</span>
+                </span>
+              </button>
+            </template>
+          </Menu>
+          <button
+            type="button"
+            class="absolute inset-y-0 right-12 flex items-center gap-1 text-[0.9rem] text-gray-200 hover:text-white"
+            @click="toggleMenuSearch"
+          >
+            <i class="pi pi-angle-down mt-[1px] text-[0.9rem]"></i>
+            {{ typeOfSearch }}
+          </button>
+          <Menu ref="menuSearch" id="overlay_menu_search" :model="itemsSearch" :popup="true" />
           <button
             v-tooltip.bottom="{
               value: 'Cerca avançada',
-              showDelay: 800,
+              showDelay: 200,
               hideDelay: 300,
             }"
             type="button"

@@ -514,7 +514,7 @@ const handleFollow = async (profile: Profile) => {
           />
           <div class="flex flex-col">
             <span class="font-semibold cursor-pointer leading-tight" @click="navigateTo(`/profile/${review.user}`)">{{ userReaction?.username }}</span>
-            <span class="text-gray-500/80 leading-tight">{{ userReaction?.real_name + ' ' + userReaction?.last_name }}</span>
+            <span class="text-gray-500/80 dark:text-gray-400/80 leading-tight">{{ userReaction?.real_name + ' ' + userReaction?.last_name }}</span>
           </div>
         </div>
         <Button
