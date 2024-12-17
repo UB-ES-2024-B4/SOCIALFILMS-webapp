@@ -212,14 +212,11 @@ watch(
         />
         <button
           v-for="item in menuItems"
-          :disabled="item.label === 'Pel·lícules' || (item.label === 'Perfil' && user === null)"
           :key="item.path"
           @click="navigateTo(item.path)"
           :class="[
             'flex items-center gap-2 font-medium py-3 px-6 rounded-full mr-2',
-            (item.label === 'Pel·lícules' || (item.label === 'Perfil' && user === null)) 
-            ? 'text-gray-400 bg-gray-800/40'
-            : (isActive(item.path).value
+            (isActive(item.path).value
                ? 'bg-neutral-400/40 text-white font-semibold'
                : 'text-gray-100 hover:bg-neutral-400/40'),
           ]"

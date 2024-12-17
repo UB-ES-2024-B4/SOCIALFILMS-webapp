@@ -267,21 +267,26 @@ const handleFollow = async () => {
 
 <template>
 	<transition name="scale">
-      <div v-if="snackbarVisible" id="snackbar" class="flex items-center justify-between backdrop-blur bg-neutral-600/70  rounded-lg z-50">
-        <div class="flex items-center gap-4">
-			<span class="text-white text-md font-medium">
-          {{ snackbarMessage }}
-        </span>
-        <button
-			@click="restoreFilm"
-			class="flex items-center justify-center px-4 py-2 bg-transparent border border-white text-white rounded-full hover:bg-white hover:text-black transition-all"
+		<div 
+			v-if="snackbarVisible" 
+			id="snackbar" 
+			class="flex items-center justify-between backdrop-blur bg-neutral-600/70 dark:bg-neutral-800/90 rounded-lg z-50 p-4 shadow-lg"
 		>
-			<i class="pi pi-replay mr-2"></i>
-			Desfer
-		</button>
+			<div class="flex items-center gap-4">
+			<span class="text-white text-md font-medium dark:text-gray-200">
+				{{ snackbarMessage }}
+			</span>
+			<button
+				@click="restoreFilm"
+				class="flex items-center justify-center px-4 py-2 bg-transparent border border-white text-white dark:border-gray-200 dark:text-gray-200 rounded-full hover:bg-white hover:text-black dark:hover:bg-gray-200 dark:hover:text-black transition-all"
+			>
+				<i class="pi pi-replay mr-2"></i>
+				Desfer
+			</button>
+			</div>
 		</div>
-      </div>
-    </transition>
+	</transition>
+
 
 	<div class="relative w-full h-full pb-5">
     <!-- Background -->

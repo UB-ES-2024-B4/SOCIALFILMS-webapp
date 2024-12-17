@@ -26,30 +26,22 @@ const props = defineProps({
 
 const review = reactive<Review>({ ...props.review });
 
-const openEditDialog = () => {
-  if (!visible.value) {
-    visible.value = true;
-  }
-};
-
-const openReportDialog = () => {
-  if (!visibleReport.value) {
-    visibleReport.value = true;
-  }
-};
-
 const menu = ref();
+const visible = ref(false)
+const visibleReport = ref(false)
 const authorItems = ref([
   {
     label: "Editar",
     icon: "pi pi-pencil",
-    command: openEditDialog,
+    command: () => {
+      visible.value = !visible.value;
+    },
     disabled: props.review.editable === false,
   },
   { label: "Eliminar", icon: "pi pi-trash", command: () => { confirmPosition('bottomright')}},
 ]);
 
-const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag",  command: openReportDialog}];
+const nonAuthorItems = [{ label: "Denunciar", icon: "pi pi-flag",  command: () => {visibleReport.value = !visibleReport.value;}}];
 
 const toggleMenu = (event) => {
   menu.value.toggle(event);
@@ -110,8 +102,7 @@ const numCharacters = computed(() => {
   return comment.value.length;
 });
 
-const visible = ref(false)
-const visibleReport = ref(false)
+
 const like = ref();
 const dislike = ref();
 
@@ -350,68 +341,37 @@ const handleFollow = async (profile: Profile) => {
 
 <template>
   <Toast />
-  <ConfirmDialog group="positioned" v-model:visible="confirmVisible" />
-  <Dialog v-model:visible="visible" modal header="Editar reseña">
-    <div class="flex flex-col mt-4 space-y-4">
-      <div class="flex space-x-8">
-        <div class="flex flex-col">
-          <h2
-            class="font-bold whitespace-nowrap text-2xl text-gray-800 dark:text-gray-100 leading-tight"
-          >
-            {{ film?.title }}
-          </h2>
-
-          <div class="flex items-center space-x-1.5 mt-3">
-            <span
-              :class="
-                film?.adult
-                  ? 'tag_dialog bg-red-500/20 border border-red-500 whitespace-nowrap text-red-500 dark:bg-red-500/20 dark:border-red-400 dark:text-red-400'
-                  : 'tag_dialog bg-green-500/20 border border-green-500 whitespace-nowrap text-green-500 dark:bg-green-500/20 dark:border-green-400 dark:text-green-400'
-              "
-            >
-              {{ film?.adult ? "R" : "PG-13" }}
-            </span>
-            <span
-              class="tag_dialog border border-gray-400 whitespace-nowrap text-gray-800 dark:text-gray-200"
-            >
-              <i class="pi pi-calendar mr-1.5 text-[0.8rem]"></i>
-              {{ film?.release_date }}
-            </span>
-            <span
-              class="tag_dialog border border-gray-400 text-gray-800 dark:text-gray-200"
-            >
-              <i
-                class="pi pi-star-fill text-yellow-400 dark:text-yellow-400 mr-1.5 text-[0.8rem]"
-              ></i>
-              {{ film?.vote_average.toFixed(1) }}
-            </span>
-          </div>
-
-          <h3 class="mt-auto">Califica del 1 al 10 ({{ rating }})</h3>
-          <div class="flex mb-4 items-center space-x-2">
-            <span
-              v-for="star in 10"
-              :key="star"
-              @mouseover="selectRating(star)"
-              class="cursor-pointer text-2xl transition-transform duration-200 transform"
-              :class="{ 'scale-125': star === rating }"
-            >
-              <i
-                :class="[
-                  'pi',
-                  star <= rating ? 'pi-star-fill text-yellow-400' : 'pi-star',
-                ]"
-              ></i>
-            </span>
-          </div>
-        </div>
-        <img
-          :src="'https://image.tmdb.org/t/p/original' + film?.poster_path"
-          :alt="`${film?.title} poster`"
-          class="w-2/3 h-72 object-cover rounded-lg"
-        />
+  <ConfirmDialog group="positioned" v-model:visible="confirmVisible" :draggable="false" />
+  <Dialog v-model:visible="visible" modal :draggable="false">
+    <template #header>
+      <div class="text-lg ">
+        Editar ressenya: <span class="font-bold">{{ film?.title }}</span>
       </div>
-      <div class="relative mb-4">
+    </template>
+    <div class="flex flex-col mt-4 h-220px w-[500px] mx-auto space-y-4 text-center">
+    <!-- Calificación -->
+      <div class="flex flex-col items-center">
+        <h3 class="font-semibold text-lg">Qualifica de l'1 al 10</h3>
+        <div class="flex mb-4 items-center space-x-2">
+          <span
+            v-for="star in 10"
+            :key="star"
+            @mouseover="selectRating(star)"
+            class="cursor-pointer text-2xl transition-transform duration-200 transform"
+            :class="{ 'scale-125': star === rating }"
+          >
+            <i
+              :class="[
+                'pi',
+                star <= rating ? 'pi-star-fill text-yellow-400' : 'pi-star',
+              ]"
+            ></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Área de comentarios -->
+      <div class="relative">
         <Textarea
           autoResize
           v-model="comment"
@@ -419,22 +379,24 @@ const handleFollow = async (profile: Profile) => {
           cols="20"
           maxlength="255"
           placeholder="Escribe tu comentario..."
-          class="mb-4 w-full"
+          class="w-full"
         />
-        <span class="absolute right-2 bottom-[-0.1rem] text-gray-500 text-sm">
+        <span class="absolute right-2 bottom-[-1rem] text-gray-500 text-sm">
           {{ numCharacters }} / 255
         </span>
       </div>
-        <div v-if="user" class="flex justify-between">
-          <Button label="Cancelar" severity="secondary" @click="visible=false" />
-          <div class="flex items-center gap-7">
-            <div class="relative flex items-center justify-center">
-              <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
-              <ToggleSwitch v-model="checked"/>
-            </div>
-            <Button label="Publicar" @click="submitReview" />
-          </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex justify-between items-center mt-16">
+      <Button label="Cancel·lar" severity="secondary" @click="visible=false" />
+      <div class="flex items-center gap-7">
+        <div class="relative flex items-center justify-center">
+          <span class="absolute top-[-1.3rem] text-sm">Spoiler</span>
+          <ToggleSwitch v-model="checked"/>
         </div>
+        <Button label="Publicar" @click="submitReview" />
+      </div>
     </div>
   </Dialog>
 
@@ -626,8 +588,10 @@ const handleFollow = async (profile: Profile) => {
         class="absolute top-0 left-0 w-full text-lg font-medium z-10 transition-all duration-500">
         ⚠️ Esta review contiene spoilers!
       </p>
-      <p :class="[ 'text-lg transition-all duration-500 relative', spoiler && isBlurred ? 'blur-md' : '' ]">
-        {{ review.comment }}
+      <p :class="[ 'text-lg transition-all duration-500 relative break-words whitespace-normal', spoiler && isBlurred ? 'blur-md' : '' ]">
+        {{ review.comment.slice(0, 100) }}<br v-if="review.comment.length > 100" />
+        {{ review.comment.slice(100, 200) }}<br v-if="review.comment.length > 200" />
+        {{ review.comment.slice(200) }}
       </p>
       <Button 
           v-if="spoiler"
